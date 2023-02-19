@@ -28,10 +28,13 @@ data Command
   = Backward Steps
   | Forward Steps
   | Left Angle
+  | PenDown
+  | PenUp
   | Right Angle
 
 type PointerState =
   { angle :: Angle
+  , isDown :: Boolean
   , position :: Position
   }
 
@@ -40,7 +43,13 @@ type ExecutionState =
   }
 
 interpret :: Array Command -> ExecutionState
-interpret = foldl f zero
+interpret = foldl f
+  { pointer:
+      { angle: zero
+      , isDown: true
+      , position: zero
+      }
+  }
   where
   f acc = case _ of
     Backward steps ->
@@ -56,6 +65,10 @@ interpret = foldl f zero
         }
     Left angle ->
       f acc $ Right $ -angle
+    PenDown ->
+      acc { pointer = acc.pointer { isDown = true } }
+    PenUp ->
+      acc { pointer = acc.pointer { isDown = false } }
     Right angle ->
       acc { pointer = acc.pointer { angle = acc.pointer.angle + angle } }
 
@@ -65,4 +78,5 @@ main = do
     [ Forward $ Steps 10
     , Right $ Angle 5
     , Forward $ Steps 10
+    , PenUp
     ]
