@@ -27,6 +27,7 @@ type Position = { x :: Number, y :: Number }
 data Command
   = Backward Steps
   | Forward Steps
+  | Home
   | Left Angle
   | PenDown
   | PenUp
@@ -63,6 +64,8 @@ interpret = foldl f
                 }
             }
         }
+    Home ->
+      acc { pointer = acc.pointer { position = { x: zero, y: zero } } }
     Left angle ->
       f acc $ Right $ -angle
     PenDown ->
@@ -77,6 +80,7 @@ main = do
   log $ show $ interpret
     [ Forward $ Steps 10
     , Right $ Angle 5
+    , Home
     , Forward $ Steps 10
     , PenUp
     ]
