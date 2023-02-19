@@ -26,6 +26,7 @@ type Position = { x :: Number, y :: Number }
 
 data Command
   = Backward Steps
+  | ClearScreen
   | Forward Steps
   | Home
   | Left Angle
@@ -55,6 +56,8 @@ interpret = foldl f
   f acc = case _ of
     Backward steps ->
       f acc $ Forward $ -steps
+    ClearScreen ->
+      acc
     Forward (Steps n) ->
       acc
         { pointer = acc.pointer
@@ -83,4 +86,5 @@ main = do
     , Home
     , Forward $ Steps 10
     , PenUp
+    , ClearScreen
     ]
