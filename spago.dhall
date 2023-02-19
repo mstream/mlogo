@@ -4,6 +4,7 @@
   , "effect"
   , "foldable-traversable"
   , "integers"
+  , "lists"
   , "numbers"
   , "prelude"
   ]

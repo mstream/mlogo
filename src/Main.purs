@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Foldable (foldl)
 import Data.Int (toNumber)
+import Data.List (List(..), (:))
 import Data.Number (cos, pi, sin)
 import Effect (Effect)
 import Effect.Console (log)
@@ -24,6 +25,8 @@ derive newtype instance Ring Steps
 
 type Position = { x :: Number, y :: Number }
 
+type Line = { p1 :: Position, p2 :: Position }
+
 data Command
   = Backward Steps
   | ClearScreen
@@ -40,8 +43,11 @@ type PointerState =
   , position :: Position
   }
 
+type ScreenState = List Line
+
 type ExecutionState =
   { pointer :: PointerState
+  , screen :: ScreenState
   }
 
 interpret :: Array Command -> ExecutionState
@@ -51,24 +57,36 @@ interpret = foldl f
       , isDown: true
       , position: zero
       }
+  , screen: Nil
   }
   where
+  moveTo acc target = acc
+    { pointer = acc.pointer { position = target }
+    , screen =
+        if acc.pointer.isDown then
+          { p1: acc.pointer.position
+          , p2: target
+          } : acc.screen
+        else acc.screen
+    }
+
   f acc = case _ of
     Backward steps ->
       f acc $ Forward $ -steps
     ClearScreen ->
-      acc
+      acc { screen = Nil }
     Forward (Steps n) ->
-      acc
-        { pointer = acc.pointer
-            { position = acc.pointer.position
-                { x = acc.pointer.position.x + (toNumber n) * (sin $ toRadians acc.pointer.angle)
-                , y = acc.pointer.position.y + (toNumber n) * (cos $ toRadians acc.pointer.angle)
-                }
-            }
-        }
+      let
+        d = toNumber n
+        rads = toRadians acc.pointer.angle
+        target = acc.pointer.position
+          { x = acc.pointer.position.x + d * sin rads
+          , y = acc.pointer.position.y + d * cos rads
+          }
+      in
+        moveTo acc target
     Home ->
-      acc { pointer = acc.pointer { position = { x: zero, y: zero } } }
+      moveTo acc { x: zero, y: zero }
     Left angle ->
       f acc $ Right $ -angle
     PenDown ->
@@ -82,9 +100,9 @@ main :: Effect Unit
 main = do
   log $ show $ interpret
     [ Forward $ Steps 10
+    , ClearScreen
     , Right $ Angle 5
     , Home
     , Forward $ Steps 10
     , PenUp
-    , ClearScreen
     ]
