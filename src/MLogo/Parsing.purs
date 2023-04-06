@@ -18,7 +18,13 @@ import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
 import Data.String as String
 import MLogo.Lexing (Token(..))
-import Parsing (ParseError(..), ParseState(..), Parser, ParserT(..), Position(..))
+import Parsing
+  ( ParseError(..)
+  , ParseState(..)
+  , Parser
+  , ParserT(..)
+  , Position(..)
+  )
 import Parsing (runParser) as P
 import Parsing.Combinators (choice, many) as P
 
@@ -60,76 +66,83 @@ derive instance Eq ProcedureCall
 
 instance Show ProcedureCall where
   show = case _ of
-    ProcedureCall name arguments ->
-      "Procedure Call \"" <> name <> "\" " <> String.joinWith " " (Array.fromFoldable $ show <$> arguments)
+    ProcedureCall name arguments →
+      "Procedure Call \"" <> name <> "\" " <> String.joinWith " "
+        (Array.fromFoldable $ show <$> arguments)
 
-run :: List Token -> ParseError \/ List Statement
+run ∷ List Token → ParseError \/ List Statement
 run tokens = P.runParser tokens programParser
 
-programParser :: ProgramParser
+programParser ∷ ProgramParser
 programParser = P.many statementParser
 
-statementParser :: TokenParser Statement
+statementParser ∷ TokenParser Statement
 statementParser = P.choice
   [ procedureCallStatementParser
   , procedureDefinitionParser
   ]
 
-procedureCallStatementParser :: TokenParser Statement
+procedureCallStatementParser ∷ TokenParser Statement
 procedureCallStatementParser = do
-  s <- consumeUnquotedWord
-  args <- P.many expressionParser
+  s ← consumeUnquotedWord
+  args ← P.many expressionParser
   pure $ ProcedureCallStatement $ ProcedureCall s args
 
-procedureDefinitionParser :: TokenParser Statement
+procedureDefinitionParser ∷ TokenParser Statement
 procedureDefinitionParser = do
-  s <- consumeUnquotedWord
+  s ← consumeUnquotedWord
   pure $ ProcedureDefinition s Nil Nil
 
-expressionParser :: TokenParser Expression
+expressionParser ∷ TokenParser Expression
 expressionParser = P.choice
   [ numericLiteralParser
   , wordLiteralParser
   ]
 
-numericLiteralParser :: TokenParser Expression
+numericLiteralParser ∷ TokenParser Expression
 numericLiteralParser = NumericLiteral <$> consumeNumber
 
-wordLiteralParser :: TokenParser Expression
+wordLiteralParser ∷ TokenParser Expression
 wordLiteralParser = WordLiteral <$> consumeQuotedWord
 
-consumeQuotedWord :: TokenParser String
+consumeQuotedWord ∷ TokenParser String
 consumeQuotedWord = consumeToken case _ of
-  QuotedWord s ->
+  QuotedWord s →
     Just s
-  _ -> Nothing
+  _ → Nothing
 
-consumeUnquotedWord :: TokenParser String
+consumeUnquotedWord ∷ TokenParser String
 consumeUnquotedWord = consumeToken case _ of
-  UnquotedWord s ->
+  UnquotedWord s →
     Just s
-  _ -> Nothing
+  _ → Nothing
 
-consumeNumber :: TokenParser Int
+consumeNumber ∷ TokenParser Int
 consumeNumber = consumeToken case _ of
-  Number n ->
+  Number n →
     Just n
-  _ -> Nothing
+  _ → Nothing
 
-consumeToken :: forall a. (Token -> Maybe a) -> TokenParser a
+consumeToken ∷ ∀ a. (Token → Maybe a) → TokenParser a
 consumeToken f = ParserT
-  ( mkFn5 \state@(ParseState input pos _) _ _ throw done ->
+  ( mkFn5 \state@(ParseState input pos _) _ _ throw done →
       case List.uncons input of
-        Nothing ->
+        Nothing →
           runFn2 throw state (ParseError "Unexpected EOF" pos)
-        Just { head, tail } ->
+        Just { head, tail } →
           case f head of
-            Just ast ->
+            Just ast →
               let
                 (Position p) = pos
               in
-                runFn2 done (ParseState tail (Position $ p { index = p.index + 1 }) true) ast
-            Nothing ->
-              runFn2 throw state (ParseError "Predicate unsatisfied" pos)
+                runFn2 done
+                  ( ParseState tail
+                      (Position $ p { index = p.index + 1 })
+                      true
+                  )
+                  ast
+            Nothing →
+              runFn2 throw state
+                (ParseError "Predicate unsatisfied" pos)
   )
 

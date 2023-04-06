@@ -8,9 +8,18 @@ import Data.List (List(..))
 import Data.List as List
 import Data.Map as Map
 import Data.Tuple.Nested ((/\))
-import MLogo.Interpretation.State (ExecutionState, Position(..), Value(..))
 import MLogo.Interpretation as Interpretation
-import MLogo.Parsing (Expression(..), Parameter(..), ProcedureCall(..), Statement(..))
+import MLogo.Interpretation.State
+  ( ExecutionState
+  , Position(..)
+  , Value(..)
+  )
+import MLogo.Parsing
+  ( Expression(..)
+  , Parameter(..)
+  , ProcedureCall(..)
+  , Statement(..)
+  )
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 
@@ -82,7 +91,8 @@ spec = describe "Interpretation" do
 
     ( let
         procedureName1 = "procedure1"
-        procedureParameters1 = (List.fromFoldable [ Parameter "parameter1" ])
+        procedureParameters1 =
+          (List.fromFoldable [ Parameter "parameter1" ])
         procedureBody1 =
           ( List.fromFoldable
               [ ProcedureCallStatement $ ProcedureCall "forward"
@@ -130,8 +140,11 @@ spec = describe "Interpretation" do
           )
     )
 
-testCase :: String -> Array Statement -> String \/ ExecutionState -> Spec Unit
+testCase
+  ∷ String → Array Statement → String \/ ExecutionState → Spec Unit
 testCase title statements expected = it
   ("interprets \"" <> title <> "\"")
-  ((Interpretation.run $ List.fromFoldable statements) `shouldEqual` expected)
+  ( (Interpretation.run $ List.fromFoldable statements) `shouldEqual`
+      expected
+  )
 

@@ -9,19 +9,34 @@ import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
 import Effect.Class.Console as Console
+import MLogo.Program as Program
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as FS
-import Options.Applicative (Parser, ParserInfo, execParser, fullDesc, header, help, helper, info, long, metavar, progDesc, short, strOption, (<**>))
-import MLogo.Program as Program
+import Options.Applicative
+  ( Parser
+  , ParserInfo
+  , execParser
+  , fullDesc
+  , header
+  , help
+  , helper
+  , info
+  , long
+  , metavar
+  , progDesc
+  , short
+  , strOption
+  , (<**>)
+  )
 
-data Config = Config { filePath :: String }
+data Config = Config { filePath ∷ String }
 
 derive instance Generic Config _
 
 instance Show Config where
   show = genericShow
 
-configParser :: Parser Config
+configParser ∷ Parser Config
 configParser = map Config $ ({ filePath: _ })
   <$> strOption
     ( long "file"
@@ -30,22 +45,22 @@ configParser = map Config $ ({ filePath: _ })
         <> help "Path to a file containing a source code."
     )
 
-main :: Effect Unit
+main ∷ Effect Unit
 main = run =<< execParser opts
 
-opts :: ParserInfo Config
+opts ∷ ParserInfo Config
 opts = info (configParser <**> helper)
   ( fullDesc
       <> progDesc "Print a greeting for TARGET"
       <> header "mlogo"
   )
 
-run :: Config -> Effect Unit
+run ∷ Config → Effect Unit
 run (Config { filePath }) = do
-  source <- FS.readTextFile UTF8 filePath
+  source ← FS.readTextFile UTF8 filePath
   case Program.run source of
-    Left errorMessage -> do
+    Left errorMessage → do
       Console.error errorMessage
-    Right state ->
+    Right state →
       Console.info $ A.stringify $ A.encodeJson state
 

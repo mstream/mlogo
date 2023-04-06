@@ -13,51 +13,60 @@ import Data.Map as Map
 import Data.Number as Number
 import Data.Traversable (traverse)
 import MLogo.Interpretation.Expression as Expression
-import MLogo.Interpretation.State (Angle(..), ExecutionState, Position(..), Value(..))
+import MLogo.Interpretation.State
+  ( Angle(..)
+  , ExecutionState
+  , Position(..)
+  , Value(..)
+  )
 import MLogo.Interpretation.State as State
 import MLogo.Parsing (Parameter, ProcedureCall(..), Statement(..))
 
-interpret :: ExecutionState -> Statement -> String \/ ExecutionState
+interpret ∷ ExecutionState → Statement → String \/ ExecutionState
 interpret state = case _ of
-  ProcedureCallStatement pc ->
+  ProcedureCallStatement pc →
     interpretProcedureCall state pc
-  ProcedureDefinition name parameters body ->
+  ProcedureDefinition name parameters body →
     interpretProcedureDefinition state name parameters body
 
-interpretProcedureCall :: ExecutionState -> ProcedureCall -> String \/ ExecutionState
+interpretProcedureCall
+  ∷ ExecutionState → ProcedureCall → String \/ ExecutionState
 interpretProcedureCall state (ProcedureCall name arguments) = do
-  evaluatedArguments <- traverse (Expression.evaluate state) arguments
+  evaluatedArguments ← traverse (Expression.evaluate state) arguments
   case name of
-    "back" ->
+    "back" →
       interpretMoveBackward state evaluatedArguments
-    "bk" ->
+    "bk" →
       interpretMoveBackward state evaluatedArguments
-    "fd" ->
+    "fd" →
       interpretMoveForward state evaluatedArguments
-    "forward" ->
+    "forward" →
       interpretMoveForward state evaluatedArguments
-    "left" ->
+    "left" →
       interpretTurnLeft state evaluatedArguments
-    "lt" ->
+    "lt" →
       interpretTurnLeft state evaluatedArguments
-    "make" ->
+    "make" →
       interpretVariableAssignment state evaluatedArguments
-    "right" ->
+    "right" →
       interpretTurnRight state evaluatedArguments
-    "rt" ->
+    "rt" →
       interpretTurnRight state evaluatedArguments
 
-    otherName -> do
-      { body, parameters } <- Either.note ("Unknown procedure name: " <> otherName) (Map.lookup otherName state.procedures)
+    otherName → do
+      { body, parameters } ← Either.note
+        ("Unknown procedure name: " <> otherName)
+        (Map.lookup otherName state.procedures)
       let
-        boundArguments = Map.fromFoldable $ List.zip parameters evaluatedArguments
+        boundArguments = Map.fromFoldable $ List.zip parameters
+          evaluatedArguments
       if Map.size boundArguments /= List.length parameters then
         Left $ "Expected "
           <> (show $ List.length parameters)
           <> " arguments but got "
           <> (show $ List.length arguments)
       else do
-        newState <- foldM
+        newState ← foldM
           interpret
           ( state
               { callStack =
@@ -69,77 +78,95 @@ interpretProcedureCall state (ProcedureCall name arguments) = do
           body
         Right $ newState { callStack = state.callStack }
 
-interpretProcedureDefinition :: ExecutionState -> String -> List Parameter -> List Statement -> String \/ ExecutionState
+interpretProcedureDefinition
+  ∷ ExecutionState
+  → String
+  → List Parameter
+  → List Statement
+  → String \/ ExecutionState
 interpretProcedureDefinition state name parameters body =
-  Right $ state { procedures = Map.insert name { body, parameters } state.procedures }
+  Right $ state
+    { procedures = Map.insert name { body, parameters } state.procedures
+    }
 
-interpretVariableAssignment :: ExecutionState -> List Value -> String \/ ExecutionState
+interpretVariableAssignment
+  ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretVariableAssignment state = case _ of
-  _ : Nil ->
+  _ : Nil →
     Left errorMessage
-  WordValue name : value : Nil ->
+  WordValue name : value : Nil →
     Right $ state { variables = Map.insert name value state.variables }
-  _ ->
+  _ →
     Left errorMessage
   where
-  errorMessage = "variable takes two arguments: a variable name and variable value"
+  errorMessage =
+    "variable takes two arguments: a variable name and variable value"
 
-interpretMoveForward :: ExecutionState -> List Value -> String \/ ExecutionState
+interpretMoveForward
+  ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretMoveForward state = case _ of
-  value : Nil ->
+  value : Nil →
     case value of
-      NumberValue n ->
+      NumberValue n →
         let
           d = Int.toNumber n
           rads = State.toRadians state.pointer.angle
-          target = state.pointer.position + Position { x: d * Number.sin rads, y: d * Number.cos rads }
+          target = state.pointer.position + Position
+            { x: d * Number.sin rads, y: d * Number.cos rads }
         in
           Right $ moveTo state target
-      WordValue s ->
+      WordValue s →
         Left $ "Word \"" <> s <> "\" is not a number"
 
-  _ ->
+  _ →
     Left "FORWARD takes exactly one parameter"
 
-interpretMoveBackward :: ExecutionState -> List Value -> String \/ ExecutionState
+interpretMoveBackward
+  ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretMoveBackward state = case _ of
-  value : Nil ->
+  value : Nil →
     case value of
-      NumberValue n ->
+      NumberValue n →
         interpretMoveForward
           state
           (List.fromFoldable [ NumberValue (-n) ])
-      WordValue s ->
+      WordValue s →
         Left $ "Word \"" <> s <> "\" is not a number"
 
-  _ ->
+  _ →
     Left "BACKWARD takes exactly one parameter"
 
-interpretTurnRight :: ExecutionState -> List Value -> String \/ ExecutionState
+interpretTurnRight
+  ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretTurnRight state = case _ of
-  value : Nil ->
+  value : Nil →
     case value of
-      NumberValue n ->
-        Right $ state { pointer = state.pointer { angle = state.pointer.angle + Angle (Int.toNumber n) } }
-      WordValue s ->
+      NumberValue n →
+        Right $ state
+          { pointer = state.pointer
+              { angle = state.pointer.angle + Angle (Int.toNumber n) }
+          }
+      WordValue s →
         Left $ "Word \"" <> s <> "\" is not a number"
 
-  _ ->
+  _ →
     Left "RIGHT takes exactly one parameter"
 
-interpretTurnLeft :: ExecutionState -> List Value -> String \/ ExecutionState
+interpretTurnLeft
+  ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretTurnLeft state = case _ of
-  value : Nil ->
+  value : Nil →
     case value of
-      NumberValue n ->
-        interpretTurnRight state (List.fromFoldable [ NumberValue (-n) ])
-      WordValue s ->
+      NumberValue n →
+        interpretTurnRight state
+          (List.fromFoldable [ NumberValue (-n) ])
+      WordValue s →
         Left $ "Word \"" <> s <> "\" is not a number"
 
-  _ ->
+  _ →
     Left "RIGHT takes exactly one parameter"
 
-moveTo :: ExecutionState -> Position -> ExecutionState
+moveTo ∷ ExecutionState → Position → ExecutionState
 moveTo state target = state
   { pointer = state.pointer { position = target }
   , screen =

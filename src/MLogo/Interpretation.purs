@@ -17,12 +17,17 @@ import Data.Maybe (Maybe(..))
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import Data.Traversable (traverse)
-import MLogo.Parsing (Expression(..), Parameter(..), ProcedureCall(..), Statement(..))
 import MLogo.Interpretation.State (ExecutionState)
 import MLogo.Interpretation.State as State
 import MLogo.Interpretation.Statement as Statement
+import MLogo.Parsing
+  ( Expression(..)
+  , Parameter(..)
+  , ProcedureCall(..)
+  , Statement(..)
+  )
 
-run :: List Statement -> String \/ ExecutionState
+run ∷ List Statement → String \/ ExecutionState
 run = foldM Statement.interpret State.initialExecutionState
 
 {-

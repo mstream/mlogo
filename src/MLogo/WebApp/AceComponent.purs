@@ -26,9 +26,9 @@ data Action
   | Finalize
   | HandleChange
 
-type State = { editor :: Maybe Editor }
+type State = { editor ∷ Maybe Editor }
 
-component :: forall i m. MonadAff m => H.Component Query i Output m
+component ∷ ∀ i m. MonadAff m ⇒ H.Component Query i Output m
 component =
   H.mkComponent
     { initialState
@@ -41,10 +41,10 @@ component =
         }
     }
 
-initialState :: forall i. i -> State
+initialState ∷ ∀ i. i → State
 initialState _ = { editor: Nothing }
 
-render :: forall m. State -> H.ComponentHTML Action () m
+render ∷ ∀ m. State → H.ComponentHTML Action () m
 render = const $ HH.div
   [ HP.classes
       [ ClassName "editor" ]
@@ -52,31 +52,37 @@ render = const $ HH.div
   ]
   []
 
-handleAction :: forall m. MonadAff m => Action -> H.HalogenM State Action () Output m Unit
+handleAction
+  ∷ ∀ m. MonadAff m ⇒ Action → H.HalogenM State Action () Output m Unit
 handleAction = case _ of
-  Initialize -> do
-    H.getHTMLElementRef (H.RefLabel "ace") >>= traverse_ \element -> do
-      editor <- H.liftEffect $ Ace.editNode element Ace.ace
-      session <- H.liftEffect $ Editor.getSession editor
+  Initialize → do
+    H.getHTMLElementRef (H.RefLabel "ace") >>= traverse_ \element → do
+      editor ← H.liftEffect $ Ace.editNode element Ace.ace
+      session ← H.liftEffect $ Editor.getSession editor
       H.modify_ (_ { editor = Just editor })
-      { emitter, listener } <- H.liftEffect HS.create
+      { emitter, listener } ← H.liftEffect HS.create
       void $ H.subscribe emitter
-      H.liftEffect $ Session.onChange session (\_ -> HS.notify listener HandleChange)
-  Finalize -> do
+      H.liftEffect $ Session.onChange session
+        (\_ → HS.notify listener HandleChange)
+  Finalize → do
     H.modify_ (_ { editor = Nothing })
-  HandleChange -> do
-    H.gets _.editor >>= traverse_ \editor -> do
-      text <- H.liftEffect (Editor.getValue editor)
+  HandleChange → do
+    H.gets _.editor >>= traverse_ \editor → do
+      text ← H.liftEffect (Editor.getValue editor)
       H.raise $ TextChanged text
 
-handleQuery :: forall m a. MonadAff m => Query a -> H.HalogenM State Action () Output m (Maybe a)
+handleQuery
+  ∷ ∀ m a
+  . MonadAff m
+  ⇒ Query a
+  → H.HalogenM State Action () Output m (Maybe a)
 handleQuery = case _ of
-  ChangeText text next -> do
-    maybeEditor <- H.gets _.editor
+  ChangeText text next → do
+    maybeEditor ← H.gets _.editor
     case maybeEditor of
-      Nothing -> pure unit
-      Just editor -> do
-        current <- H.liftEffect $ Editor.getValue editor
+      Nothing → pure unit
+      Just editor → do
+        current ← H.liftEffect $ Editor.getValue editor
         when (text /= current) do
           void $ H.liftEffect $ Editor.setValue text Nothing editor
     H.raise $ TextChanged text

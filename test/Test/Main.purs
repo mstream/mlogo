@@ -10,7 +10,7 @@ import Test.Spec.MLogo.Parsing as Parsing
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (runSpec)
 
-main :: Effect Unit
+main ∷ Effect Unit
 main = launchAff_ $ runSpec [ consoleReporter ] do
   Interpretation.spec
   Lexing.spec

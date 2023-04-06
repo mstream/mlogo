@@ -11,6 +11,7 @@ module MLogo.Interpretation.State
   ) where
 
 import Prelude
+
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Generic.Rep (class Generic)
 import Data.List (List(..))
@@ -39,7 +40,7 @@ derive newtype instance Semiring Angle
 derive newtype instance Ring Angle
 derive newtype instance EncodeJson Angle
 
-toRadians :: Angle -> Number
+toRadians ∷ Angle → Number
 toRadians (Angle x) = x * Number.pi / 180.0
 
 newtype Steps = Steps Int
@@ -51,12 +52,12 @@ derive newtype instance Semiring Steps
 derive newtype instance Ring Steps
 
 type PointerState =
-  { angle :: Angle
-  , isDown :: Boolean
-  , position :: Position
+  { angle ∷ Angle
+  , isDown ∷ Boolean
+  , position ∷ Position
   }
 
-initialPointerState :: PointerState
+initialPointerState ∷ PointerState
 initialPointerState =
   { angle: zero
   , isDown: true
@@ -66,22 +67,22 @@ initialPointerState =
 type ScreenState = List Line
 
 type ExecutionState =
-  { callStack ::
+  { callStack ∷
       List
-        { name :: String
-        , boundArguments :: Map Parameter Value
+        { name ∷ String
+        , boundArguments ∷ Map Parameter Value
         }
-  , pointer :: PointerState
-  , procedures ::
+  , pointer ∷ PointerState
+  , procedures ∷
       Map String
-        { body :: List Statement
-        , parameters :: List Parameter
+        { body ∷ List Statement
+        , parameters ∷ List Parameter
         }
-  , screen :: ScreenState
-  , variables :: Map String Value
+  , screen ∷ ScreenState
+  , variables ∷ Map String Value
   }
 
-initialExecutionState :: ExecutionState
+initialExecutionState ∷ ExecutionState
 initialExecutionState =
   { callStack: Nil
   , pointer: initialPointerState
@@ -90,7 +91,7 @@ initialExecutionState =
   , variables: Map.empty
   }
 
-newtype Position = Position { x :: Number, y :: Number }
+newtype Position = Position { x ∷ Number, y ∷ Number }
 
 derive instance Generic Position _
 derive newtype instance Eq Position
@@ -98,10 +99,12 @@ derive newtype instance Show Position
 derive newtype instance EncodeJson Position
 
 instance Semiring Position where
-  add (Position p1) (Position p2) = Position { x: p1.x + p2.x, y: p1.y + p2.y }
-  mul (Position p1) (Position p2) = Position { x: p1.x * p2.x, y: p1.y * p2.y }
+  add (Position p1) (Position p2) = Position
+    { x: p1.x + p2.x, y: p1.y + p2.y }
+  mul (Position p1) (Position p2) = Position
+    { x: p1.x * p2.x, y: p1.y * p2.y }
   one = Position one
   zero = Position zero
 
-type Line = { p1 :: Position, p2 :: Position }
+type Line = { p1 ∷ Position, p2 ∷ Position }
 

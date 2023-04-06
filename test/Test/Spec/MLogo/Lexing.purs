@@ -57,7 +57,7 @@ spec = describe "Lexing" do
           ]
       )
 
-testCase :: String -> String -> ParseError \/ Array Token -> Spec Unit
+testCase ∷ String → String → ParseError \/ Array Token → Spec Unit
 testCase title source expected = it
   ("lexes \"" <> title <> "\"")
   ((Lexing.run source) `shouldEqual` (List.fromFoldable <$> expected))

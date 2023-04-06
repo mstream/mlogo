@@ -33,8 +33,11 @@ spec = describe "Parsing" do
           ]
       )
 
-testCase :: String -> Array Token -> ParseError \/ Array Statement -> Spec Unit
+testCase
+  ∷ String → Array Token → ParseError \/ Array Statement → Spec Unit
 testCase title tokens expected = it
   ("parses \"" <> title <> "\"")
-  ((Parsing.run $ List.fromFoldable tokens) `shouldEqual` (List.fromFoldable <$> expected))
+  ( (Parsing.run $ List.fromFoldable tokens) `shouldEqual`
+      (List.fromFoldable <$> expected)
+  )
 

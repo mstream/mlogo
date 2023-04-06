@@ -21,7 +21,12 @@ import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
 import Halogen.Svg.Elements as SE
 import Halogen.VDom.Driver (runUI)
-import MLogo.Interpretation.State (Angle(..), PointerState, Position(..), ScreenState)
+import MLogo.Interpretation.State
+  ( Angle(..)
+  , PointerState
+  , Position(..)
+  , ScreenState
+  )
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
 import MLogo.WebApp.AceComponent as AceComponent
@@ -29,58 +34,58 @@ import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
 type RenderableState =
-  { pointer :: PointerState
-  , screen :: ScreenState
+  { pointer ∷ PointerState
+  , screen ∷ ScreenState
   }
 
-type State = { text :: String }
+type State = { text ∷ String }
 
 type ChildSlots =
-  ( ace :: AceComponent.Slot Unit
+  ( ace ∷ AceComponent.Slot Unit
   )
 
-_ace = Proxy :: Proxy "ace"
+_ace = Proxy ∷ Proxy "ace"
 
-main :: Effect Unit
+main ∷ Effect Unit
 main = launchAff_ do
-  mbDivElem <- selectElement $ QuerySelector "#halogen"
-  for_ mbDivElem \divElem -> do
+  mbDivElem ← selectElement $ QuerySelector "#halogen"
+  for_ mbDivElem \divElem → do
     void $ runUI rootComp 0 divElem
 
-canvasSize :: Number
+canvasSize ∷ Number
 canvasSize = 100.0
 
-transforms :: Array Transform
+transforms ∷ Array Transform
 transforms =
   [ Translate (canvasSize / 2.0) (canvasSize / 2.0)
   , Scale one (-one)
   ]
 
-pointerSize :: Number
+pointerSize ∷ Number
 pointerSize = 8.0
 
-halfOfPointerSize :: Number
+halfOfPointerSize ∷ Number
 halfOfPointerSize = pointerSize / 2.0
 
-rootComp :: forall i m o q. MonadAff m => Component q i o m
-rootComp = Hooks.component \_ _ -> Hooks.do
-  source /\ sourceId <- Hooks.useState ""
+rootComp ∷ ∀ i m o q. MonadAff m ⇒ Component q i o m
+rootComp = Hooks.component \_ _ → Hooks.do
+  source /\ sourceId ← Hooks.useState ""
   let
     handleAceOutput = case _ of
-      TextChanged s ->
+      TextChanged s →
         Hooks.put sourceId s
   Hooks.pure do
     HH.div
       [ HP.id "container" ]
       [ HH.slot _ace unit AceComponent.component unit handleAceOutput
       , case Program.run source of
-          Left errorMessage ->
+          Left errorMessage →
             HH.text errorMessage
-          Right state ->
+          Right state →
             renderSvg state
       ]
 
-renderSvg :: forall i w. RenderableState -> HTML w i
+renderSvg ∷ ∀ i w. RenderableState → HTML w i
 renderSvg state = SE.svg
   [ SA.classes
       [ ClassName "canvas" ]
@@ -88,17 +93,20 @@ renderSvg state = SE.svg
   ]
   (Array.fromFoldable $ renderState state)
 
-renderState :: forall i w. RenderableState -> List (HTML w i)
+renderState ∷ ∀ i w. RenderableState → List (HTML w i)
 renderState state =
   renderScreenState
     state.screen <> renderPointerState state.pointer
 
-renderPointerState :: forall i w. PointerState -> List (HTML w i)
+renderPointerState ∷ ∀ i w. PointerState → List (HTML w i)
 renderPointerState pointer =
   let
-    (Position p1) = pointer.position + Position { x: -halfOfPointerSize, y: -halfOfPointerSize }
-    (Position p2) = pointer.position + Position { x: halfOfPointerSize, y: -halfOfPointerSize }
-    (Position p3) = pointer.position + Position { x: zero, y: halfOfPointerSize }
+    (Position p1) = pointer.position + Position
+      { x: -halfOfPointerSize, y: -halfOfPointerSize }
+    (Position p2) = pointer.position + Position
+      { x: halfOfPointerSize, y: -halfOfPointerSize }
+    (Position p3) = pointer.position + Position
+      { x: zero, y: halfOfPointerSize }
     (Position p) = pointer.position
     (Angle a) = pointer.angle
     stroke = SA.stroke $ Named "green"
@@ -131,8 +139,8 @@ renderPointerState pointer =
           ]
       ]
 
-renderScreenState :: forall i w. ScreenState -> List (HTML w i)
-renderScreenState = map \{ p1: (Position start), p2: (Position end) } ->
+renderScreenState ∷ ∀ i w. ScreenState → List (HTML w i)
+renderScreenState = map \{ p1: (Position start), p2: (Position end) } →
   SE.line
     [ SA.x1 start.x
     , SA.y1 start.y
