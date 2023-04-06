@@ -11,7 +11,7 @@ import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
 import Data.Generic.Rep (class Generic)
 import Data.Int as Int
-import Data.List ((:), List)
+import Data.List (List, (:))
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
 import Data.String as String
@@ -46,18 +46,18 @@ derive instance Eq BracketType
 instance Show BracketType where
   show = genericShow
 
-run :: String -> ParseError \/ List Token
+run ∷ String → ParseError \/ List Token
 run = SP.runParser programParser
 
-programParser :: Parser (List Token)
-programParser = tokenParser `SP.sepEndBy`
+programParser ∷ Parser (List Token)
+programParser = (SP.skipSpaces *> tokenParser) `SP.sepEndBy`
   ( SP.choice
       [ SP.string " "
       , SP.string "\n"
       ]
   )
 
-tokenParser :: Parser Token
+tokenParser ∷ Parser Token
 tokenParser = SP.choice
   [ bracketParser
   , colonPrefixedWordParser
@@ -67,7 +67,7 @@ tokenParser = SP.choice
   , unquotedWordParser
   ]
 
-bracketParser :: Parser Token
+bracketParser ∷ Parser Token
 bracketParser = Bracket <$> SP.choice
   [ CurlyClosing <$ SP.string "}"
   , CurlyOpening <$ SP.string "{"
@@ -77,45 +77,45 @@ bracketParser = Bracket <$> SP.choice
   , SquareOpening <$ SP.string "["
   ]
 
-colonPrefixedWordParser :: Parser Token
+colonPrefixedWordParser ∷ Parser Token
 colonPrefixedWordParser = do
   void $ SP.string ":"
-  letter <- SP.anyLetter
-  alphaNums <- SP.many SP.alphaNum
+  letter ← SP.anyLetter
+  alphaNums ← SP.many SP.alphaNum
   pure $ ColonPrefixedWord $ charsToString $ letter : alphaNums
 
-commentParser :: Parser Token
+commentParser ∷ Parser Token
 commentParser = do
   void $ SP.string ";"
-  chars <- SP.many $ SP.satisfy (_ /= '\n')
+  chars ← SP.many $ SP.satisfy (_ /= '\n')
   pure $ Comment $ charsToString chars
 
-quotedWordParser :: Parser Token
+quotedWordParser ∷ Parser Token
 quotedWordParser = do
   void $ SP.string "\""
-  letter <- SP.anyLetter
-  alphaNums <- SP.many SP.alphaNum
+  letter ← SP.anyLetter
+  alphaNums ← SP.many SP.alphaNum
   pure $ QuotedWord $ charsToString $ letter : alphaNums
 
-unquotedWordParser :: Parser Token
+unquotedWordParser ∷ Parser Token
 unquotedWordParser = do
-  letter <- SP.anyLetter
-  alphaNums <- SP.many SP.alphaNum
+  letter ← SP.anyLetter
+  alphaNums ← SP.many SP.alphaNum
   pure $ UnquotedWord $ charsToString $ letter : alphaNums
 
-numberParser :: Parser Token
+numberParser ∷ Parser Token
 numberParser = do
-  digits <- SP.many1 SP.anyDigit
+  digits ← SP.many1 SP.anyDigit
   let
     s = charsToString digits
   case Int.fromString s of
-    Just n ->
+    Just n →
       pure $ Number n
-    Nothing ->
+    Nothing →
       SP.fail
         $ "\"" <> s <> "\" is not a valid number"
 
-charsToString :: forall f. Foldable f => Functor f => f Char -> String
+charsToString ∷ ∀ f. Foldable f ⇒ Functor f ⇒ f Char → String
 charsToString = String.fromCodePointArray
   <<< Array.fromFoldable
   <<< map String.codePointFromChar

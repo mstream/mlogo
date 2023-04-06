@@ -16,19 +16,25 @@ run
 run source = do
   tokens ← case Lexing.run source of
     Left parseError →
-      Left $ "Lexing error: " <> SP.printParserError parseError
+      Left $ show source
+        <> "\n\nLexing error: "
+        <> SP.printParserError parseError
     Right tokens →
       Right tokens
 
   statements ← case Parsing.run tokens of
     Left parseError →
-      Left $ "Parsing error: " <> P.parseErrorMessage parseError
+      Left $ show tokens
+        <> "\n\nParsing error: "
+        <> P.parseErrorMessage parseError
     Right statements →
       Right statements
 
   { pointer, screen } ← case Interpretation.run statements of
     Left interpretationError →
-      Left $ "Interpretation error: " <> interpretationError
+      Left $ show statements
+        <> "\n\nInterpretation error: "
+        <> interpretationError
     Right state →
       Right state
 

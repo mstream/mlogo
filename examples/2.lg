@@ -1,0 +1,5 @@
+to go :steps
+forward :steps
+end
+
+go 10

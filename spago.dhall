@@ -6,6 +6,7 @@
   , "argonaut-core"
   , "arrays"
   , "console"
+  , "control"
   , "effect"
   , "either"
   , "foldable-traversable"

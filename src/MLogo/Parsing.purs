@@ -8,15 +8,14 @@ module MLogo.Parsing
 
 import Prelude
 
-import Data.Array as Array
+import Control.Lazy as Lazy
 import Data.Either.Nested (type (\/))
 import Data.Function.Uncurried (mkFn5, runFn2)
 import Data.Generic.Rep (class Generic)
-import Data.List (List(..))
+import Data.List (List)
 import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
-import Data.String as String
 import MLogo.Lexing (Token(..))
 import Parsing
   ( ParseError(..)
@@ -62,13 +61,11 @@ instance Show Expression where
 
 data ProcedureCall = ProcedureCall String (List Expression)
 
+derive instance Generic ProcedureCall _
 derive instance Eq ProcedureCall
 
 instance Show ProcedureCall where
-  show = case _ of
-    ProcedureCall name arguments →
-      "Procedure Call \"" <> name <> "\" " <> String.joinWith " "
-        (Array.fromFoldable $ show <$> arguments)
+  show = genericShow
 
 run ∷ List Token → ParseError \/ List Statement
 run tokens = P.runParser tokens programParser
@@ -77,30 +74,38 @@ programParser ∷ ProgramParser
 programParser = P.many statementParser
 
 statementParser ∷ TokenParser Statement
-statementParser = P.choice
+statementParser = Lazy.defer \_ → P.choice
   [ procedureCallStatementParser
   , procedureDefinitionParser
   ]
 
 procedureCallStatementParser ∷ TokenParser Statement
 procedureCallStatementParser = do
-  s ← consumeUnquotedWord
+  name ← consumeUnquotedWord \s → s /= "to" && s /= "end"
   args ← P.many expressionParser
-  pure $ ProcedureCallStatement $ ProcedureCall s args
+  pure $ ProcedureCallStatement $ ProcedureCall name args
 
 procedureDefinitionParser ∷ TokenParser Statement
 procedureDefinitionParser = do
-  s ← consumeUnquotedWord
-  pure $ ProcedureDefinition s Nil Nil
+  void $ consumeUnquotedWord (_ == "to")
+  name ← consumeUnquotedWord \s → s /= "to" && s /= "end"
+  params ← P.many consumeColonPrefixedWord
+  body ← P.many statementParser
+  void $ consumeUnquotedWord (_ == "end")
+  pure $ ProcedureDefinition name (Parameter <$> params) body
 
 expressionParser ∷ TokenParser Expression
 expressionParser = P.choice
   [ numericLiteralParser
+  , variableReferenceParser
   , wordLiteralParser
   ]
 
 numericLiteralParser ∷ TokenParser Expression
 numericLiteralParser = NumericLiteral <$> consumeNumber
+
+variableReferenceParser ∷ TokenParser Expression
+variableReferenceParser = VariableReference <$> consumeColonPrefixedWord
 
 wordLiteralParser ∷ TokenParser Expression
 wordLiteralParser = WordLiteral <$> consumeQuotedWord
@@ -111,11 +116,19 @@ consumeQuotedWord = consumeToken case _ of
     Just s
   _ → Nothing
 
-consumeUnquotedWord ∷ TokenParser String
-consumeUnquotedWord = consumeToken case _ of
+consumeUnquotedWord ∷ (String → Boolean) → TokenParser String
+consumeUnquotedWord predicate = consumeToken case _ of
   UnquotedWord s →
+    if predicate s then Just s else Nothing
+  _ →
+    Nothing
+
+consumeColonPrefixedWord ∷ TokenParser String
+consumeColonPrefixedWord = consumeToken case _ of
+  ColonPrefixedWord s →
     Just s
-  _ → Nothing
+  _ →
+    Nothing
 
 consumeNumber ∷ TokenParser Int
 consumeNumber = consumeToken case _ of

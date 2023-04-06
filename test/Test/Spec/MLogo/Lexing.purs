@@ -5,7 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.List as List
-import MLogo.Lexing (BracketType(..), Token(..))
+import MLogo.Lexing (Token(..))
 import MLogo.Lexing as Lexing
 import StringParser (ParseError)
 import Test.Spec (Spec, describe, it)
@@ -16,8 +16,8 @@ spec = describe "Lexing" do
   describe "run" do
 
     testCase
-      "example1"
-      "forward 10\n"
+      "single command"
+      "forward 10"
       ( Right
           [ UnquotedWord "forward"
           , Number 10
@@ -25,33 +25,29 @@ spec = describe "Lexing" do
       )
 
     testCase
-      "example2"
-      ( "( aaa111 111 \"aaa ) ;aaa\n"
-          <> "[ bbb222 222 222 \"bbb ] ;bbb\n"
-          <> "{ ccc333 }\n"
-          <> "to proc1 :param1 :param2\n"
+      "single command, reduntant spaces"
+      " forward  10 "
+      ( Right
+          [ UnquotedWord "forward"
+          , Number 10
+          ]
+      )
+
+    testCase
+      "procedure definition"
+      ( "to proc1 :param1 :param2\n"
+          <> "proc2 :param1\n"
+          <> "proc3 :param2\n"
           <> "end"
       )
       ( Right $
-          [ Bracket RoundOpening
-          , UnquotedWord "aaa111"
-          , Number 111
-          , QuotedWord "aaa"
-          , Bracket RoundClosing
-          , Comment "aaa"
-          , Bracket SquareOpening
-          , UnquotedWord "bbb222"
-          , Number 222
-          , Number 222
-          , QuotedWord "bbb"
-          , Bracket SquareClosing
-          , Comment "bbb"
-          , Bracket CurlyOpening
-          , UnquotedWord "ccc333"
-          , Bracket CurlyClosing
-          , UnquotedWord "to"
+          [ UnquotedWord "to"
           , UnquotedWord "proc1"
           , ColonPrefixedWord "param1"
+          , ColonPrefixedWord "param2"
+          , UnquotedWord "proc2"
+          , ColonPrefixedWord "param1"
+          , UnquotedWord "proc3"
           , ColonPrefixedWord "param2"
           , UnquotedWord "end"
           ]

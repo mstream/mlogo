@@ -6,8 +6,10 @@
     "url": "git+https://github.com/mstream/mlogo"
   },
   "scripts": {
+    "bundle": "npm run bundle:cli && npm run bundle:webapp",
     "bundle:cli": "spago bundle-app -m Main.CLI -p node -t dist/cli.js",
-    "bundle:webapp": "spago bundle-app -m Main.WebApp -p browser -t dist/webapp.js"
+    "bundle:webapp": "spago bundle-app -m Main.WebApp -p browser -t dist/webapp.js",
+    "test": "spago test"
   },
   "type": "module",
   "devDependencies": {
