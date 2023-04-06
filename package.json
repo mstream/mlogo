@@ -6,16 +6,57 @@
     "url": "git+https://github.com/mstream/mlogo"
   },
   "scripts": {
+    "build": "spago build",
     "bundle": "npm run bundle:cli && npm run bundle:webapp",
-    "bundle:cli": "spago bundle-app -m Main.CLI -p node -t dist/cli.js",
-    "bundle:webapp": "spago bundle-app -m Main.WebApp -p browser -t dist/webapp.js",
+    "bundle:cli": "npm run build && purs-backend-es bundle-app -m Main.CLI --minify --no-build -p node -t dist/cli.js",
+    "bundle:webapp": "npm run build && purs-backend-es bundle-app -m Main.WebApp --minify --no-build -p browser -t dist/webapp.js && cp dist/webapp.js static/",
+    "release": "release-it",
     "test": "spago test"
   },
   "type": "module",
   "devDependencies": {
-    "esbuild": "~0.17"
+    "@release-it/conventional-changelog": "^5",
+    "esbuild": "~0.17",
+    "purs-backend-es": "^1",
+    "release-it": "^15"
   },
   "dependencies": {
-    "ace-builds": "^1.16.0"
+    "ace-builds": "^1"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release v${version}",
+      "requireCleanWorkingDir": true
+    },
+    "github": {
+      "release": true,
+      "releaseName": "Release ${version}",
+      "tokenRef": "GITHUB_TOKEN"
+    },
+    "npm": {
+      "publish": "false"
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "infile": "CHANGELOG.md",
+        "preset": {
+          "name": "conventionalcommits",
+          "types": [
+            {
+              "type": "feat",
+              "section": "Features"
+            },
+            {
+              "type": "fix",
+              "section": "Bug Fixes"
+            },
+            {
+              "type": "refactor",
+              "hidden": true
+            }
+          ]
+        }
+      }
+    }
   }
 }

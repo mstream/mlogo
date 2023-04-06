@@ -1,4 +1,5 @@
 { name = "mlogo"
+, backend = "purs-backend-es build"
 , dependencies =
   [ "ace"
   , "aff"
