@@ -29,14 +29,11 @@ data Statement
   = ProcedureCallStatement ProcedureCall
   | ProcedureDefinition String (List Parameter) (List Statement)
 
+derive instance Generic Statement _
 derive instance Eq Statement
 
 instance Show Statement where
-  show = case _ of
-    ProcedureCallStatement pc ->
-      "Procedure Call (" <> show pc <> ")"
-    ProcedureDefinition name parameters body ->
-      "Procedure Definition " <> name <> "[ " <> String.joinWith " " (Array.fromFoldable $ show <$> parameters) <> " ] (...)"
+  show statement = genericShow statement
 
 newtype Parameter = Parameter String
 
@@ -100,18 +97,6 @@ numericLiteralParser = NumericLiteral <$> consumeNumber
 
 wordLiteralParser :: TokenParser Expression
 wordLiteralParser = WordLiteral <$> consumeQuotedWord
-
-{-
-listNodeParser :: ASTParser
-listNodeParser = do
-  skipSquareOpeningBracket
-  words <- P.many $ P.choice
-    [ listNodeParser
-    , wordNodeParser
-    ]
-  skipSquareClosingBracket
-  pure $ ListNode words
--}
 
 consumeQuotedWord :: TokenParser String
 consumeQuotedWord = consumeToken case _ of

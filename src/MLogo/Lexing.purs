@@ -9,9 +9,11 @@ import Prelude
 import Data.Array as Array
 import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
+import Data.Generic.Rep (class Generic)
 import Data.Int as Int
 import Data.List ((:), List)
 import Data.Maybe (Maybe(..))
+import Data.Show.Generic (genericShow)
 import Data.String as String
 import StringParser (ParseError, Parser)
 import StringParser as SP
@@ -24,22 +26,11 @@ data Token
   | QuotedWord String
   | UnquotedWord String
 
+derive instance Generic Token _
 derive instance Eq Token
 
 instance Show Token where
-  show = case _ of
-    ColonPrefixedWord s ->
-      "ColonPrefixedWord \"" <> s <> "\""
-    Comment s ->
-      "Comment \"" <> s <> "\""
-    Bracket b ->
-      "Bracket \"" <> show b <> "\""
-    Number n ->
-      "Number \"" <> show n <> "\""
-    QuotedWord s ->
-      "QuotedWord \"" <> s <> "\""
-    UnquotedWord s ->
-      "UnquotedWord \"" <> s <> "\""
+  show = genericShow
 
 data BracketType
   = CurlyClosing
@@ -49,28 +40,17 @@ data BracketType
   | SquareClosing
   | SquareOpening
 
+derive instance Generic BracketType _
 derive instance Eq BracketType
 
 instance Show BracketType where
-  show = case _ of
-    CurlyClosing ->
-      "}"
-    CurlyOpening ->
-      "{"
-    RoundClosing ->
-      ")"
-    RoundOpening ->
-      "("
-    SquareClosing ->
-      "]"
-    SquareOpening ->
-      "["
+  show = genericShow
 
 run :: String -> ParseError \/ List Token
 run = SP.runParser programParser
 
 programParser :: Parser (List Token)
-programParser = tokenParser `SP.sepBy`
+programParser = tokenParser `SP.sepEndBy`
   ( SP.choice
       [ SP.string " "
       , SP.string "\n"
