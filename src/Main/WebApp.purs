@@ -80,7 +80,9 @@ rootComp = Hooks.component \_ _ → Hooks.do
       [ HH.slot _ace unit AceComponent.component unit handleAceOutput
       , case Program.run source of
           Left errorMessage →
-            HH.text errorMessage
+            HH.div
+              [ HP.classes [ ClassName "error" ] ]
+              [ HH.text errorMessage ]
           Right state →
             renderSvg state
       ]

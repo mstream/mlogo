@@ -38,16 +38,32 @@ interpretProcedureCall state (ProcedureCall name arguments) = do
       interpretMoveBackward state evaluatedArguments
     "bk" →
       interpretMoveBackward state evaluatedArguments
+    "clean" →
+      interpretClean state evaluatedArguments
+    "clearscreen" →
+      interpretClearScreen state evaluatedArguments
+    "cs" →
+      interpretClearScreen state evaluatedArguments
     "fd" →
       interpretMoveForward state evaluatedArguments
     "forward" →
       interpretMoveForward state evaluatedArguments
+    "home" →
+      interpretGoHome state evaluatedArguments
     "left" →
       interpretTurnLeft state evaluatedArguments
     "lt" →
       interpretTurnLeft state evaluatedArguments
     "make" →
       interpretVariableAssignment state evaluatedArguments
+    "pd" →
+      interpretPenDown state evaluatedArguments
+    "pendown" →
+      interpretPenDown state evaluatedArguments
+    "penup" →
+      interpretPenUp state evaluatedArguments
+    "pu" →
+      interpretPenUp state evaluatedArguments
     "right" →
       interpretTurnRight state evaluatedArguments
     "rt" →
@@ -164,7 +180,49 @@ interpretTurnLeft state = case _ of
         Left $ "Word \"" <> s <> "\" is not a number"
 
   _ →
-    Left "RIGHT takes exactly one parameter"
+    Left "RIGHT takes exactly one argument"
+
+interpretPenDown
+  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretPenDown state = case _ of
+  Nil →
+    Right $ state { pointer = state.pointer { isDown = true } }
+  _ →
+    Left "PENDOWN takes no arguments"
+
+interpretPenUp
+  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretPenUp state = case _ of
+  Nil →
+    Right $ state { pointer = state.pointer { isDown = false } }
+  _ →
+    Left "PENUP takes no arguments"
+
+interpretGoHome
+  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretGoHome state = case _ of
+  Nil →
+    Right $ state
+      { pointer = state.pointer { position = (zero ∷ Position) } }
+  _ →
+    Left "HOME takes no arguments"
+
+interpretClean
+  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretClean state = case _ of
+  Nil →
+    Right $ state { screen = Nil }
+  _ →
+    Left "CLEAN takes no arguments"
+
+interpretClearScreen
+  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretClearScreen state = case _ of
+  Nil → do
+    newState ← interpretGoHome state Nil
+    interpretClean newState Nil
+  _ →
+    Left "CLEAN takes no arguments"
 
 moveTo ∷ ExecutionState → Position → ExecutionState
 moveTo state target = state

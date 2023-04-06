@@ -26,6 +26,7 @@ import Test.Spec.Assertions (shouldEqual)
 spec ∷ Spec Unit
 spec = describe "Interpretation" do
   describe "run" do
+
     testCase
       "calling a command directly using a literal"
       [ ProcedureCallStatement $ ProcedureCall
@@ -49,6 +50,105 @@ spec = describe "Interpretation" do
                 , p2: Position { x: 0.0, y: 10.0 }
                 }
               ]
+          , variables: Map.empty
+          }
+      )
+
+    testCase
+      "moving home"
+      [ ProcedureCallStatement $ ProcedureCall
+          "penup"
+          Nil
+      , ProcedureCallStatement $ ProcedureCall
+          "forward"
+          (List.fromFoldable [ NumericLiteral 10 ])
+      , ProcedureCallStatement $ ProcedureCall
+          "home"
+          Nil
+      ]
+      ( Right $
+          { callStack: Nil
+          , pointer:
+              { angle: zero
+              , isDown: false
+              , position: zero
+              }
+          , procedures: Map.empty
+          , screen: Nil
+          , variables: Map.empty
+          }
+      )
+
+    testCase
+      "moving cursor with a pen up"
+      [ ProcedureCallStatement $ ProcedureCall
+          "penup"
+          Nil
+      , ProcedureCallStatement $ ProcedureCall
+          "forward"
+          (List.fromFoldable [ NumericLiteral 10 ])
+      ]
+      ( Right $
+          { callStack: Nil
+          , pointer:
+              { angle: zero
+              , isDown: false
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 10.0
+                    }
+              }
+          , procedures: Map.empty
+          , screen: Nil
+          , variables: Map.empty
+          }
+      )
+
+    testCase
+      "cleaning after drawing"
+      [ ProcedureCallStatement $ ProcedureCall
+          "forward"
+          (List.fromFoldable [ NumericLiteral 10 ])
+      , ProcedureCallStatement $ ProcedureCall
+          "clean"
+          Nil
+      ]
+      ( Right $
+          { callStack: Nil
+          , pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 10.0
+                    }
+              }
+          , procedures: Map.empty
+          , screen: Nil
+          , variables: Map.empty
+          }
+      )
+
+    testCase
+      "clearing screen after drawing"
+      [ ProcedureCallStatement $ ProcedureCall
+          "forward"
+          (List.fromFoldable [ NumericLiteral 10 ])
+      , ProcedureCallStatement $ ProcedureCall
+          "clearscreen"
+          Nil
+      ]
+      ( Right $
+          { callStack: Nil
+          , pointer:
+              { angle: zero
+              , isDown: true
+              , position: zero
+              }
+          , procedures: Map.empty
+          , screen: Nil
           , variables: Map.empty
           }
       )
