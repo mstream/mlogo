@@ -12,5 +12,8 @@
   "type": "module",
   "devDependencies": {
     "esbuild": "~0.17"
+  },
+  "dependencies": {
+    "ace-builds": "^1.16.0"
   }
 }

@@ -2,13 +2,15 @@ module Main.WebApp (main) where
 
 import Prelude
 
+import Data.Tuple.Nested ((/\))
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.List (List)
 import Data.List as List
 import Effect (Effect)
-import Effect.Aff (Aff, launchAff_)
+import Effect.Aff (launchAff_)
+import Effect.Aff.Class (class MonadAff)
 import Halogen (ClassName(..), Component)
 import Halogen.Aff (selectElement)
 import Halogen.HTML (HTML, IProp)
@@ -19,21 +21,31 @@ import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
 import Halogen.Svg.Elements as SE
 import Halogen.VDom.Driver (runUI)
+import MLogo.AceComponent (Output(..))
+import MLogo.AceComponent as AceComponent
 import MLogo.Interpretation (PointerState, Position(..), ScreenState)
 import MLogo.Program as Program
+import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
-type RenderableState = { pointer :: PointerState, screen :: ScreenState }
+type RenderableState =
+  { pointer :: PointerState
+  , screen :: ScreenState
+  }
+
+type State = { text :: String }
+
+type ChildSlots =
+  ( ace :: AceComponent.Slot Unit
+  )
+
+_ace = Proxy :: Proxy "ace"
 
 main :: Effect Unit
 main = launchAff_ do
   mbDivElem <- selectElement $ QuerySelector "#halogen"
   for_ mbDivElem \divElem -> do
     void $ runUI rootComp 0 divElem
-
-type Input = Int
-type Output = Int
-data Query a = Query a
 
 canvasSize :: Number
 canvasSize = 100.0
@@ -45,17 +57,23 @@ transform = SA.transform
   ]
 
 pointerSize :: Number
-pointerSize = 10.0
+pointerSize = 8.0
 
 halfOfPointerSize :: Number
 halfOfPointerSize = pointerSize / 2.0
 
-rootComp :: Component Query Input Output Aff
+rootComp :: forall i m o q. MonadAff m => Component q i o m
 rootComp = Hooks.component \_ _ -> Hooks.do
+  source /\ sourceId <- Hooks.useState ""
+  let
+    handleAceOutput = case _ of
+      TextChanged s ->
+        Hooks.put sourceId s
   Hooks.pure do
     HH.div
-      [ HP.id "canvas-container" ]
-      [ case Program.run "forward 10" of
+      [ HP.id "container" ]
+      [ HH.slot _ace unit AceComponent.component unit handleAceOutput
+      , case Program.run source of
           Left errorMessage ->
             HH.text errorMessage
           Right state ->

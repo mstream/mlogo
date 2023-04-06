@@ -1,6 +1,7 @@
 { name = "mlogo"
 , dependencies =
-  [ "aff"
+  [ "ace"
+  , "aff"
   , "argonaut-codecs"
   , "argonaut-core"
   , "arrays"
@@ -11,6 +12,7 @@
   , "functions"
   , "halogen"
   , "halogen-hooks"
+  , "halogen-subscriptions"
   , "halogen-svg-elems"
   , "integers"
   , "lists"
