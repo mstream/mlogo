@@ -2,6 +2,8 @@ module Main where
 
 import Prelude
 
+import Data.Argonaut.Core as A
+import Data.Argonaut.Encode as A
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
@@ -51,7 +53,7 @@ run (Config { filePath }) = do
     Left errorMessage -> do
       Console.error errorMessage
     Right state ->
-      Console.info $ show state
+      Console.info $ A.stringify $ A.encodeJson state
 
 runProgram :: String -> String \/ { pointer :: PointerState, screen :: ScreenState }
 runProgram source = do

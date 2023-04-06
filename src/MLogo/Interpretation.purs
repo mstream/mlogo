@@ -11,6 +11,7 @@ module MLogo.Interpretation
 
 import Prelude
 
+import Data.Argonaut.Encode (class EncodeJson)
 import Data.Either (Either(..))
 import Data.Either as Either
 import Data.Either.Nested (type (\/))
@@ -44,6 +45,7 @@ derive newtype instance Eq Angle
 derive newtype instance Show Angle
 derive newtype instance Semiring Angle
 derive newtype instance Ring Angle
+derive newtype instance EncodeJson Angle
 
 toRadians :: Angle -> Number
 toRadians (Angle n) = Int.toNumber n * Number.pi / 180.0
