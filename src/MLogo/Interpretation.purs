@@ -3,7 +3,7 @@ module MLogo.Interpretation
   , ExecutionState
   , Line
   , PointerState
-  , Position
+  , Position(..)
   , ScreenState
   , Value(..)
   , run
@@ -68,7 +68,7 @@ initialPointerState :: PointerState
 initialPointerState =
   { angle: zero
   , isDown: true
-  , position: { x: zero, y: zero }
+  , position: zero
   }
 
 type ScreenState = List Line
@@ -98,7 +98,18 @@ initialExecutionState =
   , variables: Map.empty
   }
 
-type Position = { x :: Number, y :: Number }
+newtype Position = Position { x :: Number, y :: Number }
+
+derive instance Generic Position _
+derive newtype instance Eq Position
+derive newtype instance Show Position
+derive newtype instance EncodeJson Position
+
+instance Semiring Position where
+  add (Position p1) (Position p2) = Position { x: p1.x + p2.x, y: p1.y + p2.y }
+  mul (Position p1) (Position p2) = Position { x: p1.x * p2.x, y: p1.y * p2.y }
+  one = Position one
+  zero = Position zero
 
 type Line = { p1 :: Position, p2 :: Position }
 
@@ -166,10 +177,7 @@ interpretMoveForward state = case _ of
         let
           d = Int.toNumber n
           rads = toRadians state.pointer.angle
-          target = state.pointer.position
-            { x = state.pointer.position.x + d * Number.sin rads
-            , y = state.pointer.position.y + d * Number.cos rads
-            }
+          target = state.pointer.position + Position { x: d * Number.sin rads, y: d * Number.cos rads }
         in
           Right $ moveTo state target
       WordValue s ->

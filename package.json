@@ -1,0 +1,16 @@
+{
+  "name": "mlogo",
+  "description": "A Logo language execution environment",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mstream/mlogo"
+  },
+  "scripts": {
+    "bundle:cli": "spago bundle-app -m Main.CLI -p node -t dist/cli.js",
+    "bundle:webapp": "spago bundle-app -m Main.WebApp -p browser -t dist/webapp.js"
+  },
+  "type": "module",
+  "devDependencies": {
+    "esbuild": "~0.17"
+  }
+}

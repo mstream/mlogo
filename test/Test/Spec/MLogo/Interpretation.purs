@@ -2,15 +2,15 @@ module Test.Spec.MLogo.Interpretation (spec) where
 
 import Prelude
 
-import Data.Either.Nested (type (\/))
 import Data.Either (Either(..))
+import Data.Either.Nested (type (\/))
 import Data.List (List(..))
 import Data.List as List
 import Data.Map as Map
 import Data.Tuple.Nested ((/\))
-import MLogo.Interpretation (Value(..))
-import MLogo.Interpretation as Interpretation
 import MLogo.Interpretation (ExecutionState)
+import MLogo.Interpretation (Position(..), Value(..))
+import MLogo.Interpretation as Interpretation
 import MLogo.Parsing (Expression(..), Parameter(..), ProcedureCall(..), Statement(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -30,14 +30,15 @@ spec = describe "Interpretion" do
               { angle: zero
               , isDown: true
               , position:
-                  { x: 0.0
-                  , y: 10.0
-                  }
+                  Position
+                    { x: 0.0
+                    , y: 10.0
+                    }
               }
           , procedures: Map.empty
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 0.0 }
-                , p2: { x: 0.0, y: 10.0 }
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
                 }
               ]
           , variables: Map.empty
@@ -63,14 +64,15 @@ spec = describe "Interpretion" do
               { angle: zero
               , isDown: true
               , position:
-                  { x: 0.0
-                  , y: 10.0
-                  }
+                  Position
+                    { x: 0.0
+                    , y: 10.0
+                    }
               }
           , procedures: Map.empty
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 0.0 }
-                , p2: { x: 0.0, y: 10.0 }
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
                 }
               ]
           , variables: Map.fromFoldable
@@ -108,9 +110,10 @@ spec = describe "Interpretion" do
                   { angle: zero
                   , isDown: true
                   , position:
-                      { x: 0.0
-                      , y: 10.0
-                      }
+                      Position
+                        { x: 0.0
+                        , y: 10.0
+                        }
                   }
               , procedures: Map.fromFoldable
                   [ procedureName1 /\
@@ -119,8 +122,8 @@ spec = describe "Interpretion" do
                       }
                   ]
               , screen: List.fromFoldable
-                  [ { p1: { x: 0.0, y: 0.0 }
-                    , p2: { x: 0.0, y: 10.0 }
+                  [ { p1: Position { x: 0.0, y: 0.0 }
+                    , p2: Position { x: 0.0, y: 10.0 }
                     }
                   ]
               , variables: Map.empty

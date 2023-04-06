@@ -9,6 +9,9 @@
   , "either"
   , "foldable-traversable"
   , "functions"
+  , "halogen"
+  , "halogen-hooks"
+  , "halogen-svg-elems"
   , "integers"
   , "lists"
   , "maybe"
@@ -23,6 +26,7 @@
   , "string-parsers"
   , "strings"
   , "tuples"
+  , "web-dom"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
