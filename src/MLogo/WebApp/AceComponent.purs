@@ -1,4 +1,4 @@
-module MLogo.AceComponent where
+module MLogo.WebApp.AceComponent where
 
 import Prelude
 

@@ -5,20 +5,13 @@ import Prelude
 import Data.Argonaut.Core (stringify) as A
 import Data.Argonaut.Encode (encodeJson) as A
 import Data.Either (Either(..))
-import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
 import Effect.Class.Console as Console
-import MLogo.Interpretation (PointerState, ScreenState)
-import MLogo.Interpretation as Interpretation
-import MLogo.Lexing as Lexing
-import MLogo.Parsing as Parsing
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as FS
 import Options.Applicative (Parser, ParserInfo, execParser, fullDesc, header, help, helper, info, long, metavar, progDesc, short, strOption, (<**>))
-import Parsing as P
-import StringParser as SP
 import MLogo.Program as Program
 
 data Config = Config { filePath :: String }

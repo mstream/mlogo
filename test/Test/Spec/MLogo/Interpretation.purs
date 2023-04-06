@@ -8,15 +8,14 @@ import Data.List (List(..))
 import Data.List as List
 import Data.Map as Map
 import Data.Tuple.Nested ((/\))
-import MLogo.Interpretation (ExecutionState)
-import MLogo.Interpretation (Position(..), Value(..))
+import MLogo.Interpretation.State (ExecutionState, Position(..), Value(..))
 import MLogo.Interpretation as Interpretation
 import MLogo.Parsing (Expression(..), Parameter(..), ProcedureCall(..), Statement(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 
 spec ∷ Spec Unit
-spec = describe "Interpretion" do
+spec = describe "Interpretation" do
   describe "run" do
     testCase
       "calling a command directly using a literal"

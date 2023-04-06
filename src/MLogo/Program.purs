@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
-import MLogo.Interpretation (PointerState, ScreenState)
+import MLogo.Interpretation.State (PointerState, ScreenState)
 import MLogo.Interpretation as Interpretation
 import MLogo.Lexing as Lexing
 import MLogo.Parsing as Parsing

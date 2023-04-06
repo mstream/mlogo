@@ -2,18 +2,18 @@ module Main.WebApp (main) where
 
 import Prelude
 
-import Data.Tuple.Nested ((/\))
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.List (List)
 import Data.List as List
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Aff.Class (class MonadAff)
 import Halogen (ClassName(..), Component)
 import Halogen.Aff (selectElement)
-import Halogen.HTML (HTML, IProp)
+import Halogen.HTML (HTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Hooks as Hooks
@@ -21,10 +21,10 @@ import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
 import Halogen.Svg.Elements as SE
 import Halogen.VDom.Driver (runUI)
-import MLogo.AceComponent (Output(..))
-import MLogo.AceComponent as AceComponent
-import MLogo.Interpretation (PointerState, Position(..), ScreenState)
+import MLogo.Interpretation.State (Angle(..), PointerState, Position(..), ScreenState)
 import MLogo.Program as Program
+import MLogo.WebApp.AceComponent (Output(..))
+import MLogo.WebApp.AceComponent as AceComponent
 import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
@@ -50,10 +50,10 @@ main = launchAff_ do
 canvasSize :: Number
 canvasSize = 100.0
 
-transform :: forall i r. IProp (transform :: String | r) i
-transform = SA.transform
-  [ Scale one (-one)
-  , Translate (canvasSize / 2.0) (-canvasSize / 2.0)
+transforms :: Array Transform
+transforms =
+  [ Translate (canvasSize / 2.0) (canvasSize / 2.0)
+  , Scale one (-one)
   ]
 
 pointerSize :: Number
@@ -99,7 +99,10 @@ renderPointerState pointer =
     (Position p1) = pointer.position + Position { x: -halfOfPointerSize, y: -halfOfPointerSize }
     (Position p2) = pointer.position + Position { x: halfOfPointerSize, y: -halfOfPointerSize }
     (Position p3) = pointer.position + Position { x: zero, y: halfOfPointerSize }
+    (Position p) = pointer.position
+    (Angle a) = pointer.angle
     stroke = SA.stroke $ Named "green"
+    transform = SA.transform $ transforms <> [ Rotate (-a) p.x p.y ]
   in
     List.fromFoldable
       [ SE.line
@@ -136,6 +139,6 @@ renderScreenState = map \{ p1: (Position start), p2: (Position end) } ->
     , SA.x2 end.x
     , SA.y2 end.y
     , SA.stroke $ Named "black"
-    , transform
+    , SA.transform transforms
     ]
 
