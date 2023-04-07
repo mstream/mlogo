@@ -1,5 +1,12 @@
 
 
+## [0.4.0](https://github.com/mstream/mlogo/compare/0.3.0...0.4.0) (2023-04-07)
+
+
+### Features
+
+* add a command legend to the web app ([f131ed6](https://github.com/mstream/mlogo/commit/f131ed65f085751de8a18010cb98dcb15eba89ad))
+
 ## [0.3.0](https://github.com/mstream/mlogo/compare/0.2.1...0.3.0) (2023-04-07)
 
 
