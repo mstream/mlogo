@@ -6,10 +6,11 @@
     "url": "git+https://github.com/mstream/mlogo"
   },
   "scripts": {
-    "build": "spago build",
+    "build:production": "spago -x spago.production.dhall build",
+    "build:test": "spago build",
     "bundle": "npm run bundle:cli && npm run bundle:webapp",
-    "bundle:cli": "npm run build && purs-backend-es bundle-app -m Main.CLI --minify --no-build -p node -t dist/cli.js",
-    "bundle:webapp": "npm run build && purs-backend-es bundle-app -m Main.WebApp --minify --no-build -p browser -t dist/webapp.js && cp dist/webapp.js static/",
+    "bundle:cli": "npm run build:production && purs-backend-es bundle-app -m Main.CLI --minify --no-build -p node -t dist/cli.js",
+    "bundle:webapp": "npm run build:production && purs-backend-es bundle-app -m Main.WebApp --minify --no-build -p browser -t dist/webapp.js && cp dist/webapp.js static/",
     "release": "release-it",
     "test": "spago test"
   },

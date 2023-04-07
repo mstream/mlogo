@@ -5,7 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.List as List
-import MLogo.Lexing (Token(..))
+import MLogo.Lexing (BracketType(..), Token(..))
 import MLogo.Lexing as Lexing
 import StringParser (ParseError)
 import Test.Spec (Spec, describe, it)
@@ -25,11 +25,22 @@ spec = describe "Lexing" do
       )
 
     testCase
-      "single command, reduntant spaces"
+      "single command, redundant spaces"
       " forward  10 "
       ( Right
           [ UnquotedWord "forward"
           , Number 10
+          ]
+      )
+
+    testCase
+      "a list of words"
+      "[ word1 word2 ]"
+      ( Right
+          [ Bracket SquareOpening
+          , UnquotedWord "word1"
+          , UnquotedWord "word2"
+          , Bracket SquareClosing
           ]
       )
 
