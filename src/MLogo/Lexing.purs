@@ -10,6 +10,7 @@ import Data.Array as Array
 import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
 import Data.Generic.Rep (class Generic)
+import Data.Int as Int
 import Data.List (List, (:))
 import Data.Maybe (Maybe(..))
 import Data.Number as Number
@@ -19,9 +20,10 @@ import StringParser (ParseError, Parser)
 import StringParser as SP
 
 data Token
-  = ColonPrefixedWord String
+  = Bracket BracketType
+  | ColonPrefixedWord String
   | Comment String
-  | Bracket BracketType
+  | IntegerToken Int
   | NumberToken Number
   | QuotedWord String
   | UnquotedWord String
@@ -62,7 +64,7 @@ tokenParser = SP.choice
   [ bracketParser
   , colonPrefixedWordParser
   , commentParser
-  , numberTokenParser
+  , numericTokenParser
   , quotedWordParser
   , unquotedWordParser
   ]
@@ -119,17 +121,21 @@ unquotedWordParser = do
   word ← wordParser
   pure $ UnquotedWord word
 
-numberTokenParser ∷ Parser Token
-numberTokenParser = do
-  digits ← SP.many1 SP.anyDigit
+numericTokenParser ∷ Parser Token
+numericTokenParser = do
+  digits ← SP.many1 $ SP.choice [ SP.anyDigit, SP.char '.' ]
   let
     s = charsToString digits
-  case Number.fromString s of
-    Just x →
-      pure $ NumberToken x
+  case Int.fromString s of
+    Just n →
+      pure $ IntegerToken n
     Nothing →
-      SP.fail
-        $ "\"" <> s <> "\" is not a valid number"
+      case Number.fromString s of
+        Just x →
+          pure $ NumberToken x
+        Nothing →
+          SP.fail
+            $ "\"" <> s <> "\" is not a numeric token"
 
 charsToString ∷ ∀ f. Foldable f ⇒ Functor f ⇒ f Char → String
 charsToString = String.fromCodePointArray

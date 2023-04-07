@@ -17,6 +17,7 @@ import MLogo.Interpretation.State
 import MLogo.Parsing
   ( ControlStructure(..)
   , Expression(..)
+  , NumericLiteral(..)
   , Parameter(..)
   , ProcedureCall(..)
   , Statement(..)
@@ -32,7 +33,9 @@ spec = describe "Interpretation" do
       "calling a command directly using a literal"
       [ ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10.0 ])
+          ( List.fromFoldable
+              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+          )
       ]
       ( Right $
           { callStack: Nil
@@ -56,13 +59,52 @@ spec = describe "Interpretation" do
       )
 
     testCase
+      "calling a command multiple times using a repeat statement"
+      [ ControlStructureStatement $ RepeatBlock
+          (NumericLiteralExpression $ IntegerLiteral 2)
+          ( List.fromFoldable
+              [ ProcedureCallStatement $ ProcedureCall
+                  "forward"
+                  ( List.fromFoldable
+                      [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                  )
+              ]
+          )
+      ]
+      ( Right $
+          { callStack: Nil
+          , pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 20.0
+                    }
+              }
+          , procedures: Map.empty
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 10.0 }
+                , p2: Position { x: 0.0, y: 20.0 }
+                }
+              , { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
+                }
+              ]
+          , variables: Map.empty
+          }
+      )
+
+    testCase
       "moving home"
       [ ProcedureCallStatement $ ProcedureCall
           "penup"
           Nil
       , ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10.0 ])
+          ( List.fromFoldable
+              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+          )
       , ProcedureCallStatement $ ProcedureCall
           "home"
           Nil
@@ -87,7 +129,9 @@ spec = describe "Interpretation" do
           Nil
       , ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10.0 ])
+          ( List.fromFoldable
+              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+          )
       ]
       ( Right $
           { callStack: Nil
@@ -110,7 +154,9 @@ spec = describe "Interpretation" do
       "cleaning after drawing"
       [ ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10.0 ])
+          ( List.fromFoldable
+              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+          )
       , ProcedureCallStatement $ ProcedureCall
           "clean"
           Nil
@@ -136,7 +182,9 @@ spec = describe "Interpretation" do
       "clearing screen after drawing"
       [ ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10.0 ])
+          ( List.fromFoldable
+              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+          )
       , ProcedureCallStatement $ ProcedureCall
           "clearscreen"
           Nil
@@ -160,12 +208,14 @@ spec = describe "Interpretation" do
           "make"
           ( List.fromFoldable
               [ WordLiteral "steps"
-              , NumericLiteral 10.0
+              , NumericLiteralExpression $ NumberLiteral 10.0
               ]
           )
       , ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10.0 ])
+          ( List.fromFoldable
+              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+          )
       ]
       ( Right $
           { callStack: Nil
@@ -212,7 +262,9 @@ spec = describe "Interpretation" do
               procedureBody1
           , ProcedureCallStatement $ ProcedureCall
               procedureName1
-              (List.fromFoldable [ NumericLiteral 10.0 ])
+              ( List.fromFoldable
+                  [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+              )
           ]
           ( Right $
               { callStack: Nil
@@ -248,7 +300,9 @@ spec = describe "Interpretation" do
         ( List.fromFoldable
             [ ProcedureCallStatement $ ProcedureCall
                 "forward"
-                (List.fromFoldable [ NumericLiteral 10.0 ])
+                ( List.fromFoldable
+                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                )
             ]
         )
     ]
@@ -280,7 +334,9 @@ spec = describe "Interpretation" do
         ( List.fromFoldable
             [ ProcedureCallStatement $ ProcedureCall
                 "forward"
-                (List.fromFoldable [ NumericLiteral 10.0 ])
+                ( List.fromFoldable
+                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                )
             ]
         )
     ]
@@ -313,7 +369,10 @@ spec = describe "Interpretation" do
             ( List.fromFoldable
                 [ ProcedureCallStatement $ ProcedureCall
                     "forward"
-                    (List.fromFoldable [ NumericLiteral 10.0 ])
+                    ( List.fromFoldable
+                        [ NumericLiteralExpression $ NumberLiteral 10.0
+                        ]
+                    )
                 ]
             )
     ]
@@ -356,7 +415,10 @@ spec = describe "Interpretation" do
             ( List.fromFoldable
                 [ ProcedureCallStatement $ ProcedureCall
                     "forward"
-                    (List.fromFoldable [ NumericLiteral 10.0 ])
+                    ( List.fromFoldable
+                        [ NumericLiteralExpression $ NumberLiteral 10.0
+                        ]
+                    )
                 ]
             )
     ]
@@ -382,13 +444,17 @@ spec = describe "Interpretation" do
         ( List.fromFoldable
             [ ProcedureCallStatement $ ProcedureCall
                 "forward"
-                (List.fromFoldable [ NumericLiteral 10.0 ])
+                ( List.fromFoldable
+                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                )
             ]
         )
         ( List.fromFoldable
             [ ProcedureCallStatement $ ProcedureCall
                 "back"
-                (List.fromFoldable [ NumericLiteral 10.0 ])
+                ( List.fromFoldable
+                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                )
             ]
         )
     ]
@@ -420,13 +486,17 @@ spec = describe "Interpretation" do
         ( List.fromFoldable
             [ ProcedureCallStatement $ ProcedureCall
                 "forward"
-                (List.fromFoldable [ NumericLiteral 10.0 ])
+                ( List.fromFoldable
+                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                )
             ]
         )
         ( List.fromFoldable
             [ ProcedureCallStatement $ ProcedureCall
                 "back"
-                (List.fromFoldable [ NumericLiteral 10.0 ])
+                ( List.fromFoldable
+                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                )
             ]
         )
     ]

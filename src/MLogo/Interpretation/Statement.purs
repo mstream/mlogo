@@ -21,7 +21,8 @@ import MLogo.Interpretation.State
 import MLogo.Interpretation.State as State
 import MLogo.Parsing
   ( ControlStructure(..)
-  , Expression
+  , Expression(..)
+  , NumericLiteral(..)
   , Parameter
   , ProcedureCall(..)
   , Statement(..)
@@ -56,6 +57,27 @@ interpretControlStructure state = case _ of
       conditionExpression
       positiveBranch
       negativeBranch
+
+  RepeatBlock timesExpression body →
+    interpretRepeatBlock state timesExpression body
+
+interpretRepeatBlock
+  ∷ ExecutionState
+  → Expression
+  → List Statement
+  → String \/ ExecutionState
+interpretRepeatBlock state timesExpression body = do
+  times ← State.extractInt =<< Expression.evaluate
+    state
+    timesExpression
+
+  if times > 0 then do
+    newState ← interpretMany state body
+    interpretRepeatBlock
+      newState
+      (NumericLiteralExpression $ IntegerLiteral $ times - 1)
+      body
+  else Right state
 
 interpretIfElseBlock
   ∷ ExecutionState

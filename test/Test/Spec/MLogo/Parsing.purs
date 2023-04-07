@@ -9,6 +9,7 @@ import MLogo.Lexing (BracketType(..), Token(..))
 import MLogo.Parsing
   ( ControlStructure(..)
   , Expression(..)
+  , NumericLiteral(..)
   , Parameter(..)
   , ProcedureCall(..)
   , Statement(..)
@@ -31,7 +32,7 @@ spec = describe "Parsing" do
           [ ProcedureCallStatement $ ProcedureCall
               "proc1"
               ( List.fromFoldable
-                  [ NumericLiteral 1.0
+                  [ NumericLiteralExpression $ NumberLiteral 1.0
                   ]
               )
           ]
@@ -117,10 +118,17 @@ spec = describe "Parsing" do
               ( List.fromFoldable
                   [ ProcedureCallStatement $ ProcedureCall
                       "proc1"
-                      (List.fromFoldable [ NumericLiteral 1.0 ])
+                      ( List.fromFoldable
+                          [ NumericLiteralExpression $ NumberLiteral 1.0
+                          ]
+                      )
                   , ProcedureCallStatement $ ProcedureCall
                       "proc2"
-                      (List.fromFoldable [ NumericLiteral 2.0 ])
+                      ( List.fromFoldable
+                          [ NumericLiteralExpression $ NumberLiteral
+                              2.0
+                          ]
+                      )
                   ]
               )
           ]

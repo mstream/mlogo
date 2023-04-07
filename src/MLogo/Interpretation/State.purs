@@ -8,6 +8,7 @@ module MLogo.Interpretation.State
   , Value(..)
   , VisibleState
   , extractBoolean
+  , extractInt
   , extractNumber
   , extractString
   , initialExecutionState
@@ -20,6 +21,7 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
+import Data.Int as Int
 import Data.List (List(..))
 import Data.Map (Map)
 import Data.Map as Map
@@ -29,6 +31,7 @@ import MLogo.Parsing (Parameter, Statement)
 
 data Value
   = BooleanValue Boolean
+  | IntegerValue Int
   | NumberValue Number
   | WordValue String
 
@@ -54,8 +57,17 @@ extractBoolean = case _ of
   otherValue →
     Left $ "\"" <> show otherValue <> "\" is not a boolean value"
 
+extractInt ∷ Value → String \/ Int
+extractInt = case _ of
+  IntegerValue n →
+    Right n
+  otherValue →
+    Left $ "\"" <> show otherValue <> "\" is not an integer value"
+
 extractNumber ∷ Value → String \/ Number
 extractNumber = case _ of
+  IntegerValue n →
+    Right $ Int.toNumber n
   NumberValue x →
     Right x
   otherValue →

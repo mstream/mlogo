@@ -15,6 +15,7 @@
   , "halogen-hooks"
   , "halogen-subscriptions"
   , "halogen-svg-elems"
+  , "integers"
   , "lists"
   , "maybe"
   , "node-buffer"

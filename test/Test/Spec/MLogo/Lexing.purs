@@ -16,11 +16,27 @@ spec = describe "Lexing" do
   describe "run" do
 
     testCase
-      "single command"
+      "an integer"
+      "10"
+      ( Right
+          [ IntegerToken 10
+          ]
+      )
+
+    testCase
+      "a number"
+      "10.0"
+      ( Right
+          [ NumberToken 10.0
+          ]
+      )
+
+    testCase
+      "a single command"
       "forward 10"
       ( Right
           [ UnquotedWord "forward"
-          , NumberToken 10.0
+          , IntegerToken 10
           ]
       )
 
@@ -29,8 +45,8 @@ spec = describe "Lexing" do
       "equal? 1 2"
       ( Right
           [ UnquotedWord "equal?"
-          , NumberToken 1.0
-          , NumberToken 2.0
+          , IntegerToken 1
+          , IntegerToken 2
           ]
       )
 
@@ -39,7 +55,7 @@ spec = describe "Lexing" do
       " forward  10 "
       ( Right
           [ UnquotedWord "forward"
-          , NumberToken 10.0
+          , IntegerToken 10
           ]
       )
 

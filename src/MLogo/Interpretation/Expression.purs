@@ -12,7 +12,12 @@ import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import MLogo.Interpretation.State (ExecutionState, Value(..))
 import MLogo.Interpretation.State as State
-import MLogo.Parsing (Expression(..), Parameter(..), ProcedureCall(..))
+import MLogo.Parsing
+  ( Expression(..)
+  , NumericLiteral(..)
+  , Parameter(..)
+  , ProcedureCall(..)
+  )
 
 evaluate ∷ ExecutionState → Expression → String \/ Value
 evaluate state = case _ of
@@ -20,7 +25,9 @@ evaluate state = case _ of
     Right $ BooleanValue b
   ListLiteral _ →
     Left "TODO"
-  NumericLiteral x →
+  NumericLiteralExpression (IntegerLiteral n) →
+    Right $ IntegerValue n
+  NumericLiteralExpression (NumberLiteral x) →
     Right $ NumberValue x
   ProcedureCallExpression pc →
     evaluateProcedureCallExpression state pc

@@ -85,11 +85,12 @@ spec = describe "Program" do
     "moving forward by 10 using variable assignments and conditionals"
     ( String.joinWith
         "\n"
-        [ "make \"steps 10"
+        [ "make \"steps 5"
         , "make \"t true"
         , "make \"f false"
         , "if :f [ back :steps ]"
         , "if :t [ forward :steps ]"
+        , "ifelse :t [ forward :steps ] [ back :steps ]"
         ]
     )
     ( Right $
@@ -103,8 +104,39 @@ spec = describe "Program" do
                   }
             }
         , screen: List.fromFoldable
-            [ { p1: Position { x: 0.0, y: 0.0 }
+            [ { p1: Position { x: 0.0, y: 5.0 }
               , p2: Position { x: 0.0, y: 10.0 }
+              }
+            , { p1: Position { x: 0.0, y: 0.0 }
+              , p2: Position { x: 0.0, y: 5.0 }
+              }
+            ]
+        }
+    )
+
+  testCase
+    "moving forward by 10 using the repeat statement"
+    ( String.joinWith
+        "\n"
+        [ "repeat 2 [ forward 5 ]"
+        ]
+    )
+    ( Right $
+        { pointer:
+            { angle: zero
+            , isDown: true
+            , position:
+                Position
+                  { x: 0.0
+                  , y: 10.0
+                  }
+            }
+        , screen: List.fromFoldable
+            [ { p1: Position { x: 0.0, y: 5.0 }
+              , p2: Position { x: 0.0, y: 10.0 }
+              }
+            , { p1: Position { x: 0.0, y: 0.0 }
+              , p2: Position { x: 0.0, y: 5.0 }
               }
             ]
         }

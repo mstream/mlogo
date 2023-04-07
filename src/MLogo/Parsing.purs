@@ -1,6 +1,7 @@
 module MLogo.Parsing
   ( ControlStructure(..)
   , Expression(..)
+  , NumericLiteral(..)
   , Parameter(..)
   , ProcedureCall(..)
   , Statement(..)
@@ -35,6 +36,7 @@ keywords = Set.fromFoldable
   [ "end"
   , "if"
   , "ifelse"
+  , "repeat"
   , "to"
   ]
 
@@ -67,7 +69,7 @@ derive newtype instance Show Parameter
 data Expression
   = BooleanLiteral Boolean
   | ListLiteral (List Expression)
-  | NumericLiteral Number
+  | NumericLiteralExpression NumericLiteral
   | ProcedureCallExpression ProcedureCall
   | VariableReference String
   | WordLiteral String
@@ -78,9 +80,20 @@ derive instance Eq Expression
 instance Show Expression where
   show expression = genericShow expression
 
+data NumericLiteral
+  = IntegerLiteral Int
+  | NumberLiteral Number
+
+derive instance Generic NumericLiteral _
+derive instance Eq NumericLiteral
+
+instance Show NumericLiteral where
+  show = genericShow
+
 data ControlStructure
   = IfBlock Expression (List Statement)
   | IfElseBlock Expression (List Statement) (List Statement)
+  | RepeatBlock Expression (List Statement)
 
 derive instance Generic ControlStructure _
 derive instance Eq ControlStructure
@@ -121,33 +134,38 @@ controlStructureStatementParser = Lazy.defer \_ →
   ControlStructureStatement <$> P.choice
     [ ifBlockParser
     , ifElseBlockParser
+    , repeatBlockParser
     ]
 
-ifBlockDataParser
-  ∷ TokenParser
-      { conditionExpression ∷ Expression
-      , positiveBranch ∷ List Statement
-      }
-ifBlockDataParser = Lazy.defer \_ → do
+ifBlockParser ∷ TokenParser ControlStructure
+ifBlockParser = do
   void $ consumeUnquotedWord (_ == "if")
   conditionExpression ← expressionParser
   consumeBracket (_ == SquareOpening)
   positiveBranch ← P.many statementParser
   consumeBracket (_ == SquareClosing)
-  pure { conditionExpression, positiveBranch }
-
-ifBlockParser ∷ TokenParser ControlStructure
-ifBlockParser = Lazy.defer \_ → do
-  { conditionExpression, positiveBranch } ← ifBlockDataParser
   pure $ IfBlock conditionExpression positiveBranch
 
 ifElseBlockParser ∷ TokenParser ControlStructure
-ifElseBlockParser = Lazy.defer \_ → do
-  { conditionExpression, positiveBranch } ← ifBlockDataParser
+ifElseBlockParser = do
+  void $ consumeUnquotedWord (_ == "ifelse")
+  conditionExpression ← expressionParser
+  consumeBracket (_ == SquareOpening)
+  positiveBranch ← P.many statementParser
+  consumeBracket (_ == SquareClosing)
   consumeBracket (_ == SquareOpening)
   negativeBranch ← P.many statementParser
   consumeBracket (_ == SquareClosing)
   pure $ IfElseBlock conditionExpression positiveBranch negativeBranch
+
+repeatBlockParser ∷ TokenParser ControlStructure
+repeatBlockParser = do
+  void $ consumeUnquotedWord (_ == "repeat")
+  timesExpression ← expressionParser
+  consumeBracket (_ == SquareOpening)
+  body ← P.many statementParser
+  consumeBracket (_ == SquareClosing)
+  pure $ RepeatBlock timesExpression body
 
 procedureCallStatementParser ∷ TokenParser Statement
 procedureCallStatementParser =
@@ -166,7 +184,7 @@ expressionParser ∷ TokenParser Expression
 expressionParser = Lazy.defer \_ →
   P.choice
     [ booleanLiteralParser
-    , numericLiteralParser
+    , numericLiteralExpressionParser
     , procedureCallExpressionParser
     , variableReferenceParser
     , wordLiteralParser
@@ -183,8 +201,11 @@ booleanLiteralParser = do
     other →
       P.fail $ "\"" <> other <> "\" is not a boolean value"
 
-numericLiteralParser ∷ TokenParser Expression
-numericLiteralParser = NumericLiteral <$> consumeNumberToken
+numericLiteralExpressionParser ∷ TokenParser Expression
+numericLiteralExpressionParser = NumericLiteralExpression <$> P.choice
+  [ IntegerLiteral <$> consumeIntegerToken
+  , NumberLiteral <$> consumeNumberToken
+  ]
 
 procedureCallExpressionParser ∷ TokenParser Expression
 procedureCallExpressionParser = Lazy.defer \_ → do
@@ -216,6 +237,13 @@ consumeColonPrefixedWord ∷ TokenParser String
 consumeColonPrefixedWord = consumeToken case _ of
   ColonPrefixedWord s →
     Just s
+  _ →
+    Nothing
+
+consumeIntegerToken ∷ TokenParser Int
+consumeIntegerToken = consumeToken case _ of
+  IntegerToken x →
+    Just x
   _ →
     Nothing
 
