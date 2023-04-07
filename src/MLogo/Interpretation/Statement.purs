@@ -6,7 +6,6 @@ import Data.Either (Either(..))
 import Data.Either as Either
 import Data.Either.Nested (type (\/))
 import Data.Foldable (foldM)
-import Data.Int as Int
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Map as Map
@@ -22,6 +21,7 @@ import MLogo.Interpretation.State
 import MLogo.Interpretation.State as State
 import MLogo.Parsing
   ( ControlStructure(..)
+  , Expression
   , Parameter
   , ProcedureCall(..)
   , Statement(..)
@@ -43,15 +43,38 @@ interpret state = case _ of
 interpretControlStructure
   ∷ ExecutionState → ControlStructure → String \/ ExecutionState
 interpretControlStructure state = case _ of
-  IfBlock conditionExpression body → do
-    b ← Expression.evaluate state conditionExpression
-    case b of
-      BooleanValue true →
-        interpretMany state body
-      BooleanValue false →
-        Right state
-      _ →
-        Left "expression does not evaluate to a boolean value"
+  IfBlock conditionExpression body →
+    interpretIfElseBlock
+      state
+      conditionExpression
+      body
+      Nil
+
+  IfElseBlock conditionExpression positiveBranch negativeBranch →
+    interpretIfElseBlock
+      state
+      conditionExpression
+      positiveBranch
+      negativeBranch
+
+interpretIfElseBlock
+  ∷ ExecutionState
+  → Expression
+  → List Statement
+  → List Statement
+  → String \/ ExecutionState
+interpretIfElseBlock
+  state
+  conditionExpression
+  positiveBranch
+  negativeBranch =
+  do
+    b ← State.extractBoolean =<< Expression.evaluate
+      state
+      conditionExpression
+
+    if b then interpretMany state positiveBranch
+    else interpretMany state negativeBranch
 
 interpretProcedureCall
   ∷ ExecutionState → ProcedureCall → String \/ ExecutionState
@@ -146,72 +169,48 @@ interpretVariableAssignment state = case _ of
 interpretMoveForward
   ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretMoveForward state = case _ of
-  value : Nil →
-    case value of
-      BooleanValue b →
-        Left $ "Boolean \"" <> show b <> "\" is not a number"
-      NumberValue n →
-        let
-          d = Int.toNumber n
-          rads = State.toRadians state.pointer.angle
-          target = state.pointer.position + Position
-            { x: d * Number.sin rads, y: d * Number.cos rads }
-        in
-          Right $ moveTo state target
-      WordValue s →
-        Left $ "Word \"" <> s <> "\" is not a number"
+  value : Nil → do
+    x ← State.extractNumber value
+    let
+      rads = State.toRadians state.pointer.angle
+      target = state.pointer.position + Position
+        { x: x * Number.sin rads, y: x * Number.cos rads }
 
+    Right $ moveTo state target
   _ →
     Left "FORWARD takes exactly one parameter"
 
 interpretMoveBackward
   ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretMoveBackward state = case _ of
-  value : Nil →
-    case value of
-      BooleanValue b →
-        Left $ "Boolean \"" <> show b <> "\" is not a number"
-      NumberValue n →
-        interpretMoveForward
-          state
-          (List.fromFoldable [ NumberValue (-n) ])
-      WordValue s →
-        Left $ "Word \"" <> s <> "\" is not a number"
-
+  value : Nil → do
+    x ← State.extractNumber value
+    interpretMoveForward
+      state
+      (List.fromFoldable [ NumberValue (-x) ])
   _ →
     Left "BACKWARD takes exactly one parameter"
 
 interpretTurnRight
   ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretTurnRight state = case _ of
-  value : Nil →
-    case value of
-      BooleanValue b →
-        Left $ "Boolean \"" <> show b <> "\" is not a number"
-      NumberValue n →
-        Right $ state
-          { pointer = state.pointer
-              { angle = state.pointer.angle + Angle (Int.toNumber n) }
-          }
-      WordValue s →
-        Left $ "Word \"" <> s <> "\" is not a number"
-
+  value : Nil → do
+    x ← State.extractNumber value
+    Right $ state
+      { pointer = state.pointer
+          { angle = state.pointer.angle + Angle x }
+      }
   _ →
     Left "RIGHT takes exactly one parameter"
 
 interpretTurnLeft
   ∷ ExecutionState → List Value → String \/ ExecutionState
 interpretTurnLeft state = case _ of
-  value : Nil →
-    case value of
-      BooleanValue b →
-        Left $ "Boolean \"" <> show b <> "\" is not a number"
-      NumberValue n →
-        interpretTurnRight state
-          (List.fromFoldable [ NumberValue (-n) ])
-      WordValue s →
-        Left $ "Word \"" <> s <> "\" is not a number"
-
+  value : Nil → do
+    x ← State.extractNumber value
+    interpretTurnRight
+      state
+      (List.fromFoldable [ NumberValue (-x) ])
   _ →
     Left "RIGHT takes exactly one argument"
 

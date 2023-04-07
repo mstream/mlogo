@@ -32,7 +32,7 @@ spec = describe "Interpretation" do
       "calling a command directly using a literal"
       [ ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10 ])
+          (List.fromFoldable [ NumericLiteral 10.0 ])
       ]
       ( Right $
           { callStack: Nil
@@ -62,7 +62,7 @@ spec = describe "Interpretation" do
           Nil
       , ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10 ])
+          (List.fromFoldable [ NumericLiteral 10.0 ])
       , ProcedureCallStatement $ ProcedureCall
           "home"
           Nil
@@ -87,7 +87,7 @@ spec = describe "Interpretation" do
           Nil
       , ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10 ])
+          (List.fromFoldable [ NumericLiteral 10.0 ])
       ]
       ( Right $
           { callStack: Nil
@@ -110,7 +110,7 @@ spec = describe "Interpretation" do
       "cleaning after drawing"
       [ ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10 ])
+          (List.fromFoldable [ NumericLiteral 10.0 ])
       , ProcedureCallStatement $ ProcedureCall
           "clean"
           Nil
@@ -136,7 +136,7 @@ spec = describe "Interpretation" do
       "clearing screen after drawing"
       [ ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10 ])
+          (List.fromFoldable [ NumericLiteral 10.0 ])
       , ProcedureCallStatement $ ProcedureCall
           "clearscreen"
           Nil
@@ -160,12 +160,12 @@ spec = describe "Interpretation" do
           "make"
           ( List.fromFoldable
               [ WordLiteral "steps"
-              , NumericLiteral 10
+              , NumericLiteral 10.0
               ]
           )
       , ProcedureCallStatement $ ProcedureCall
           "forward"
-          (List.fromFoldable [ NumericLiteral 10 ])
+          (List.fromFoldable [ NumericLiteral 10.0 ])
       ]
       ( Right $
           { callStack: Nil
@@ -185,7 +185,7 @@ spec = describe "Interpretation" do
                 }
               ]
           , variables: Map.fromFoldable
-              [ "steps" /\ NumberValue 10
+              [ "steps" /\ NumberValue 10.0
               ]
           }
       )
@@ -212,7 +212,7 @@ spec = describe "Interpretation" do
               procedureBody1
           , ProcedureCallStatement $ ProcedureCall
               procedureName1
-              (List.fromFoldable [ NumericLiteral 10 ])
+              (List.fromFoldable [ NumericLiteral 10.0 ])
           ]
           ( Right $
               { callStack: Nil
@@ -248,7 +248,7 @@ spec = describe "Interpretation" do
         ( List.fromFoldable
             [ ProcedureCallStatement $ ProcedureCall
                 "forward"
-                (List.fromFoldable [ NumericLiteral 10 ])
+                (List.fromFoldable [ NumericLiteral 10.0 ])
             ]
         )
     ]
@@ -280,7 +280,7 @@ spec = describe "Interpretation" do
         ( List.fromFoldable
             [ ProcedureCallStatement $ ProcedureCall
                 "forward"
-                (List.fromFoldable [ NumericLiteral 10 ])
+                (List.fromFoldable [ NumericLiteral 10.0 ])
             ]
         )
     ]
@@ -293,6 +293,160 @@ spec = describe "Interpretation" do
             }
         , procedures: Map.empty
         , screen: Nil
+        , variables: Map.empty
+        }
+    )
+
+  testCase
+    "running a command conditionally where condition is a variable reference"
+    [ ProcedureCallStatement
+        $ ProcedureCall
+            "make"
+            ( List.fromFoldable
+                [ WordLiteral "condition"
+                , BooleanLiteral true
+                ]
+            )
+    , ControlStructureStatement
+        $ IfBlock
+            (VariableReference "condition")
+            ( List.fromFoldable
+                [ ProcedureCallStatement $ ProcedureCall
+                    "forward"
+                    (List.fromFoldable [ NumericLiteral 10.0 ])
+                ]
+            )
+    ]
+    ( Right $
+        { callStack: Nil
+        , pointer:
+            { angle: zero
+            , isDown: true
+            , position:
+                Position
+                  { x: 0.0
+                  , y: 10.0
+                  }
+            }
+        , procedures: Map.empty
+        , screen: List.fromFoldable
+            [ { p1: Position { x: 0.0, y: 0.0 }
+              , p2: Position { x: 0.0, y: 10.0 }
+              }
+            ]
+        , variables: Map.fromFoldable
+            [ "condition" /\ BooleanValue true
+            ]
+        }
+    )
+
+  testCase
+    "not running a command conditionally where condition is a variable reference"
+    [ ProcedureCallStatement
+        $ ProcedureCall
+            "make"
+            ( List.fromFoldable
+                [ WordLiteral "condition"
+                , BooleanLiteral false
+                ]
+            )
+    , ControlStructureStatement
+        $ IfBlock
+            (VariableReference "condition")
+            ( List.fromFoldable
+                [ ProcedureCallStatement $ ProcedureCall
+                    "forward"
+                    (List.fromFoldable [ NumericLiteral 10.0 ])
+                ]
+            )
+    ]
+    ( Right $
+        { callStack: Nil
+        , pointer:
+            { angle: zero
+            , isDown: true
+            , position: zero
+            }
+        , procedures: Map.empty
+        , screen: Nil
+        , variables: Map.fromFoldable
+            [ "condition" /\ BooleanValue false
+            ]
+        }
+    )
+
+  testCase
+    "running the positive branch of an if statement"
+    [ ControlStructureStatement $ IfElseBlock
+        (BooleanLiteral true)
+        ( List.fromFoldable
+            [ ProcedureCallStatement $ ProcedureCall
+                "forward"
+                (List.fromFoldable [ NumericLiteral 10.0 ])
+            ]
+        )
+        ( List.fromFoldable
+            [ ProcedureCallStatement $ ProcedureCall
+                "back"
+                (List.fromFoldable [ NumericLiteral 10.0 ])
+            ]
+        )
+    ]
+    ( Right $
+        { callStack: Nil
+        , pointer:
+            { angle: zero
+            , isDown: true
+            , position:
+                Position
+                  { x: 0.0
+                  , y: 10.0
+                  }
+            }
+        , procedures: Map.empty
+        , screen: List.fromFoldable
+            [ { p1: Position { x: 0.0, y: 0.0 }
+              , p2: Position { x: 0.0, y: 10.0 }
+              }
+            ]
+        , variables: Map.empty
+        }
+    )
+
+  testCase
+    "running the negative branch of an if statement"
+    [ ControlStructureStatement $ IfElseBlock
+        (BooleanLiteral false)
+        ( List.fromFoldable
+            [ ProcedureCallStatement $ ProcedureCall
+                "forward"
+                (List.fromFoldable [ NumericLiteral 10.0 ])
+            ]
+        )
+        ( List.fromFoldable
+            [ ProcedureCallStatement $ ProcedureCall
+                "back"
+                (List.fromFoldable [ NumericLiteral 10.0 ])
+            ]
+        )
+    ]
+    ( Right $
+        { callStack: Nil
+        , pointer:
+            { angle: zero
+            , isDown: true
+            , position:
+                Position
+                  { x: 0.0
+                  , y: -10.0
+                  }
+            }
+        , procedures: Map.empty
+        , screen: List.fromFoldable
+            [ { p1: Position { x: 0.0, y: 0.0 }
+              , p2: Position { x: 0.0, y: -10.0 }
+              }
+            ]
         , variables: Map.empty
         }
     )

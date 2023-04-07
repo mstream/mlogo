@@ -6,6 +6,9 @@ module MLogo.Interpretation.State
   , Position(..)
   , ScreenState
   , Value(..)
+  , extractBoolean
+  , extractNumber
+  , extractString
   , initialExecutionState
   , toRadians
   ) where
@@ -13,6 +16,8 @@ module MLogo.Interpretation.State
 import Prelude
 
 import Data.Argonaut.Encode (class EncodeJson)
+import Data.Either (Either(..))
+import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.List (List(..))
 import Data.Map (Map)
@@ -23,7 +28,7 @@ import MLogo.Parsing (Parameter, Statement)
 
 data Value
   = BooleanValue Boolean
-  | NumberValue Int
+  | NumberValue Number
   | WordValue String
 
 derive instance Generic Value _
@@ -40,6 +45,27 @@ derive newtype instance Show Angle
 derive newtype instance Semiring Angle
 derive newtype instance Ring Angle
 derive newtype instance EncodeJson Angle
+
+extractBoolean ∷ Value → String \/ Boolean
+extractBoolean = case _ of
+  BooleanValue b →
+    Right b
+  otherValue →
+    Left $ "\"" <> show otherValue <> "\" is not a boolean value"
+
+extractNumber ∷ Value → String \/ Number
+extractNumber = case _ of
+  NumberValue x →
+    Right x
+  otherValue →
+    Left $ "\"" <> show otherValue <> "\" is not a number value"
+
+extractString ∷ Value → String \/ String
+extractString = case _ of
+  WordValue s →
+    Right s
+  otherValue →
+    Left $ "\"" <> show otherValue <> "\" is not a word value"
 
 toRadians ∷ Angle → Number
 toRadians (Angle x) = x * Number.pi / 180.0

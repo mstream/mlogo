@@ -25,13 +25,13 @@ spec = describe "Parsing" do
     testCase
       "procedure call with a numeric literal"
       [ UnquotedWord "proc1"
-      , NumberToken 1
+      , NumberToken 1.0
       ]
       ( Right $
           [ ProcedureCallStatement $ ProcedureCall
               "proc1"
               ( List.fromFoldable
-                  [ NumericLiteral 1
+                  [ NumericLiteral 1.0
                   ]
               )
           ]
@@ -100,9 +100,9 @@ spec = describe "Parsing" do
       , Bracket RoundClosing
       , Bracket SquareOpening
       , UnquotedWord "proc1"
-      , NumberToken 1
+      , NumberToken 1.0
       , UnquotedWord "proc2"
-      , NumberToken 2
+      , NumberToken 2.0
       , Bracket SquareClosing
       ]
       ( Right $
@@ -117,10 +117,10 @@ spec = describe "Parsing" do
               ( List.fromFoldable
                   [ ProcedureCallStatement $ ProcedureCall
                       "proc1"
-                      (List.fromFoldable [ NumericLiteral 1 ])
+                      (List.fromFoldable [ NumericLiteral 1.0 ])
                   , ProcedureCallStatement $ ProcedureCall
                       "proc2"
-                      (List.fromFoldable [ NumericLiteral 2 ])
+                      (List.fromFoldable [ NumericLiteral 2.0 ])
                   ]
               )
           ]

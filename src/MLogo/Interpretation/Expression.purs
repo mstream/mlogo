@@ -11,6 +11,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import MLogo.Interpretation.State (ExecutionState, Value(..))
+import MLogo.Interpretation.State as State
 import MLogo.Parsing (Expression(..), Parameter(..), ProcedureCall(..))
 
 evaluate ∷ ExecutionState → Expression → String \/ Value
@@ -19,8 +20,8 @@ evaluate state = case _ of
     Right $ BooleanValue b
   ListLiteral _ →
     Left "TODO"
-  NumericLiteral n →
-    Right $ NumberValue n
+  NumericLiteral x →
+    Right $ NumberValue x
   ProcedureCallExpression pc →
     evaluateProcedureCallExpression state pc
   VariableReference s →
@@ -62,15 +63,6 @@ evaluateSum state = case _ of
     Left "sum requires at least 2 arguments"
   xs → do
     values ← traverse (evaluate state) xs
-    numbers ← traverse
-      ( case _ of
-          BooleanValue b →
-            Left $ "Boolean \"" <> show b <> " is not a number"
-          NumberValue n →
-            Right n
-          WordValue s →
-            Left $ "Word \"" <> s <> " is not a number"
-      )
-      values
+    numbers ← traverse State.extractNumber values
     Right $ NumberValue $ foldl (+) zero numbers
 

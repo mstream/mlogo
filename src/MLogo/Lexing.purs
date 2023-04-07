@@ -10,9 +10,9 @@ import Data.Array as Array
 import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
 import Data.Generic.Rep (class Generic)
-import Data.Int as Int
 import Data.List (List, (:))
 import Data.Maybe (Maybe(..))
+import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import Data.String as String
 import StringParser (ParseError, Parser)
@@ -22,7 +22,7 @@ data Token
   = ColonPrefixedWord String
   | Comment String
   | Bracket BracketType
-  | NumberToken Int
+  | NumberToken Number
   | QuotedWord String
   | UnquotedWord String
 
@@ -124,9 +124,9 @@ numberTokenParser = do
   digits ← SP.many1 SP.anyDigit
   let
     s = charsToString digits
-  case Int.fromString s of
-    Just n →
-      pure $ NumberToken n
+  case Number.fromString s of
+    Just x →
+      pure $ NumberToken x
     Nothing →
       SP.fail
         $ "\"" <> s <> "\" is not a valid number"

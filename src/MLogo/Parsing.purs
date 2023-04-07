@@ -66,7 +66,7 @@ derive newtype instance Show Parameter
 data Expression
   = BooleanLiteral Boolean
   | ListLiteral (List Expression)
-  | NumericLiteral Int
+  | NumericLiteral Number
   | ProcedureCallExpression ProcedureCall
   | VariableReference String
   | WordLiteral String
@@ -77,8 +77,9 @@ derive instance Eq Expression
 instance Show Expression where
   show expression = genericShow expression
 
-data ControlStructure =
-  IfBlock Expression (List Statement)
+data ControlStructure
+  = IfBlock Expression (List Statement)
+  | IfElseBlock Expression (List Statement) (List Statement)
 
 derive instance Generic ControlStructure _
 derive instance Eq ControlStructure
@@ -199,10 +200,10 @@ consumeColonPrefixedWord = consumeToken case _ of
   _ →
     Nothing
 
-consumeNumberToken ∷ TokenParser Int
+consumeNumberToken ∷ TokenParser Number
 consumeNumberToken = consumeToken case _ of
-  NumberToken n →
-    Just n
+  NumberToken x →
+    Just x
   _ →
     Nothing
 

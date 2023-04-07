@@ -20,7 +20,7 @@ spec = describe "Lexing" do
       "forward 10"
       ( Right
           [ UnquotedWord "forward"
-          , NumberToken 10
+          , NumberToken 10.0
           ]
       )
 
@@ -29,8 +29,8 @@ spec = describe "Lexing" do
       "equal? 1 2"
       ( Right
           [ UnquotedWord "equal?"
-          , NumberToken 1
-          , NumberToken 2
+          , NumberToken 1.0
+          , NumberToken 2.0
           ]
       )
 
@@ -39,7 +39,7 @@ spec = describe "Lexing" do
       " forward  10 "
       ( Right
           [ UnquotedWord "forward"
-          , NumberToken 10
+          , NumberToken 10.0
           ]
       )
 
