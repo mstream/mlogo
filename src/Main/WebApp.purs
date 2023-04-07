@@ -7,6 +7,7 @@ import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.List (List)
 import Data.List as List
+import Data.Map as Map
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
@@ -28,6 +29,7 @@ import MLogo.Interpretation.State
   , ScreenState
   , VisibleState
   )
+import MLogo.Interpretation.Statement as Statement
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
 import MLogo.WebApp.AceComponent as AceComponent
@@ -73,7 +75,16 @@ rootComp = Hooks.component \_ _ → Hooks.do
   Hooks.pure do
     HH.div
       [ HP.id "container" ]
-      [ HH.slot _ace unit AceComponent.component unit handleAceOutput
+      [ HH.div
+          [ HP.classes [ ClassName "left-panel" ] ]
+          [ HH.slot _ace
+              unit
+              AceComponent.component
+              unit
+              handleAceOutput
+          , renderLegend $ List.fromFoldable $ Map.keys
+              Statement.commands
+          ]
       , case Program.run source of
           Left errorMessage →
             HH.div
@@ -90,6 +101,14 @@ renderSvg state = SE.svg
   , SA.viewBox 0.0 0.0 canvasSize canvasSize
   ]
   (Array.fromFoldable $ renderState state)
+
+renderLegend ∷ ∀ i w. List String → HTML w i
+renderLegend commandNames = HH.div
+  [ HP.classes [ ClassName "legend" ] ]
+  (Array.fromFoldable $ renderEntry <$> commandNames)
+  where
+  renderEntry s =
+    HH.div_ [ HH.text s ]
 
 renderState ∷ ∀ i w. VisibleState → List (HTML w i)
 renderState state =

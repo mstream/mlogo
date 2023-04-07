@@ -1,4 +1,4 @@
-module MLogo.Interpretation.Statement (interpretMany) where
+module MLogo.Interpretation.Statement (commands, interpretMany) where
 
 import Prelude
 
@@ -8,9 +8,12 @@ import Data.Either.Nested (type (\/))
 import Data.Foldable (foldM)
 import Data.List (List(..), (:))
 import Data.List as List
+import Data.Map (Map)
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Data.Number as Number
 import Data.Traversable (traverse)
+import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Expression as Expression
 import MLogo.Interpretation.State
   ( Angle(..)
@@ -98,50 +101,72 @@ interpretIfElseBlock
     if b then interpretMany state positiveBranch
     else interpretMany state negativeBranch
 
+type Command =
+  { interpret ∷ ExecutionState → List Value → String \/ ExecutionState
+  }
+
+moveBackwardCommand ∷ Command
+moveBackwardCommand = { interpret: interpretMoveBackward }
+
+moveForwardCommand ∷ Command
+moveForwardCommand = { interpret: interpretMoveForward }
+
+cleanCommand ∷ Command
+cleanCommand = { interpret: interpretClean }
+
+clearScreenCommand ∷ Command
+clearScreenCommand = { interpret: interpretClearScreen }
+
+goHomeCommand ∷ Command
+goHomeCommand = { interpret: interpretGoHome }
+
+turnLeftCommand ∷ Command
+turnLeftCommand = { interpret: interpretTurnLeft }
+
+turnRightCommand ∷ Command
+turnRightCommand = { interpret: interpretTurnRight }
+
+variableAssignmentCommand ∷ Command
+variableAssignmentCommand = { interpret: interpretVariableAssignment }
+
+penDownCommand ∷ Command
+penDownCommand = { interpret: interpretPenDown }
+
+penUpCommand ∷ Command
+penUpCommand = { interpret: interpretPenUp }
+
+commands ∷ Map String Command
+commands = Map.fromFoldable
+  [ "back" /\ moveBackwardCommand
+  , "bk" /\ moveBackwardCommand
+  , "clean" /\ cleanCommand
+  , "clearscreen" /\ clearScreenCommand
+  , "cs" /\ clearScreenCommand
+  , "fd" /\ moveForwardCommand
+  , "forward" /\ moveForwardCommand
+  , "home" /\ goHomeCommand
+  , "left" /\ turnLeftCommand
+  , "lt" /\ turnLeftCommand
+  , "make" /\ variableAssignmentCommand
+  , "pd" /\ penDownCommand
+  , "pendown" /\ penDownCommand
+  , "penup" /\ penUpCommand
+  , "pu" /\ penUpCommand
+  , "right" /\ turnRightCommand
+  , "rt" /\ turnRightCommand
+  ]
+
 interpretProcedureCall
   ∷ ExecutionState → ProcedureCall → String \/ ExecutionState
 interpretProcedureCall state (ProcedureCall name arguments) = do
   evaluatedArguments ← traverse (Expression.evaluate state) arguments
-  case name of
-    "back" →
-      interpretMoveBackward state evaluatedArguments
-    "bk" →
-      interpretMoveBackward state evaluatedArguments
-    "clean" →
-      interpretClean state evaluatedArguments
-    "clearscreen" →
-      interpretClearScreen state evaluatedArguments
-    "cs" →
-      interpretClearScreen state evaluatedArguments
-    "fd" →
-      interpretMoveForward state evaluatedArguments
-    "forward" →
-      interpretMoveForward state evaluatedArguments
-    "home" →
-      interpretGoHome state evaluatedArguments
-    "left" →
-      interpretTurnLeft state evaluatedArguments
-    "lt" →
-      interpretTurnLeft state evaluatedArguments
-    "make" →
-      interpretVariableAssignment state evaluatedArguments
-    "pd" →
-      interpretPenDown state evaluatedArguments
-    "pendown" →
-      interpretPenDown state evaluatedArguments
-    "penup" →
-      interpretPenUp state evaluatedArguments
-    "pu" →
-      interpretPenUp state evaluatedArguments
-    "right" →
-      interpretTurnRight state evaluatedArguments
-    "rt" →
-      interpretTurnRight state evaluatedArguments
-
-    otherName → do
+  case Map.lookup name commands of
+    Just command →
+      command.interpret state evaluatedArguments
+    Nothing → do
       { body, parameters } ← Either.note
-        ("Unknown procedure name: " <> otherName)
-        (Map.lookup otherName state.procedures)
+        ("Unknown procedure name: " <> name)
+        (Map.lookup name state.procedures)
       let
         boundArguments = Map.fromFoldable $ List.zip parameters
           evaluatedArguments
