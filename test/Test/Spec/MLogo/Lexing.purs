@@ -20,7 +20,17 @@ spec = describe "Lexing" do
       "forward 10"
       ( Right
           [ UnquotedWord "forward"
-          , Number 10
+          , NumberToken 10
+          ]
+      )
+
+    testCase
+      "a command with a question mark suffix"
+      "equal? 1 2"
+      ( Right
+          [ UnquotedWord "equal?"
+          , NumberToken 1
+          , NumberToken 2
           ]
       )
 
@@ -29,13 +39,40 @@ spec = describe "Lexing" do
       " forward  10 "
       ( Right
           [ UnquotedWord "forward"
-          , Number 10
+          , NumberToken 10
+          ]
+      )
+
+    testCase
+      "multiple procedure invocations with various arguments count"
+      "proc1 :var1 proc2 :var1 :var2\nproc3 :var1 :var2 :var3"
+      ( Right
+          [ UnquotedWord "proc1"
+          , ColonPrefixedWord "var1"
+          , UnquotedWord "proc2"
+          , ColonPrefixedWord "var1"
+          , ColonPrefixedWord "var2"
+          , UnquotedWord "proc3"
+          , ColonPrefixedWord "var1"
+          , ColonPrefixedWord "var2"
+          , ColonPrefixedWord "var3"
           ]
       )
 
     testCase
       "a list of words"
       "[ word1 word2 ]"
+      ( Right
+          [ Bracket SquareOpening
+          , UnquotedWord "word1"
+          , UnquotedWord "word2"
+          , Bracket SquareClosing
+          ]
+      )
+
+    testCase
+      "a list of words without a padding"
+      "[word1 word2]"
       ( Right
           [ Bracket SquareOpening
           , UnquotedWord "word1"

@@ -1,4 +1,4 @@
-module MLogo.Interpretation.Statement (interpret) where
+module MLogo.Interpretation.Statement (interpretMany) where
 
 import Prelude
 
@@ -20,14 +20,38 @@ import MLogo.Interpretation.State
   , Value(..)
   )
 import MLogo.Interpretation.State as State
-import MLogo.Parsing (Parameter, ProcedureCall(..), Statement(..))
+import MLogo.Parsing
+  ( ControlStructure(..)
+  , Parameter
+  , ProcedureCall(..)
+  , Statement(..)
+  )
+
+interpretMany
+  ∷ ExecutionState → List Statement → String \/ ExecutionState
+interpretMany state = foldM interpret state
 
 interpret ∷ ExecutionState → Statement → String \/ ExecutionState
 interpret state = case _ of
+  ControlStructureStatement cs →
+    interpretControlStructure state cs
   ProcedureCallStatement pc →
     interpretProcedureCall state pc
   ProcedureDefinition name parameters body →
     interpretProcedureDefinition state name parameters body
+
+interpretControlStructure
+  ∷ ExecutionState → ControlStructure → String \/ ExecutionState
+interpretControlStructure state = case _ of
+  IfBlock conditionExpression body → do
+    b ← Expression.evaluate state conditionExpression
+    case b of
+      BooleanValue true →
+        interpretMany state body
+      BooleanValue false →
+        Right state
+      _ →
+        Left "expression does not evaluate to a boolean value"
 
 interpretProcedureCall
   ∷ ExecutionState → ProcedureCall → String \/ ExecutionState
@@ -81,18 +105,19 @@ interpretProcedureCall state (ProcedureCall name arguments) = do
           <> (show $ List.length parameters)
           <> " arguments but got "
           <> (show $ List.length arguments)
-      else do
-        newState ← foldM
-          interpret
-          ( state
-              { callStack =
-                  { name
-                  , boundArguments
-                  } : state.callStack
-              }
-          )
-          body
-        Right $ newState { callStack = state.callStack }
+      else
+        do
+          newState ← interpretMany
+            ( state
+                { callStack =
+                    { name
+                    , boundArguments
+                    } : state.callStack
+                }
+            )
+            body
+
+          Right $ newState { callStack = state.callStack }
 
 interpretProcedureDefinition
   ∷ ExecutionState
@@ -123,6 +148,8 @@ interpretMoveForward
 interpretMoveForward state = case _ of
   value : Nil →
     case value of
+      BooleanValue b →
+        Left $ "Boolean \"" <> show b <> "\" is not a number"
       NumberValue n →
         let
           d = Int.toNumber n
@@ -142,6 +169,8 @@ interpretMoveBackward
 interpretMoveBackward state = case _ of
   value : Nil →
     case value of
+      BooleanValue b →
+        Left $ "Boolean \"" <> show b <> "\" is not a number"
       NumberValue n →
         interpretMoveForward
           state
@@ -157,6 +186,8 @@ interpretTurnRight
 interpretTurnRight state = case _ of
   value : Nil →
     case value of
+      BooleanValue b →
+        Left $ "Boolean \"" <> show b <> "\" is not a number"
       NumberValue n →
         Right $ state
           { pointer = state.pointer
@@ -173,6 +204,8 @@ interpretTurnLeft
 interpretTurnLeft state = case _ of
   value : Nil →
     case value of
+      BooleanValue b →
+        Left $ "Boolean \"" <> show b <> "\" is not a number"
       NumberValue n →
         interpretTurnRight state
           (List.fromFoldable [ NumberValue (-n) ])

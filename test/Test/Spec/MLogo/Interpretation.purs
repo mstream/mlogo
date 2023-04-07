@@ -15,7 +15,8 @@ import MLogo.Interpretation.State
   , Value(..)
   )
 import MLogo.Parsing
-  ( Expression(..)
+  ( ControlStructure(..)
+  , Expression(..)
   , Parameter(..)
   , ProcedureCall(..)
   , Statement(..)
@@ -238,6 +239,62 @@ spec = describe "Interpretation" do
               , variables: Map.empty
               }
           )
+    )
+
+  testCase
+    "running a command conditionally"
+    [ ControlStructureStatement $ IfBlock
+        (BooleanLiteral true)
+        ( List.fromFoldable
+            [ ProcedureCallStatement $ ProcedureCall
+                "forward"
+                (List.fromFoldable [ NumericLiteral 10 ])
+            ]
+        )
+    ]
+    ( Right $
+        { callStack: Nil
+        , pointer:
+            { angle: zero
+            , isDown: true
+            , position:
+                Position
+                  { x: 0.0
+                  , y: 10.0
+                  }
+            }
+        , procedures: Map.empty
+        , screen: List.fromFoldable
+            [ { p1: Position { x: 0.0, y: 0.0 }
+              , p2: Position { x: 0.0, y: 10.0 }
+              }
+            ]
+        , variables: Map.empty
+        }
+    )
+
+  testCase
+    "not running a command conditionally"
+    [ ControlStructureStatement $ IfBlock
+        (BooleanLiteral false)
+        ( List.fromFoldable
+            [ ProcedureCallStatement $ ProcedureCall
+                "forward"
+                (List.fromFoldable [ NumericLiteral 10 ])
+            ]
+        )
+    ]
+    ( Right $
+        { callStack: Nil
+        , pointer:
+            { angle: zero
+            , isDown: true
+            , position: zero
+            }
+        , procedures: Map.empty
+        , screen: Nil
+        , variables: Map.empty
+        }
     )
 
 testCase

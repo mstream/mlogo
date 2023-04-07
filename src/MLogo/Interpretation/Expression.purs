@@ -15,6 +15,8 @@ import MLogo.Parsing (Expression(..), Parameter(..), ProcedureCall(..))
 
 evaluate ∷ ExecutionState → Expression → String \/ Value
 evaluate state = case _ of
+  BooleanLiteral b →
+    Right $ BooleanValue b
   ListLiteral _ →
     Left "TODO"
   NumericLiteral n →
@@ -49,7 +51,7 @@ evaluateProcedureCallExpression state (ProcedureCall name arguments) =
   case name of
     "sum" →
       evaluateSum state arguments
-    _ →
+    otherName →
       Left "Unknown Command"
 
 evaluateSum ∷ ExecutionState → List Expression → String \/ Value
@@ -62,6 +64,8 @@ evaluateSum state = case _ of
     values ← traverse (evaluate state) xs
     numbers ← traverse
       ( case _ of
+          BooleanValue b →
+            Left $ "Boolean \"" <> show b <> " is not a number"
           NumberValue n →
             Right n
           WordValue s →

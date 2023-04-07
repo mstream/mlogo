@@ -5,9 +5,10 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.List as List
-import MLogo.Lexing (Token(..))
+import MLogo.Lexing (BracketType(..), Token(..))
 import MLogo.Parsing
-  ( Expression(..)
+  ( ControlStructure(..)
+  , Expression(..)
   , Parameter(..)
   , ProcedureCall(..)
   , Statement(..)
@@ -24,7 +25,7 @@ spec = describe "Parsing" do
     testCase
       "procedure call with a numeric literal"
       [ UnquotedWord "proc1"
-      , Number 1
+      , NumberToken 1
       ]
       ( Right $
           [ ProcedureCallStatement $ ProcedureCall
@@ -84,6 +85,76 @@ spec = describe "Parsing" do
                           [ VariableReference "param2"
                           ]
                       )
+                  ]
+              )
+          ]
+      )
+
+    testCase
+      "if block"
+      [ UnquotedWord "if"
+      , Bracket RoundOpening
+      , UnquotedWord "equal?"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , Bracket RoundClosing
+      , Bracket SquareOpening
+      , UnquotedWord "proc1"
+      , NumberToken 1
+      , UnquotedWord "proc2"
+      , NumberToken 2
+      , Bracket SquareClosing
+      ]
+      ( Right $
+          [ ControlStructureStatement $ IfBlock
+              ( ProcedureCallExpression $ ProcedureCall "equal?"
+                  ( List.fromFoldable
+                      [ VariableReference "var1"
+                      , VariableReference "var2"
+                      ]
+                  )
+              )
+              ( List.fromFoldable
+                  [ ProcedureCallStatement $ ProcedureCall
+                      "proc1"
+                      (List.fromFoldable [ NumericLiteral 1 ])
+                  , ProcedureCallStatement $ ProcedureCall
+                      "proc2"
+                      (List.fromFoldable [ NumericLiteral 2 ])
+                  ]
+              )
+          ]
+      )
+
+    testCase
+      "multiple procedure calls"
+      [ UnquotedWord "proc1"
+      , ColonPrefixedWord "var1"
+      , UnquotedWord "proc2"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , UnquotedWord "proc3"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , ColonPrefixedWord "var3"
+      ]
+      ( Right $
+          [ ProcedureCallStatement $ ProcedureCall
+              "proc1"
+              (List.fromFoldable [ VariableReference "var1" ])
+          , ProcedureCallStatement $ ProcedureCall
+              "proc2"
+              ( List.fromFoldable
+                  [ VariableReference "var1"
+                  , VariableReference "var2"
+                  ]
+              )
+          , ProcedureCallStatement $ ProcedureCall
+              "proc3"
+              ( List.fromFoldable
+                  [ VariableReference "var1"
+                  , VariableReference "var2"
+                  , VariableReference "var3"
                   ]
               )
           ]

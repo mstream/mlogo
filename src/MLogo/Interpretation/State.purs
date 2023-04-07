@@ -22,7 +22,8 @@ import Data.Show.Generic (genericShow)
 import MLogo.Parsing (Parameter, Statement)
 
 data Value
-  = NumberValue Int
+  = BooleanValue Boolean
+  | NumberValue Int
   | WordValue String
 
 derive instance Generic Value _

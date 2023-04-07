@@ -22,7 +22,7 @@ data Token
   = ColonPrefixedWord String
   | Comment String
   | Bracket BracketType
-  | Number Int
+  | NumberToken Int
   | QuotedWord String
   | UnquotedWord String
 
@@ -52,8 +52,8 @@ run = SP.runParser programParser
 programParser ∷ Parser (List Token)
 programParser = (SP.skipSpaces *> tokenParser) `SP.sepEndBy`
   ( SP.choice
-      [ SP.string " "
-      , SP.string "\n"
+      [ SP.skipSpaces
+      , void $ SP.string "\n"
       ]
   )
 
@@ -62,7 +62,7 @@ tokenParser = SP.choice
   [ bracketParser
   , colonPrefixedWordParser
   , commentParser
-  , numberParser
+  , numberTokenParser
   , quotedWordParser
   , unquotedWordParser
   ]
@@ -73,16 +73,15 @@ bracketParser = Bracket <$> SP.choice
   , CurlyOpening <$ SP.string "{"
   , RoundClosing <$ SP.string ")"
   , RoundOpening <$ SP.string "("
-  , SquareClosing <$ SP.string "]"
-  , SquareOpening <$ SP.string "["
+  , do
+      SP.skipSpaces
+      void $ SP.string "]"
+      pure SquareClosing
+  , do
+      void $ SP.string "["
+      SP.skipSpaces
+      pure SquareOpening
   ]
-
-colonPrefixedWordParser ∷ Parser Token
-colonPrefixedWordParser = do
-  void $ SP.string ":"
-  letter ← SP.anyLetter
-  alphaNums ← SP.many SP.alphaNum
-  pure $ ColonPrefixedWord $ charsToString $ letter : alphaNums
 
 commentParser ∷ Parser Token
 commentParser = do
@@ -90,27 +89,44 @@ commentParser = do
   chars ← SP.many $ SP.satisfy (_ /= '\n')
   pure $ Comment $ charsToString chars
 
+wordParser ∷ Parser String
+wordParser = do
+  letter ← SP.anyLetter
+  alphaNums ← SP.many SP.alphaNum
+  mbSuffix ← SP.optionMaybe $ SP.string "?"
+  let
+    prefix = charsToString $ letter : alphaNums
+  pure case mbSuffix of
+    Nothing →
+      prefix
+    Just suffix →
+      prefix <> suffix
+
+colonPrefixedWordParser ∷ Parser Token
+colonPrefixedWordParser = do
+  void $ SP.string ":"
+  word ← wordParser
+  pure $ ColonPrefixedWord word
+
 quotedWordParser ∷ Parser Token
 quotedWordParser = do
   void $ SP.string "\""
-  letter ← SP.anyLetter
-  alphaNums ← SP.many SP.alphaNum
-  pure $ QuotedWord $ charsToString $ letter : alphaNums
+  word ← wordParser
+  pure $ QuotedWord word
 
 unquotedWordParser ∷ Parser Token
 unquotedWordParser = do
-  letter ← SP.anyLetter
-  alphaNums ← SP.many SP.alphaNum
-  pure $ UnquotedWord $ charsToString $ letter : alphaNums
+  word ← wordParser
+  pure $ UnquotedWord word
 
-numberParser ∷ Parser Token
-numberParser = do
+numberTokenParser ∷ Parser Token
+numberTokenParser = do
   digits ← SP.many1 SP.anyDigit
   let
     s = charsToString digits
   case Int.fromString s of
     Just n →
-      pure $ Number n
+      pure $ NumberToken n
     Nothing →
       SP.fail
         $ "\"" <> s <> "\" is not a valid number"
