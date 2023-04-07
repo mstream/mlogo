@@ -1,5 +1,12 @@
 
 
+## [0.2.0](https://github.com/mstream/mlogo/compare/0.1.0...0.2.0) (2023-04-07)
+
+
+### Features
+
+* implement if-else statement ([977fb74](https://github.com/mstream/mlogo/commit/977fb749f4888dfba927b48a07c9194acdc96903))
+
 ## 0.1.0 (2023-04-07)
 
 
