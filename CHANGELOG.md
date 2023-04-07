@@ -1,5 +1,12 @@
 
 
+## [0.3.0](https://github.com/mstream/mlogo/compare/0.2.1...0.3.0) (2023-04-07)
+
+
+### Features
+
+* implement repeat statement ([59f9155](https://github.com/mstream/mlogo/commit/59f91557b60da35cea9dba4465b290239f9f9bfe))
+
 ### [0.2.1](https://github.com/mstream/mlogo/compare/0.2.0...0.2.1) (2023-04-07)
 
 ## [0.2.0](https://github.com/mstream/mlogo/compare/0.1.0...0.2.0) (2023-04-07)
