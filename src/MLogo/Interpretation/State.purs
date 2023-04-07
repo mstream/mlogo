@@ -6,6 +6,7 @@ module MLogo.Interpretation.State
   , Position(..)
   , ScreenState
   , Value(..)
+  , VisibleState
   , extractBoolean
   , extractNumber
   , extractString
@@ -107,6 +108,11 @@ type ExecutionState =
         }
   , screen ∷ ScreenState
   , variables ∷ Map String Value
+  }
+
+type VisibleState =
+  { pointer ∷ PointerState
+  , screen ∷ ScreenState
   }
 
 initialExecutionState ∷ ExecutionState

@@ -26,17 +26,13 @@ import MLogo.Interpretation.State
   , PointerState
   , Position(..)
   , ScreenState
+  , VisibleState
   )
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
 import MLogo.WebApp.AceComponent as AceComponent
 import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
-
-type RenderableState =
-  { pointer ∷ PointerState
-  , screen ∷ ScreenState
-  }
 
 type State = { text ∷ String }
 
@@ -87,7 +83,7 @@ rootComp = Hooks.component \_ _ → Hooks.do
             renderSvg state
       ]
 
-renderSvg ∷ ∀ i w. RenderableState → HTML w i
+renderSvg ∷ ∀ i w. VisibleState → HTML w i
 renderSvg state = SE.svg
   [ SA.classes
       [ ClassName "canvas" ]
@@ -95,7 +91,7 @@ renderSvg state = SE.svg
   ]
   (Array.fromFoldable $ renderState state)
 
-renderState ∷ ∀ i w. RenderableState → List (HTML w i)
+renderState ∷ ∀ i w. VisibleState → List (HTML w i)
 renderState state =
   renderScreenState
     state.screen <> renderPointerState state.pointer

@@ -5,14 +5,18 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import MLogo.Interpretation as Interpretation
-import MLogo.Interpretation.State (PointerState, ScreenState)
+import MLogo.Interpretation.State
+  ( PointerState
+  , ScreenState
+  , VisibleState
+  )
 import MLogo.Lexing as Lexing
 import MLogo.Parsing as Parsing
 import Parsing as P
 import StringParser as SP
 
 run
-  ∷ String → String \/ { pointer ∷ PointerState, screen ∷ ScreenState }
+  ∷ String → String \/ VisibleState
 run source = do
   tokens ← case Lexing.run source of
     Left parseError →

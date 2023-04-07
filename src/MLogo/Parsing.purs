@@ -34,6 +34,7 @@ keywords ∷ Set String
 keywords = Set.fromFoldable
   [ "end"
   , "if"
+  , "ifelse"
   , "to"
   ]
 
@@ -119,16 +120,34 @@ controlStructureStatementParser ∷ TokenParser Statement
 controlStructureStatementParser = Lazy.defer \_ →
   ControlStructureStatement <$> P.choice
     [ ifBlockParser
+    , ifElseBlockParser
     ]
 
-ifBlockParser ∷ TokenParser ControlStructure
-ifBlockParser = do
+ifBlockDataParser
+  ∷ TokenParser
+      { conditionExpression ∷ Expression
+      , positiveBranch ∷ List Statement
+      }
+ifBlockDataParser = Lazy.defer \_ → do
   void $ consumeUnquotedWord (_ == "if")
-  condExpr ← expressionParser
+  conditionExpression ← expressionParser
   consumeBracket (_ == SquareOpening)
-  body ← P.many statementParser
+  positiveBranch ← P.many statementParser
   consumeBracket (_ == SquareClosing)
-  pure $ IfBlock condExpr body
+  pure { conditionExpression, positiveBranch }
+
+ifBlockParser ∷ TokenParser ControlStructure
+ifBlockParser = Lazy.defer \_ → do
+  { conditionExpression, positiveBranch } ← ifBlockDataParser
+  pure $ IfBlock conditionExpression positiveBranch
+
+ifElseBlockParser ∷ TokenParser ControlStructure
+ifElseBlockParser = Lazy.defer \_ → do
+  { conditionExpression, positiveBranch } ← ifBlockDataParser
+  consumeBracket (_ == SquareOpening)
+  negativeBranch ← P.many statementParser
+  consumeBracket (_ == SquareClosing)
+  pure $ IfElseBlock conditionExpression positiveBranch negativeBranch
 
 procedureCallStatementParser ∷ TokenParser Statement
 procedureCallStatementParser =

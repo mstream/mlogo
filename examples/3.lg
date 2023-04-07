@@ -1,2 +1,0 @@
-if false [ back 10 ]
-if true [ forward 10 ]
