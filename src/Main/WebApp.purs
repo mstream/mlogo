@@ -8,6 +8,7 @@ import Data.Foldable (for_)
 import Data.List (List)
 import Data.List as List
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
@@ -113,18 +114,23 @@ renderLegend commandsByName = HH.div
   (Array.fromFoldable $ renderLegendEntry <$> commandsByName)
 
 renderLegendEntry ∷ ∀ i w. String /\ Command → HTML w i
-renderLegendEntry (name /\ { description, parameters }) =
+renderLegendEntry (name /\ { description, outputValueType, parameters }) =
   HH.div
     [ HP.classes [ ClassName "legend-entry" ] ]
     [ HH.div
         [ HP.classes [ ClassName "command-header" ] ]
         ( [ HH.text name
           , HH.text " "
-          ] <> renderParameters
+          ] <> renderParameters <> renderOutputType
         )
     , HH.div_ [ HH.text description ]
     ]
   where
+  renderOutputType = case outputValueType of
+    Just ovt →
+      [ HH.span_ [ HH.text " -> " ], renderValueType ovt ]
+    Nothing →
+      []
   renderParameters = case parameters of
     FixedParameters ps →
       Array.intersperse

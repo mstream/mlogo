@@ -11,16 +11,11 @@ import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Number as Number
 import Data.Traversable (traverse)
-import Data.Tuple.Nested ((/\))
+import Data.Tuple as Tuple
+import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation.Expression as Expression
-import MLogo.Interpretation.State
-  ( Angle(..)
-  , ExecutionState
-  , Position(..)
-  , Value(..)
-  )
+import MLogo.Interpretation.State (ExecutionState, Value)
 import MLogo.Interpretation.State as State
 import MLogo.Interpretation.Statement.Command (Command)
 import MLogo.Interpretation.Statement.Command as Command
@@ -34,17 +29,24 @@ import MLogo.Parsing
   )
 
 interpretMany
-  ∷ ExecutionState → List Statement → String \/ ExecutionState
-interpretMany state = foldM interpret state
+  ∷ ExecutionState
+  → List Statement
+  → String \/ ExecutionState
+interpretMany state = foldM (\st s → Tuple.snd <$> interpret st s) state
 
-interpret ∷ ExecutionState → Statement → String \/ ExecutionState
+interpret
+  ∷ ExecutionState
+  → Statement
+  → String \/ (Maybe Value /\ ExecutionState)
 interpret state = case _ of
-  ControlStructureStatement cs →
-    interpretControlStructure state cs
+  ControlStructureStatement cs → do
+    newState ← interpretControlStructure state cs
+    Right $ Nothing /\ newState
   ProcedureCallStatement pc →
     interpretProcedureCall state pc
-  ProcedureDefinition name parameters body →
-    interpretProcedureDefinition state name parameters body
+  ProcedureDefinition name parameters body → do
+    newState ← interpretProcedureDefinition state name parameters body
+    pure $ Nothing /\ newState
 
 interpretControlStructure
   ∷ ExecutionState → ControlStructure → String \/ ExecutionState
@@ -122,10 +124,13 @@ commands = Map.fromFoldable
   , "pu" /\ Command.penUp
   , "right" /\ Command.turnRight
   , "rt" /\ Command.turnRight
+  , "sum" /\ Command.sum
   ]
 
 interpretProcedureCall
-  ∷ ExecutionState → ProcedureCall → String \/ ExecutionState
+  ∷ ExecutionState
+  → ProcedureCall
+  → String \/ (Maybe Value /\ ExecutionState)
 interpretProcedureCall state (ProcedureCall name arguments) = do
   evaluatedArguments ← traverse (Expression.evaluate state) arguments
   case Map.lookup name commands of
@@ -155,7 +160,7 @@ interpretProcedureCall state (ProcedureCall name arguments) = do
             )
             body
 
-          Right $ newState { callStack = state.callStack }
+          Right $ Nothing /\ newState { callStack = state.callStack }
 
 interpretProcedureDefinition
   ∷ ExecutionState

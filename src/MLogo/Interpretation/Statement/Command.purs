@@ -1,5 +1,6 @@
 module MLogo.Interpretation.Statement.Command
   ( Command
+  , Interpret
   , Parameter
   , Parameters(..)
   , ValueType(..)
@@ -10,6 +11,7 @@ module MLogo.Interpretation.Statement.Command
   , moveBackward
   , penDown
   , penUp
+  , sum
   , turnLeft
   , turnRight
   , variableAssignment
@@ -19,10 +21,14 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
+import Data.Foldable (foldl)
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Data.Number as Number
+import Data.Traversable (traverse)
+import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation.State
   ( Angle(..)
   , ExecutionState
@@ -31,9 +37,15 @@ import MLogo.Interpretation.State
   )
 import MLogo.Interpretation.State as State
 
+type Interpret =
+  ExecutionState
+  → List Value
+  → String \/ (Maybe Value /\ ExecutionState)
+
 type Command =
   { description ∷ String
-  , interpret ∷ ExecutionState → List Value → String \/ ExecutionState
+  , interpret ∷ Interpret
+  , outputValueType ∷ Maybe ValueType
   , parameters ∷ Parameters
   }
 
@@ -57,6 +69,7 @@ moveBackward =
   { description:
       "Move the cursor backward by the given amount of steps."
   , interpret: interpretMoveBackward
+  , outputValueType: Nothing
   , parameters: FixedParameters
       [ { name: "steps", valueType: NumberType } ]
   }
@@ -65,6 +78,7 @@ moveForward ∷ Command
 moveForward =
   { description: "Move the cursor forward by the given amount of steps."
   , interpret: interpretMoveForward
+  , outputValueType: Nothing
   , parameters: FixedParameters
       [ { name: "steps", valueType: NumberType } ]
   }
@@ -73,6 +87,7 @@ clean ∷ Command
 clean =
   { description: "Clear the drawing area."
   , interpret: interpretClean
+  , outputValueType: Nothing
   , parameters: FixedParameters []
   }
 
@@ -81,6 +96,7 @@ clearScreen =
   { description:
       "Clear the drawing area and move the cursor to the initial position."
   , interpret: interpretClearScreen
+  , outputValueType: Nothing
   , parameters: FixedParameters []
   }
 
@@ -88,6 +104,7 @@ goHome ∷ Command
 goHome =
   { description: "Move the cursor to the initial position."
   , interpret: interpretGoHome
+  , outputValueType: Nothing
   , parameters: FixedParameters []
   }
 
@@ -96,6 +113,7 @@ turnLeft =
   { description:
       "Rotate the cursor by the given angle counterclockwise."
   , interpret: interpretTurnLeft
+  , outputValueType: Nothing
   , parameters: FixedParameters
       [ { name: "angle", valueType: NumberType } ]
   }
@@ -104,6 +122,7 @@ turnRight ∷ Command
 turnRight =
   { description: "Rotate the cursor by the given angle clockwise."
   , interpret: interpretTurnRight
+  , outputValueType: Nothing
   , parameters: FixedParameters
       [ { name: "angle", valueType: NumberType } ]
   }
@@ -112,6 +131,7 @@ variableAssignment ∷ Command
 variableAssignment =
   { description: "Set a global variable value."
   , interpret: interpretVariableAssignment
+  , outputValueType: Nothing
   , parameters: FixedParameters
       [ { name: "name", valueType: WordType }
       , { name: "value", valueType: AnyType }
@@ -122,6 +142,7 @@ penDown ∷ Command
 penDown =
   { description: "Make the cursor resume leaving a trail."
   , interpret: interpretPenDown
+  , outputValueType: Nothing
   , parameters: FixedParameters []
   }
 
@@ -129,24 +150,38 @@ penUp ∷ Command
 penUp =
   { description: "Make the cursor stop leaving a trail."
   , interpret: interpretPenUp
+  , outputValueType: Nothing
   , parameters: FixedParameters []
   }
 
-interpretVariableAssignment
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+sum ∷ Command
+sum =
+  { description: "Sums up given numbers."
+  , interpret: interpretSum
+  , outputValueType: Just NumberType
+  , parameters: VariableParameters
+      { name: "addends", valueType: NumberType }
+  }
+
+interpretSum ∷ Interpret
+interpretSum state values = do
+  numbers ← traverse State.extractNumber values
+  Right $ (Just $ NumberValue $ foldl (+) zero numbers) /\ state
+
+interpretVariableAssignment ∷ Interpret
 interpretVariableAssignment state = case _ of
   _ : Nil →
     Left errorMessage
   WordValue name : value : Nil →
-    Right $ state { variables = Map.insert name value state.variables }
+    Right $ Nothing /\ state
+      { variables = Map.insert name value state.variables }
   _ →
     Left errorMessage
   where
   errorMessage =
     "variable takes two arguments: a variable name and variable value"
 
-interpretMoveForward
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretMoveForward ∷ Interpret
 interpretMoveForward state = case _ of
   value : Nil → do
     x ← State.extractNumber value
@@ -155,12 +190,11 @@ interpretMoveForward state = case _ of
       target = state.pointer.position + Position
         { x: x * Number.sin rads, y: x * Number.cos rads }
 
-    Right $ moveTo state target
+    Right $ Nothing /\ moveTo state target
   _ →
     Left "FORWARD takes exactly one parameter"
 
-interpretMoveBackward
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretMoveBackward ∷ Interpret
 interpretMoveBackward state = case _ of
   value : Nil → do
     x ← State.extractNumber value
@@ -170,20 +204,18 @@ interpretMoveBackward state = case _ of
   _ →
     Left "BACKWARD takes exactly one parameter"
 
-interpretTurnRight
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretTurnRight ∷ Interpret
 interpretTurnRight state = case _ of
   value : Nil → do
     x ← State.extractNumber value
-    Right $ state
+    Right $ Nothing /\ state
       { pointer = state.pointer
           { angle = state.pointer.angle + Angle x }
       }
   _ →
     Left "RIGHT takes exactly one parameter"
 
-interpretTurnLeft
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretTurnLeft ∷ Interpret
 interpretTurnLeft state = case _ of
   value : Nil → do
     x ← State.extractNumber value
@@ -193,44 +225,41 @@ interpretTurnLeft state = case _ of
   _ →
     Left "RIGHT takes exactly one argument"
 
-interpretPenDown
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretPenDown ∷ Interpret
 interpretPenDown state = case _ of
   Nil →
-    Right $ state { pointer = state.pointer { isDown = true } }
+    Right $ Nothing /\ state
+      { pointer = state.pointer { isDown = true } }
   _ →
     Left "PENDOWN takes no arguments"
 
-interpretPenUp
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretPenUp ∷ Interpret
 interpretPenUp state = case _ of
   Nil →
-    Right $ state { pointer = state.pointer { isDown = false } }
+    Right $ Nothing /\ state
+      { pointer = state.pointer { isDown = false } }
   _ →
     Left "PENUP takes no arguments"
 
-interpretGoHome
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretGoHome ∷ Interpret
 interpretGoHome state = case _ of
   Nil →
-    Right $ state
+    Right $ Nothing /\ state
       { pointer = state.pointer { position = (zero ∷ Position) } }
   _ →
     Left "HOME takes no arguments"
 
-interpretClean
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretClean ∷ Interpret
 interpretClean state = case _ of
   Nil →
-    Right $ state { screen = Nil }
+    Right $ Nothing /\ state { screen = Nil }
   _ →
     Left "CLEAN takes no arguments"
 
-interpretClearScreen
-  ∷ ExecutionState → List Value → String \/ ExecutionState
+interpretClearScreen ∷ Interpret
 interpretClearScreen state = case _ of
   Nil → do
-    newState ← interpretGoHome state Nil
+    _ /\ newState ← interpretGoHome state Nil
     interpretClean newState Nil
   _ →
     Left "CLEAN takes no arguments"
