@@ -22,6 +22,8 @@ import MLogo.Interpretation.State
   , Value(..)
   )
 import MLogo.Interpretation.State as State
+import MLogo.Interpretation.Statement.Command (Command)
+import MLogo.Interpretation.Statement.Command as Command
 import MLogo.Parsing
   ( ControlStructure(..)
   , Expression(..)
@@ -101,59 +103,25 @@ interpretIfElseBlock
     if b then interpretMany state positiveBranch
     else interpretMany state negativeBranch
 
-type Command =
-  { interpret ∷ ExecutionState → List Value → String \/ ExecutionState
-  }
-
-moveBackwardCommand ∷ Command
-moveBackwardCommand = { interpret: interpretMoveBackward }
-
-moveForwardCommand ∷ Command
-moveForwardCommand = { interpret: interpretMoveForward }
-
-cleanCommand ∷ Command
-cleanCommand = { interpret: interpretClean }
-
-clearScreenCommand ∷ Command
-clearScreenCommand = { interpret: interpretClearScreen }
-
-goHomeCommand ∷ Command
-goHomeCommand = { interpret: interpretGoHome }
-
-turnLeftCommand ∷ Command
-turnLeftCommand = { interpret: interpretTurnLeft }
-
-turnRightCommand ∷ Command
-turnRightCommand = { interpret: interpretTurnRight }
-
-variableAssignmentCommand ∷ Command
-variableAssignmentCommand = { interpret: interpretVariableAssignment }
-
-penDownCommand ∷ Command
-penDownCommand = { interpret: interpretPenDown }
-
-penUpCommand ∷ Command
-penUpCommand = { interpret: interpretPenUp }
-
 commands ∷ Map String Command
 commands = Map.fromFoldable
-  [ "back" /\ moveBackwardCommand
-  , "bk" /\ moveBackwardCommand
-  , "clean" /\ cleanCommand
-  , "clearscreen" /\ clearScreenCommand
-  , "cs" /\ clearScreenCommand
-  , "fd" /\ moveForwardCommand
-  , "forward" /\ moveForwardCommand
-  , "home" /\ goHomeCommand
-  , "left" /\ turnLeftCommand
-  , "lt" /\ turnLeftCommand
-  , "make" /\ variableAssignmentCommand
-  , "pd" /\ penDownCommand
-  , "pendown" /\ penDownCommand
-  , "penup" /\ penUpCommand
-  , "pu" /\ penUpCommand
-  , "right" /\ turnRightCommand
-  , "rt" /\ turnRightCommand
+  [ "back" /\ Command.moveBackward
+  , "bk" /\ Command.moveBackward
+  , "clean" /\ Command.clean
+  , "clearscreen" /\ Command.clearScreen
+  , "cs" /\ Command.clearScreen
+  , "fd" /\ Command.moveForward
+  , "forward" /\ Command.moveForward
+  , "home" /\ Command.goHome
+  , "left" /\ Command.turnLeft
+  , "lt" /\ Command.turnLeft
+  , "make" /\ Command.variableAssignment
+  , "pd" /\ Command.penDown
+  , "pendown" /\ Command.penDown
+  , "penup" /\ Command.penUp
+  , "pu" /\ Command.penUp
+  , "right" /\ Command.turnRight
+  , "rt" /\ Command.turnRight
   ]
 
 interpretProcedureCall
@@ -199,118 +167,4 @@ interpretProcedureDefinition state name parameters body =
   Right $ state
     { procedures = Map.insert name { body, parameters } state.procedures
     }
-
-interpretVariableAssignment
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretVariableAssignment state = case _ of
-  _ : Nil →
-    Left errorMessage
-  WordValue name : value : Nil →
-    Right $ state { variables = Map.insert name value state.variables }
-  _ →
-    Left errorMessage
-  where
-  errorMessage =
-    "variable takes two arguments: a variable name and variable value"
-
-interpretMoveForward
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretMoveForward state = case _ of
-  value : Nil → do
-    x ← State.extractNumber value
-    let
-      rads = State.toRadians state.pointer.angle
-      target = state.pointer.position + Position
-        { x: x * Number.sin rads, y: x * Number.cos rads }
-
-    Right $ moveTo state target
-  _ →
-    Left "FORWARD takes exactly one parameter"
-
-interpretMoveBackward
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretMoveBackward state = case _ of
-  value : Nil → do
-    x ← State.extractNumber value
-    interpretMoveForward
-      state
-      (List.fromFoldable [ NumberValue (-x) ])
-  _ →
-    Left "BACKWARD takes exactly one parameter"
-
-interpretTurnRight
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretTurnRight state = case _ of
-  value : Nil → do
-    x ← State.extractNumber value
-    Right $ state
-      { pointer = state.pointer
-          { angle = state.pointer.angle + Angle x }
-      }
-  _ →
-    Left "RIGHT takes exactly one parameter"
-
-interpretTurnLeft
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretTurnLeft state = case _ of
-  value : Nil → do
-    x ← State.extractNumber value
-    interpretTurnRight
-      state
-      (List.fromFoldable [ NumberValue (-x) ])
-  _ →
-    Left "RIGHT takes exactly one argument"
-
-interpretPenDown
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretPenDown state = case _ of
-  Nil →
-    Right $ state { pointer = state.pointer { isDown = true } }
-  _ →
-    Left "PENDOWN takes no arguments"
-
-interpretPenUp
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretPenUp state = case _ of
-  Nil →
-    Right $ state { pointer = state.pointer { isDown = false } }
-  _ →
-    Left "PENUP takes no arguments"
-
-interpretGoHome
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretGoHome state = case _ of
-  Nil →
-    Right $ state
-      { pointer = state.pointer { position = (zero ∷ Position) } }
-  _ →
-    Left "HOME takes no arguments"
-
-interpretClean
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretClean state = case _ of
-  Nil →
-    Right $ state { screen = Nil }
-  _ →
-    Left "CLEAN takes no arguments"
-
-interpretClearScreen
-  ∷ ExecutionState → List Value → String \/ ExecutionState
-interpretClearScreen state = case _ of
-  Nil → do
-    newState ← interpretGoHome state Nil
-    interpretClean newState Nil
-  _ →
-    Left "CLEAN takes no arguments"
-
-moveTo ∷ ExecutionState → Position → ExecutionState
-moveTo state target = state
-  { pointer = state.pointer { position = target }
-  , screen =
-      if state.pointer.isDown then
-        { p1: state.pointer.position
-        , p2: target
-        } : state.screen
-      else state.screen
-  }
 

@@ -8,7 +8,7 @@ import Data.Foldable (for_)
 import Data.List (List)
 import Data.List as List
 import Data.Map as Map
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested (type (/\), (/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Aff.Class (class MonadAff)
@@ -30,6 +30,12 @@ import MLogo.Interpretation.State
   , VisibleState
   )
 import MLogo.Interpretation.Statement as Statement
+import MLogo.Interpretation.Statement.Command
+  ( Command
+  , Parameter
+  , Parameters(..)
+  , ValueType(..)
+  )
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
 import MLogo.WebApp.AceComponent as AceComponent
@@ -82,8 +88,7 @@ rootComp = Hooks.component \_ _ → Hooks.do
               AceComponent.component
               unit
               handleAceOutput
-          , renderLegend $ List.fromFoldable $ Map.keys
-              Statement.commands
+          , renderLegend $ Map.toUnfoldable Statement.commands
           ]
       , case Program.run source of
           Left errorMessage →
@@ -102,13 +107,57 @@ renderSvg state = SE.svg
   ]
   (Array.fromFoldable $ renderState state)
 
-renderLegend ∷ ∀ i w. List String → HTML w i
-renderLegend commandNames = HH.div
+renderLegend ∷ ∀ i w. Array (String /\ Command) → HTML w i
+renderLegend commandsByName = HH.div
   [ HP.classes [ ClassName "legend" ] ]
-  (Array.fromFoldable $ renderEntry <$> commandNames)
+  (Array.fromFoldable $ renderLegendEntry <$> commandsByName)
+
+renderLegendEntry ∷ ∀ i w. String /\ Command → HTML w i
+renderLegendEntry (name /\ { description, parameters }) =
+  HH.div
+    [ HP.classes [ ClassName "legend-entry" ] ]
+    [ HH.div
+        [ HP.classes [ ClassName "command-header" ] ]
+        ( [ HH.text name
+          , HH.text " "
+          ] <> renderParameters
+        )
+    , HH.div_ [ HH.text description ]
+    ]
   where
-  renderEntry s =
-    HH.div_ [ HH.text s ]
+  renderParameters = case parameters of
+    FixedParameters ps →
+      Array.intersperse
+        (HH.span_ [ HH.text " " ])
+        (renderParameter <$> ps)
+    VariableParameters p →
+      [ renderParameter p, HH.text "..." ]
+
+renderParameter ∷ ∀ i w. Parameter → HTML w i
+renderParameter { name, valueType } =
+  HH.span_
+    [ HH.text ":"
+    , HH.span
+        [ HP.classes [ ClassName "command-header" ] ]
+        [ HH.text name ]
+    , renderValueType valueType
+    ]
+
+renderValueType ∷ ∀ i w. ValueType → HTML w i
+renderValueType valueType = HH.span
+  [ HP.classes [ ClassName "parameter-value-type" ] ]
+  [ HH.text $ "(" <> valueTypeName <> ")"
+  ]
+  where
+  valueTypeName = case valueType of
+    AnyType →
+      "any"
+    IntegerType →
+      "integer"
+    NumberType →
+      "number"
+    WordType →
+      "word"
 
 renderState ∷ ∀ i w. VisibleState → List (HTML w i)
 renderState state =
