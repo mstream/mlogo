@@ -1,5 +1,12 @@
 
 
+## [0.5.0](https://github.com/mstream/mlogo/compare/0.4.0...0.5.0) (2023-04-08)
+
+
+### Features
+
+* extend the legend by command parameters and description ([5f3b9f5](https://github.com/mstream/mlogo/commit/5f3b9f51fa905aebdbe6dd811da55304f13f8fa4))
+
 ## [0.4.0](https://github.com/mstream/mlogo/compare/0.3.0...0.4.0) (2023-04-07)
 
 
