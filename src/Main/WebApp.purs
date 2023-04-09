@@ -32,10 +32,10 @@ import MLogo.Interpretation.State
   )
 import MLogo.Interpretation.Statement as Statement
 import MLogo.Interpretation.Statement.Command
-  ( Command
+  ( Command(..)
   , Parameter
   , Parameters(..)
-  , ValueType(..)
+  , ValueType
   )
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
@@ -114,7 +114,8 @@ renderLegend commandsByName = HH.div
   (Array.fromFoldable $ renderLegendEntry <$> commandsByName)
 
 renderLegendEntry ∷ ∀ i w. String /\ Command → HTML w i
-renderLegendEntry (name /\ { description, outputValueType, parameters }) =
+renderLegendEntry
+  (name /\ Command { description, outputValueType, parameters }) =
   HH.div
     [ HP.classes [ ClassName "legend-entry" ] ]
     [ HH.div
@@ -152,18 +153,8 @@ renderParameter { name, valueType } =
 renderValueType ∷ ∀ i w. ValueType → HTML w i
 renderValueType valueType = HH.span
   [ HP.classes [ ClassName "parameter-value-type" ] ]
-  [ HH.text $ "(" <> valueTypeName <> ")"
+  [ HH.text $ "(" <> show valueType <> ")"
   ]
-  where
-  valueTypeName = case valueType of
-    AnyType →
-      "any"
-    IntegerType →
-      "integer"
-    NumberType →
-      "number"
-    WordType →
-      "word"
 
 renderState ∷ ∀ i w. VisibleState → List (HTML w i)
 renderState state =

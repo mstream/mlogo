@@ -11,13 +11,16 @@ import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Symbol (class IsSymbol, reflectSymbol)
 import Data.Traversable (traverse)
 import Data.Tuple as Tuple
 import Data.Tuple.Nested (type (/\), (/\))
+import Heterogeneous.Folding (class FoldingWithIndex)
+import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Expression as Expression
 import MLogo.Interpretation.State (ExecutionState, Value)
 import MLogo.Interpretation.State as State
-import MLogo.Interpretation.Statement.Command (Command)
+import MLogo.Interpretation.Statement.Command (Command(..))
 import MLogo.Interpretation.Statement.Command as Command
 import MLogo.Parsing
   ( ControlStructure(..)
@@ -27,6 +30,7 @@ import MLogo.Parsing
   , ProcedureCall(..)
   , Statement(..)
   )
+import Type.Proxy (Proxy)
 
 interpretMany
   ∷ ExecutionState
@@ -105,27 +109,43 @@ interpretIfElseBlock
     if b then interpretMany state positiveBranch
     else interpretMany state negativeBranch
 
+data ToMap = ToMap
+
+instance
+  ( IsSymbol sym
+  ) ⇒
+  FoldingWithIndex
+    ToMap
+    (Proxy sym)
+    (Map String Command)
+    Command
+    (Map String Command) where
+  foldingWithIndex ToMap prop acc val =
+    Map.insert (reflectSymbol prop) val acc
+
 commands ∷ Map String Command
-commands = Map.fromFoldable
-  [ "back" /\ Command.moveBackward
-  , "bk" /\ Command.moveBackward
-  , "clean" /\ Command.clean
-  , "clearscreen" /\ Command.clearScreen
-  , "cs" /\ Command.clearScreen
-  , "fd" /\ Command.moveForward
-  , "forward" /\ Command.moveForward
-  , "home" /\ Command.goHome
-  , "left" /\ Command.turnLeft
-  , "lt" /\ Command.turnLeft
-  , "make" /\ Command.variableAssignment
-  , "pd" /\ Command.penDown
-  , "pendown" /\ Command.penDown
-  , "penup" /\ Command.penUp
-  , "pu" /\ Command.penUp
-  , "right" /\ Command.turnRight
-  , "rt" /\ Command.turnRight
-  , "sum" /\ Command.sum
-  ]
+commands = Heterogeneous.hfoldlWithIndex
+  ToMap
+  (Map.empty ∷ Map String Command)
+  { back: Command.moveBackward
+  , bk: Command.moveBackward
+  , clean: Command.clean
+  , clearscreen: Command.clearScreen
+  , cs: Command.clearScreen
+  , fd: Command.moveForward
+  , forward: Command.moveForward
+  , home: Command.goHome
+  , left: Command.turnLeft
+  , lt: Command.turnLeft
+  , make: Command.variableAssignment
+  , pd: Command.penDown
+  , pendown: Command.penDown
+  , penup: Command.penUp
+  , pu: Command.penUp
+  , right: Command.turnRight
+  , rt: Command.turnRight
+  , sum: Command.sum
+  }
 
 interpretProcedureCall
   ∷ ExecutionState
@@ -134,7 +154,7 @@ interpretProcedureCall
 interpretProcedureCall state (ProcedureCall name arguments) = do
   evaluatedArguments ← traverse (Expression.evaluate state) arguments
   case Map.lookup name commands of
-    Just command →
+    Just (Command command) →
       command.interpret state evaluatedArguments
     Nothing → do
       { body, parameters } ← Either.note
