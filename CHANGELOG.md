@@ -1,5 +1,12 @@
 
 
+## [0.6.0](https://github.com/mstream/mlogo/compare/0.5.0...0.6.0) (2023-04-09)
+
+
+### Features
+
+* add procedures output values to the legend ([673bb20](https://github.com/mstream/mlogo/commit/673bb201cb6687bb1428b26c96d7ee9c0635bc57))
+
 ## [0.5.0](https://github.com/mstream/mlogo/compare/0.4.0...0.5.0) (2023-04-08)
 
 
