@@ -5,11 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import MLogo.Interpretation as Interpretation
-import MLogo.Interpretation.State
-  ( PointerState
-  , ScreenState
-  , VisibleState
-  )
+import MLogo.Interpretation.State (VisibleState)
 import MLogo.Lexing as Lexing
 import MLogo.Parsing as Parsing
 import Parsing as P

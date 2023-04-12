@@ -11,7 +11,6 @@ import MLogo.Parsing
   , Expression(..)
   , NumericLiteral(..)
   , Parameter(..)
-  , ProcedureCall(..)
   , Statement(..)
   )
 import MLogo.Parsing as Parsing
@@ -29,10 +28,29 @@ spec = describe "Parsing" do
       , NumberToken 1.0
       ]
       ( Right $
-          [ ProcedureCallStatement $ ProcedureCall
+          [ ProcedureCall
               "proc1"
               ( List.fromFoldable
-                  [ NumericLiteralExpression $ NumberLiteral 1.0
+                  [ ExpressionStatement
+                      $ NumericLiteralExpression
+                      $ NumberLiteral 1.0
+                  ]
+              )
+          ]
+      )
+
+    testCase
+      "procedure call with a numeric literal - question mark suffix"
+      [ UnquotedWord "proc1?"
+      , NumberToken 1.0
+      ]
+      ( Right $
+          [ ProcedureCall
+              "proc1?"
+              ( List.fromFoldable
+                  [ ExpressionStatement
+                      $ NumericLiteralExpression
+                      $ NumberLiteral 1.0
                   ]
               )
           ]
@@ -44,10 +62,10 @@ spec = describe "Parsing" do
       , ColonPrefixedWord "var1"
       ]
       ( Right $
-          [ ProcedureCallStatement $ ProcedureCall
+          [ ProcedureCall
               "proc1"
               ( List.fromFoldable
-                  [ VariableReference "var1"
+                  [ ExpressionStatement $ VariableReference "var1"
                   ]
               )
           ]
@@ -59,10 +77,16 @@ spec = describe "Parsing" do
       , UnquotedWord "proc1"
       , ColonPrefixedWord "param1"
       , ColonPrefixedWord "param2"
+      , LineBreak
       , UnquotedWord "proc2"
       , ColonPrefixedWord "param1"
+      , LineBreak
       , UnquotedWord "proc3"
       , ColonPrefixedWord "param2"
+      , LineBreak
+      , UnquotedWord "output"
+      , NumberToken 1.0
+      , LineBreak
       , UnquotedWord "end"
       ]
       ( Right $
@@ -74,18 +98,25 @@ spec = describe "Parsing" do
                   ]
               )
               ( List.fromFoldable
-                  [ ProcedureCallStatement $ ProcedureCall
+                  [ ProcedureCall
                       "proc2"
                       ( List.fromFoldable
-                          [ VariableReference "param1"
+                          [ ExpressionStatement
+                              $ VariableReference "param1"
                           ]
                       )
-                  , ProcedureCallStatement $ ProcedureCall
+                  , ProcedureCall
                       "proc3"
                       ( List.fromFoldable
-                          [ VariableReference "param2"
+                          [ ExpressionStatement
+                              $ VariableReference "param2"
                           ]
                       )
+                  , ControlStructureStatement
+                      $ OutputCall
+                      $ ExpressionStatement
+                      $ NumericLiteralExpression
+                      $ NumberLiteral 1.0
                   ]
               )
           ]
@@ -102,31 +133,37 @@ spec = describe "Parsing" do
       , Bracket SquareOpening
       , UnquotedWord "proc1"
       , NumberToken 1.0
+      , LineBreak
       , UnquotedWord "proc2"
       , NumberToken 2.0
       , Bracket SquareClosing
       ]
       ( Right $
           [ ControlStructureStatement $ IfBlock
-              ( ProcedureCallExpression $ ProcedureCall "equal?"
+              ( ProcedureCall "equal?"
                   ( List.fromFoldable
-                      [ VariableReference "var1"
-                      , VariableReference "var2"
+                      [ ExpressionStatement $ VariableReference
+                          "var1"
+                      , ExpressionStatement $ VariableReference
+                          "var2"
                       ]
                   )
               )
               ( List.fromFoldable
-                  [ ProcedureCallStatement $ ProcedureCall
+                  [ ProcedureCall
                       "proc1"
                       ( List.fromFoldable
-                          [ NumericLiteralExpression $ NumberLiteral 1.0
+                          [ ExpressionStatement
+                              $ NumericLiteralExpression
+                              $ NumberLiteral 1.0
                           ]
                       )
-                  , ProcedureCallStatement $ ProcedureCall
+                  , ProcedureCall
                       "proc2"
                       ( List.fromFoldable
-                          [ NumericLiteralExpression $ NumberLiteral
-                              2.0
+                          [ ExpressionStatement
+                              $ NumericLiteralExpression
+                              $ NumberLiteral 2.0
                           ]
                       )
                   ]
@@ -135,7 +172,50 @@ spec = describe "Parsing" do
       )
 
     testCase
-      "multiple procedure calls"
+      "multiple procedure calls - separate lines"
+      [ UnquotedWord "proc1"
+      , ColonPrefixedWord "var1"
+      , LineBreak
+      , UnquotedWord "proc2"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , LineBreak
+      , UnquotedWord "proc3"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , ColonPrefixedWord "var3"
+      ]
+      ( Right $
+          [ ProcedureCall
+              "proc1"
+              ( List.fromFoldable
+                  [ ExpressionStatement $ VariableReference "var1" ]
+              )
+          , ProcedureCall
+              "proc2"
+              ( List.fromFoldable
+                  [ ExpressionStatement $ VariableReference
+                      "var1"
+                  , ExpressionStatement $ VariableReference
+                      "var2"
+                  ]
+              )
+          , ProcedureCall
+              "proc3"
+              ( List.fromFoldable
+                  [ ExpressionStatement $
+                      VariableReference "var1"
+                  , ExpressionStatement $
+                      VariableReference "var2"
+                  , ExpressionStatement $
+                      VariableReference "var3"
+                  ]
+              )
+          ]
+      )
+
+    testCase
+      "multiple procedure calls - same line"
       [ UnquotedWord "proc1"
       , ColonPrefixedWord "var1"
       , UnquotedWord "proc2"
@@ -147,22 +227,73 @@ spec = describe "Parsing" do
       , ColonPrefixedWord "var3"
       ]
       ( Right $
-          [ ProcedureCallStatement $ ProcedureCall
+          [ ProcedureCall
               "proc1"
-              (List.fromFoldable [ VariableReference "var1" ])
-          , ProcedureCallStatement $ ProcedureCall
-              "proc2"
               ( List.fromFoldable
-                  [ VariableReference "var1"
-                  , VariableReference "var2"
+                  [ ExpressionStatement $ VariableReference "var1"
+                  , ProcedureCall
+                      "proc2"
+                      ( List.fromFoldable
+                          [ ExpressionStatement $ VariableReference
+                              "var1"
+                          , ExpressionStatement $ VariableReference
+                              "var2"
+                          , ProcedureCall
+                              "proc3"
+                              ( List.fromFoldable
+                                  [ ExpressionStatement $
+                                      VariableReference "var1"
+                                  , ExpressionStatement $
+                                      VariableReference "var2"
+                                  , ExpressionStatement $
+                                      VariableReference "var3"
+                                  ]
+                              )
+                          ]
+                      )
                   ]
               )
-          , ProcedureCallStatement $ ProcedureCall
+          ]
+      )
+
+    testCase
+      "multiple procedure calls - mixed arrangement"
+      [ UnquotedWord "proc1"
+      , ColonPrefixedWord "var1"
+      , UnquotedWord "proc2"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , LineBreak
+      , UnquotedWord "proc3"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , ColonPrefixedWord "var3"
+      ]
+      ( Right $
+          [ ProcedureCall
+              "proc1"
+              ( List.fromFoldable
+                  [ ExpressionStatement $ VariableReference "var1"
+                  , ProcedureCall
+                      "proc2"
+                      ( List.fromFoldable
+                          [ ExpressionStatement $ VariableReference
+                              "var1"
+                          , ExpressionStatement $ VariableReference
+                              "var2"
+                          ]
+                      )
+                  ]
+              )
+          , ProcedureCall
               "proc3"
               ( List.fromFoldable
-                  [ VariableReference "var1"
-                  , VariableReference "var2"
-                  , VariableReference "var3"
+                  [ ExpressionStatement $
+                      VariableReference "var1"
+                  , ExpressionStatement $
+                      VariableReference "var2"
+                  , ExpressionStatement $
+                      VariableReference "var3"
                   ]
               )
           ]

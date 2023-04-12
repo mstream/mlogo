@@ -7,6 +7,7 @@ import Data.Either.Nested (type (\/))
 import Data.List (List(..))
 import Data.List as List
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation as Interpretation
 import MLogo.Interpretation.State
@@ -19,7 +20,6 @@ import MLogo.Parsing
   , Expression(..)
   , NumericLiteral(..)
   , Parameter(..)
-  , ProcedureCall(..)
   , Statement(..)
   )
 import Test.Spec (Spec, describe, it)
@@ -28,17 +28,21 @@ import Test.Spec.Assertions (shouldEqual)
 spec ∷ Spec Unit
 spec = describe "Interpretation" do
   describe "run" do
-
+    {-
     testCase
       "calling a command directly using a literal"
-      [ ProcedureCallStatement $ ProcedureCall
+      [ ProcedureCall
           "forward"
           ( List.fromFoldable
-              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+              [ ExpressionStatement
+                  $ NumericLiteralExpression
+                  $ NumberLiteral 10.0
+              ]
           )
       ]
       ( Right $
           { callStack: Nil
+          , outputtedValue: Nothing
           , pointer:
               { angle: zero
               , isDown: true
@@ -61,18 +65,23 @@ spec = describe "Interpretation" do
     testCase
       "calling a command multiple times using a repeat statement"
       [ ControlStructureStatement $ RepeatBlock
-          (NumericLiteralExpression $ IntegerLiteral 2)
+          ( ExpressionStatement $ NumericLiteralExpression $
+              IntegerLiteral 2
+          )
           ( List.fromFoldable
-              [ ProcedureCallStatement $ ProcedureCall
+              [ ProcedureCall
                   "forward"
                   ( List.fromFoldable
-                      [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                      [ ExpressionStatement $ NumericLiteralExpression $
+                          NumberLiteral 10.0
+                      ]
                   )
               ]
           )
       ]
       ( Right $
           { callStack: Nil
+          , outputtedValue: Nothing
           , pointer:
               { angle: zero
               , isDown: true
@@ -97,20 +106,23 @@ spec = describe "Interpretation" do
 
     testCase
       "moving home"
-      [ ProcedureCallStatement $ ProcedureCall
+      [ ProcedureCall
           "penup"
           Nil
-      , ProcedureCallStatement $ ProcedureCall
+      , ProcedureCall
           "forward"
           ( List.fromFoldable
-              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+              [ ExpressionStatement $ NumericLiteralExpression $
+                  NumberLiteral 10.0
+              ]
           )
-      , ProcedureCallStatement $ ProcedureCall
+      , ProcedureCall
           "home"
           Nil
       ]
       ( Right $
           { callStack: Nil
+          , outputtedValue: Nothing
           , pointer:
               { angle: zero
               , isDown: false
@@ -124,17 +136,20 @@ spec = describe "Interpretation" do
 
     testCase
       "moving cursor with a pen up"
-      [ ProcedureCallStatement $ ProcedureCall
+      [ ProcedureCall
           "penup"
           Nil
-      , ProcedureCallStatement $ ProcedureCall
+      , ProcedureCall
           "forward"
           ( List.fromFoldable
-              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+              [ ExpressionStatement $ NumericLiteralExpression $
+                  NumberLiteral 10.0
+              ]
           )
       ]
       ( Right $
           { callStack: Nil
+          , outputtedValue: Nothing
           , pointer:
               { angle: zero
               , isDown: false
@@ -152,17 +167,20 @@ spec = describe "Interpretation" do
 
     testCase
       "cleaning after drawing"
-      [ ProcedureCallStatement $ ProcedureCall
+      [ ProcedureCall
           "forward"
           ( List.fromFoldable
-              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+              [ ExpressionStatement $ NumericLiteralExpression $
+                  NumberLiteral 10.0
+              ]
           )
-      , ProcedureCallStatement $ ProcedureCall
+      , ProcedureCall
           "clean"
           Nil
       ]
       ( Right $
           { callStack: Nil
+          , outputtedValue: Nothing
           , pointer:
               { angle: zero
               , isDown: true
@@ -180,17 +198,20 @@ spec = describe "Interpretation" do
 
     testCase
       "clearing screen after drawing"
-      [ ProcedureCallStatement $ ProcedureCall
+      [ ProcedureCall
           "forward"
           ( List.fromFoldable
-              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+              [ ExpressionStatement $ NumericLiteralExpression $
+                  NumberLiteral 10.0
+              ]
           )
-      , ProcedureCallStatement $ ProcedureCall
+      , ProcedureCall
           "clearscreen"
           Nil
       ]
       ( Right $
           { callStack: Nil
+          , outputtedValue: Nothing
           , pointer:
               { angle: zero
               , isDown: true
@@ -204,21 +225,25 @@ spec = describe "Interpretation" do
 
     testCase
       "calling a command directly using a variable reference"
-      [ ProcedureCallStatement $ ProcedureCall
+      [ ProcedureCall
           "make"
           ( List.fromFoldable
-              [ WordLiteral "steps"
-              , NumericLiteralExpression $ NumberLiteral 10.0
+              [ ExpressionStatement $ WordLiteral "steps"
+              , ExpressionStatement $ NumericLiteralExpression $
+                  NumberLiteral 10.0
               ]
           )
-      , ProcedureCallStatement $ ProcedureCall
+      , ProcedureCall
           "forward"
           ( List.fromFoldable
-              [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+              [ ExpressionStatement $ NumericLiteralExpression $
+                  NumberLiteral 10.0
+              ]
           )
       ]
       ( Right $
           { callStack: Nil
+          , outputtedValue: Nothing
           , pointer:
               { angle: zero
               , isDown: true
@@ -246,9 +271,10 @@ spec = describe "Interpretation" do
           (List.fromFoldable [ Parameter "parameter1" ])
         procedureBody1 =
           ( List.fromFoldable
-              [ ProcedureCallStatement $ ProcedureCall "forward"
+              [ ProcedureCall "forward"
                   ( List.fromFoldable
-                      [ VariableReference "parameter1"
+                      [ ExpressionStatement $ VariableReference
+                          "parameter1"
                       ]
                   )
               ]
@@ -260,14 +286,17 @@ spec = describe "Interpretation" do
               procedureName1
               procedureParameters1
               procedureBody1
-          , ProcedureCallStatement $ ProcedureCall
+          , ProcedureCall
               procedureName1
               ( List.fromFoldable
-                  [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                  [ ExpressionStatement $ NumericLiteralExpression $
+                      NumberLiteral 10.0
+                  ]
               )
           ]
           ( Right $
               { callStack: Nil
+              , outputtedValue: Nothing
               , pointer:
                   { angle: zero
                   , isDown: true
@@ -296,18 +325,21 @@ spec = describe "Interpretation" do
   testCase
     "running a command conditionally"
     [ ControlStructureStatement $ IfBlock
-        (BooleanLiteral true)
+        (ExpressionStatement $ BooleanLiteral true)
         ( List.fromFoldable
-            [ ProcedureCallStatement $ ProcedureCall
+            [ ProcedureCall
                 "forward"
                 ( List.fromFoldable
-                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                    [ ExpressionStatement $ NumericLiteralExpression $
+                        NumberLiteral 10.0
+                    ]
                 )
             ]
         )
     ]
     ( Right $
         { callStack: Nil
+        , outputtedValue: Nothing
         , pointer:
             { angle: zero
             , isDown: true
@@ -330,18 +362,21 @@ spec = describe "Interpretation" do
   testCase
     "not running a command conditionally"
     [ ControlStructureStatement $ IfBlock
-        (BooleanLiteral false)
+        (ExpressionStatement $ BooleanLiteral false)
         ( List.fromFoldable
-            [ ProcedureCallStatement $ ProcedureCall
+            [ ProcedureCall
                 "forward"
                 ( List.fromFoldable
-                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                    [ ExpressionStatement $ NumericLiteralExpression $
+                        NumberLiteral 10.0
+                    ]
                 )
             ]
         )
     ]
     ( Right $
         { callStack: Nil
+        , outputtedValue: Nothing
         , pointer:
             { angle: zero
             , isDown: true
@@ -355,22 +390,22 @@ spec = describe "Interpretation" do
 
   testCase
     "running a command conditionally where condition is a variable reference"
-    [ ProcedureCallStatement
-        $ ProcedureCall
-            "make"
-            ( List.fromFoldable
-                [ WordLiteral "condition"
-                , BooleanLiteral true
-                ]
-            )
+    [ ProcedureCall
+        "make"
+        ( List.fromFoldable
+            [ ExpressionStatement $ WordLiteral "condition"
+            , ExpressionStatement $ BooleanLiteral true
+            ]
+        )
     , ControlStructureStatement
         $ IfBlock
-            (VariableReference "condition")
+            (ExpressionStatement $ VariableReference "condition")
             ( List.fromFoldable
-                [ ProcedureCallStatement $ ProcedureCall
+                [ ProcedureCall
                     "forward"
                     ( List.fromFoldable
-                        [ NumericLiteralExpression $ NumberLiteral 10.0
+                        [ ExpressionStatement $ NumericLiteralExpression
+                            $ NumberLiteral 10.0
                         ]
                     )
                 ]
@@ -378,6 +413,7 @@ spec = describe "Interpretation" do
     ]
     ( Right $
         { callStack: Nil
+        , outputtedValue: Nothing
         , pointer:
             { angle: zero
             , isDown: true
@@ -401,22 +437,22 @@ spec = describe "Interpretation" do
 
   testCase
     "not running a command conditionally where condition is a variable reference"
-    [ ProcedureCallStatement
-        $ ProcedureCall
-            "make"
-            ( List.fromFoldable
-                [ WordLiteral "condition"
-                , BooleanLiteral false
-                ]
-            )
+    [ ProcedureCall
+        "make"
+        ( List.fromFoldable
+            [ ExpressionStatement $ WordLiteral "condition"
+            , ExpressionStatement $ BooleanLiteral false
+            ]
+        )
     , ControlStructureStatement
         $ IfBlock
-            (VariableReference "condition")
+            (ExpressionStatement $ VariableReference "condition")
             ( List.fromFoldable
-                [ ProcedureCallStatement $ ProcedureCall
+                [ ProcedureCall
                     "forward"
                     ( List.fromFoldable
-                        [ NumericLiteralExpression $ NumberLiteral 10.0
+                        [ ExpressionStatement $ NumericLiteralExpression
+                            $ NumberLiteral 10.0
                         ]
                     )
                 ]
@@ -424,6 +460,7 @@ spec = describe "Interpretation" do
     ]
     ( Right $
         { callStack: Nil
+        , outputtedValue: Nothing
         , pointer:
             { angle: zero
             , isDown: true
@@ -440,26 +477,31 @@ spec = describe "Interpretation" do
   testCase
     "running the positive branch of an if statement"
     [ ControlStructureStatement $ IfElseBlock
-        (BooleanLiteral true)
+        (ExpressionStatement $ BooleanLiteral true)
         ( List.fromFoldable
-            [ ProcedureCallStatement $ ProcedureCall
+            [ ProcedureCall
                 "forward"
                 ( List.fromFoldable
-                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                    [ ExpressionStatement $ NumericLiteralExpression $
+                        NumberLiteral 10.0
+                    ]
                 )
             ]
         )
         ( List.fromFoldable
-            [ ProcedureCallStatement $ ProcedureCall
+            [ ProcedureCall
                 "back"
                 ( List.fromFoldable
-                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                    [ ExpressionStatement $ NumericLiteralExpression $
+                        NumberLiteral 10.0
+                    ]
                 )
             ]
         )
     ]
     ( Right $
         { callStack: Nil
+        , outputtedValue: Nothing
         , pointer:
             { angle: zero
             , isDown: true
@@ -482,26 +524,31 @@ spec = describe "Interpretation" do
   testCase
     "running the negative branch of an if statement"
     [ ControlStructureStatement $ IfElseBlock
-        (BooleanLiteral false)
+        (ExpressionStatement $ BooleanLiteral false)
         ( List.fromFoldable
-            [ ProcedureCallStatement $ ProcedureCall
+            [ ProcedureCall
                 "forward"
                 ( List.fromFoldable
-                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                    [ ExpressionStatement $ NumericLiteralExpression $
+                        NumberLiteral 10.0
+                    ]
                 )
             ]
         )
         ( List.fromFoldable
-            [ ProcedureCallStatement $ ProcedureCall
+            [ ProcedureCall
                 "back"
                 ( List.fromFoldable
-                    [ NumericLiteralExpression $ NumberLiteral 10.0 ]
+                    [ ExpressionStatement $ NumericLiteralExpression $
+                        NumberLiteral 10.0
+                    ]
                 )
             ]
         )
     ]
     ( Right $
         { callStack: Nil
+        , outputtedValue: Nothing
         , pointer:
             { angle: zero
             , isDown: true
@@ -519,6 +566,62 @@ spec = describe "Interpretation" do
             ]
         , variables: Map.empty
         }
+    )
+-}
+    ( let
+        procedureName1 = "procedure1"
+        procedureParameters1 = Nil
+        procedureBody1 =
+          ( List.fromFoldable
+              [ ControlStructureStatement
+                  $ OutputCall
+                  $ ExpressionStatement
+                  $ NumericLiteralExpression
+                  $ NumberLiteral 10.0
+              ]
+          )
+      in
+        testCase
+          "outputting a value from a procedure"
+          [ ProcedureDefinition
+              procedureName1
+              procedureParameters1
+              procedureBody1
+          , ProcedureCall
+              "forward"
+              ( List.fromFoldable
+                  [ ProcedureCall
+                      procedureName1
+                      Nil
+                  ]
+              )
+          ]
+          ( Right $
+              { callStack: Nil
+              , outputtedValue: Nothing
+              , pointer:
+                  { angle: zero
+                  , isDown: true
+                  , position:
+                      Position
+                        { x: 0.0
+                        , y: 10.0
+                        }
+                  }
+              , procedures: Map.fromFoldable
+                  [ procedureName1 /\
+                      { body: procedureBody1
+                      , parameters: procedureParameters1
+                      }
+                  ]
+              , screen: List.fromFoldable
+                  [ { p1: Position { x: 0.0, y: 0.0 }
+                    , p2: Position { x: 0.0, y: 10.0 }
+                    }
+                  ]
+              , variables: Map.empty
+              }
+          )
     )
 
 testCase

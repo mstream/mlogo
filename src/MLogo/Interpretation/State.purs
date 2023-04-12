@@ -25,6 +25,7 @@ import Data.Int as Int
 import Data.List (List(..))
 import Data.Map (Map)
 import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import MLogo.Parsing (Parameter, Statement)
@@ -112,6 +113,7 @@ type ExecutionState =
         { name ∷ String
         , boundArguments ∷ Map Parameter Value
         }
+  , outputtedValue ∷ Maybe Value
   , pointer ∷ PointerState
   , procedures ∷
       Map String
@@ -130,6 +132,7 @@ type VisibleState =
 initialExecutionState ∷ ExecutionState
 initialExecutionState =
   { callStack: Nil
+  , outputtedValue: Nothing
   , pointer: initialPointerState
   , procedures: Map.empty
   , screen: Nil

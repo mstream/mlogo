@@ -88,9 +88,9 @@ spec = describe "Program" do
         [ "make \"steps 5"
         , "make \"t true"
         , "make \"f false"
-        , "if :f [ back :steps ]"
-        , "if :t [ forward :steps ]"
-        , "ifelse :t [ forward :steps ] [ back :steps ]"
+        , "if (:f) [ back :steps ]"
+        , "if (:t) [ forward :steps ]"
+        , "ifelse (:t) [ forward :steps ] [ back :steps ]"
         ]
     )
     ( Right $
@@ -139,6 +139,46 @@ spec = describe "Program" do
               , p2: Position { x: 0.0, y: 5.0 }
               }
             ]
+        }
+    )
+
+  testCase
+    "moving forward by 10 using a conditional with a predicate"
+    ( String.joinWith
+        "\n"
+        [ "if (equal? 1 1) [ fd 10 ]" ]
+    )
+    ( Right $
+        { pointer:
+            { angle: zero
+            , isDown: true
+            , position:
+                Position
+                  { x: 0.0
+                  , y: 10.0
+                  }
+            }
+        , screen: List.fromFoldable
+            [ { p1: Position { x: 0.0, y: 0.0 }
+              , p2: Position { x: 0.0, y: 10.0 }
+              }
+            ]
+        }
+    )
+
+  testCase
+    "not moving forward using a conditional with a predicate"
+    ( String.joinWith
+        "\n"
+        [ "if (equal? 1 2) [ fd 10 ]" ]
+    )
+    ( Right $
+        { pointer:
+            { angle: zero
+            , isDown: true
+            , position: zero
+            }
+        , screen: Nil
         }
     )
 

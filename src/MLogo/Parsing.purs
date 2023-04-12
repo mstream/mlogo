@@ -3,13 +3,13 @@ module MLogo.Parsing
   , Expression(..)
   , NumericLiteral(..)
   , Parameter(..)
-  , ProcedureCall(..)
   , Statement(..)
   , run
   ) where
 
 import Prelude
 
+import Control.Alt ((<|>))
 import Control.Lazy as Lazy
 import Data.Either.Nested (type (\/))
 import Data.Function.Uncurried (mkFn5, runFn2)
@@ -20,6 +20,7 @@ import Data.Maybe (Maybe(..))
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Show.Generic (genericShow)
+import Data.Tuple.Nested ((/\))
 import MLogo.Lexing (BracketType(..), Token(..))
 import Parsing
   ( ParseError(..)
@@ -29,13 +30,21 @@ import Parsing
   , Position(..)
   )
 import Parsing (fail, runParser) as P
-import Parsing.Combinators (choice, many) as P
+import Parsing.Combinators
+  ( between
+  , choice
+  , many
+  , manyTill_
+  , optional
+  , sepBy
+  ) as P
 
 keywords ∷ Set String
 keywords = Set.fromFoldable
   [ "end"
   , "if"
   , "ifelse"
+  , "output"
   , "repeat"
   , "to"
   ]
@@ -51,7 +60,8 @@ type ProgramParser = TokenParser (List Statement)
 
 data Statement
   = ControlStructureStatement ControlStructure
-  | ProcedureCallStatement ProcedureCall
+  | ExpressionStatement Expression
+  | ProcedureCall String (List Statement)
   | ProcedureDefinition String (List Parameter) (List Statement)
 
 derive instance Generic Statement _
@@ -68,9 +78,8 @@ derive newtype instance Show Parameter
 
 data Expression
   = BooleanLiteral Boolean
-  | ListLiteral (List Expression)
+  | ListLiteral (List Statement)
   | NumericLiteralExpression NumericLiteral
-  | ProcedureCallExpression ProcedureCall
   | VariableReference String
   | WordLiteral String
 
@@ -91,9 +100,10 @@ instance Show NumericLiteral where
   show = genericShow
 
 data ControlStructure
-  = IfBlock Expression (List Statement)
-  | IfElseBlock Expression (List Statement) (List Statement)
-  | RepeatBlock Expression (List Statement)
+  = IfBlock Statement (List Statement)
+  | IfElseBlock Statement (List Statement) (List Statement)
+  | OutputCall Statement
+  | RepeatBlock Statement (List Statement)
 
 derive instance Generic ControlStructure _
 derive instance Eq ControlStructure
@@ -101,55 +111,57 @@ derive instance Eq ControlStructure
 instance Show ControlStructure where
   show = genericShow
 
-data ProcedureCall = ProcedureCall String (List Expression)
-
-derive instance Generic ProcedureCall _
-derive instance Eq ProcedureCall
-
-instance Show ProcedureCall where
-  show = genericShow
-
-procedureCallParser ∷ TokenParser ProcedureCall
+procedureCallParser ∷ TokenParser Statement
 procedureCallParser = Lazy.defer \_ → do
   name ← consumeUnquotedWord isNotKeyword
-  args ← P.many expressionParser
+  args ← P.many statementParser
   pure $ ProcedureCall name args
 
 run ∷ List Token → ParseError \/ List Statement
 run tokens = P.runParser tokens programParser
 
 programParser ∷ ProgramParser
-programParser = P.many statementParser
+programParser = Lazy.defer \_ →
+  statementParser `P.sepBy` skipLineBreak
 
 statementParser ∷ TokenParser Statement
 statementParser = Lazy.defer \_ →
   P.choice
     [ controlStructureStatementParser
-    , procedureCallStatementParser
+    , expressionStatementParser
     , procedureDefinitionParser
+    , procedureCallParser
     ]
+
+expressionStatementParser ∷ TokenParser Statement
+expressionStatementParser = ExpressionStatement <$> expressionParser
 
 controlStructureStatementParser ∷ TokenParser Statement
 controlStructureStatementParser = Lazy.defer \_ →
   ControlStructureStatement <$> P.choice
     [ ifBlockParser
     , ifElseBlockParser
+    , outputCallParser
     , repeatBlockParser
     ]
 
 ifBlockParser ∷ TokenParser ControlStructure
 ifBlockParser = do
   void $ consumeUnquotedWord (_ == "if")
-  conditionExpression ← expressionParser
+  consumeBracket (_ == RoundOpening)
+  conditionExpression ← statementParser
+  consumeBracket (_ == RoundClosing)
   consumeBracket (_ == SquareOpening)
-  positiveBranch ← P.many statementParser
+  positiveBranch ← programParser
   consumeBracket (_ == SquareClosing)
   pure $ IfBlock conditionExpression positiveBranch
 
 ifElseBlockParser ∷ TokenParser ControlStructure
 ifElseBlockParser = do
   void $ consumeUnquotedWord (_ == "ifelse")
-  conditionExpression ← expressionParser
+  consumeBracket (_ == RoundOpening)
+  conditionExpression ← statementParser
+  consumeBracket (_ == RoundClosing)
   consumeBracket (_ == SquareOpening)
   positiveBranch ← P.many statementParser
   consumeBracket (_ == SquareClosing)
@@ -158,34 +170,48 @@ ifElseBlockParser = do
   consumeBracket (_ == SquareClosing)
   pure $ IfElseBlock conditionExpression positiveBranch negativeBranch
 
+outputCallParser ∷ TokenParser ControlStructure
+outputCallParser = do
+  void $ consumeUnquotedWord (_ == "output")
+  expression ← statementParser
+  pure $ OutputCall expression
+
 repeatBlockParser ∷ TokenParser ControlStructure
 repeatBlockParser = do
   void $ consumeUnquotedWord (_ == "repeat")
-  timesExpression ← expressionParser
+  timesExpression ← statementParser
   consumeBracket (_ == SquareOpening)
   body ← P.many statementParser
   consumeBracket (_ == SquareClosing)
   pure $ RepeatBlock timesExpression body
 
-procedureCallStatementParser ∷ TokenParser Statement
-procedureCallStatementParser =
-  ProcedureCallStatement <$> procedureCallParser
-
 procedureDefinitionParser ∷ TokenParser Statement
 procedureDefinitionParser = do
   void $ consumeUnquotedWord (_ == "to")
   name ← consumeUnquotedWord isNotKeyword
-  params ← P.many consumeColonPrefixedWord
-  body ← P.many statementParser
-  void $ consumeUnquotedWord (_ == "end")
-  pure $ ProcedureDefinition name (Parameter <$> params) body
+  parameters ← P.many consumeColonPrefixedWord
+  skipLineBreak
+  body /\ _ ← P.manyTill_
+    ( do
+        statement ← statementParser
+        void $ P.optional skipLineBreak
+        pure statement
+    )
+    (consumeUnquotedWord (_ == "end"))
+  pure $ ProcedureDefinition name (Parameter <$> parameters) body
+
+skipLineBreak ∷ TokenParser Unit
+skipLineBreak = consumeToken case _ of
+  LineBreak →
+    Just unit
+  _ →
+    Nothing
 
 expressionParser ∷ TokenParser Expression
 expressionParser = Lazy.defer \_ →
   P.choice
     [ booleanLiteralParser
     , numericLiteralExpressionParser
-    , procedureCallExpressionParser
     , variableReferenceParser
     , wordLiteralParser
     ]
@@ -206,13 +232,6 @@ numericLiteralExpressionParser = NumericLiteralExpression <$> P.choice
   [ IntegerLiteral <$> consumeIntegerToken
   , NumberLiteral <$> consumeNumberToken
   ]
-
-procedureCallExpressionParser ∷ TokenParser Expression
-procedureCallExpressionParser = Lazy.defer \_ → do
-  consumeBracket (_ == RoundOpening)
-  procCall ← procedureCallParser
-  consumeBracket (_ == RoundClosing)
-  pure $ ProcedureCallExpression procCall
 
 variableReferenceParser ∷ TokenParser Expression
 variableReferenceParser = VariableReference <$> consumeColonPrefixedWord
@@ -281,6 +300,6 @@ consumeToken f = ParserT
                   ast
             Nothing →
               runFn2 throw state
-                (ParseError "Predicate unsatisfied" pos)
+                (ParseError ("unexpected token " <> show head) pos)
   )
 

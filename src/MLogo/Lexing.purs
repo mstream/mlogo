@@ -24,6 +24,7 @@ data Token
   | ColonPrefixedWord String
   | Comment String
   | IntegerToken Int
+  | LineBreak
   | NumberToken Number
   | QuotedWord String
   | UnquotedWord String
@@ -52,16 +53,15 @@ run ∷ String → ParseError \/ List Token
 run = SP.runParser programParser
 
 programParser ∷ Parser (List Token)
-programParser = (SP.skipSpaces *> tokenParser) `SP.sepEndBy`
-  ( SP.choice
-      [ SP.skipSpaces
-      , void $ SP.string "\n"
-      ]
-  )
+programParser =
+  (skipSpaces *> tokenParser) `SP.sepEndBy` skipSpaces
+  where
+  skipSpaces = void $ SP.many $ SP.string " "
 
 tokenParser ∷ Parser Token
 tokenParser = SP.choice
-  [ bracketParser
+  [ LineBreak <$ SP.string "\n"
+  , bracketParser
   , colonPrefixedWordParser
   , commentParser
   , numericTokenParser

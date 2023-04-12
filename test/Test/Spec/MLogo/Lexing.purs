@@ -41,6 +41,15 @@ spec = describe "Lexing" do
       )
 
     testCase
+      "an output statement"
+      "output 10"
+      ( Right
+          [ UnquotedWord "output"
+          , IntegerToken 10
+          ]
+      )
+
+    testCase
       "a command with a question mark suffix"
       "equal? 1 2"
       ( Right
@@ -61,13 +70,15 @@ spec = describe "Lexing" do
 
     testCase
       "multiple procedure invocations with various arguments count"
-      "proc1 :var1 proc2 :var1 :var2\nproc3 :var1 :var2 :var3"
+      "proc1 :var1\nproc2 :var1 :var2\nproc3 :var1 :var2 :var3"
       ( Right
           [ UnquotedWord "proc1"
           , ColonPrefixedWord "var1"
+          , LineBreak
           , UnquotedWord "proc2"
           , ColonPrefixedWord "var1"
           , ColonPrefixedWord "var2"
+          , LineBreak
           , UnquotedWord "proc3"
           , ColonPrefixedWord "var1"
           , ColonPrefixedWord "var2"
@@ -109,10 +120,13 @@ spec = describe "Lexing" do
           , UnquotedWord "proc1"
           , ColonPrefixedWord "param1"
           , ColonPrefixedWord "param2"
+          , LineBreak
           , UnquotedWord "proc2"
           , ColonPrefixedWord "param1"
+          , LineBreak
           , UnquotedWord "proc3"
           , ColonPrefixedWord "param2"
+          , LineBreak
           , UnquotedWord "end"
           ]
       )

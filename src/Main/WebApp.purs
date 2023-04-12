@@ -23,19 +23,19 @@ import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
 import Halogen.Svg.Elements as SE
 import Halogen.VDom.Driver (runUI)
+import MLogo.Interpretation.Command (Command(..))
+import MLogo.Interpretation.Command as Command
+import MLogo.Interpretation.Command.Input
+  ( Parameter
+  , Parameters(..)
+  , ValueType
+  )
 import MLogo.Interpretation.State
   ( Angle(..)
   , PointerState
   , Position(..)
   , ScreenState
   , VisibleState
-  )
-import MLogo.Interpretation.Statement as Statement
-import MLogo.Interpretation.Statement.Command
-  ( Command(..)
-  , Parameter
-  , Parameters(..)
-  , ValueType
   )
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
@@ -89,7 +89,7 @@ rootComp = Hooks.component \_ _ → Hooks.do
               AceComponent.component
               unit
               handleAceOutput
-          , renderLegend $ Map.toUnfoldable Statement.commands
+          , renderLegend $ Map.toUnfoldable Command.commandsByAlias
           ]
       , case Program.run source of
           Left errorMessage →
