@@ -17,65 +17,86 @@ import Test.Spec.Assertions (shouldEqual)
 spec ∷ Spec Unit
 spec = describe "Command" do
   describe "isEqual" do
-    let testCase = commandTestCase Command.isEqual
 
-    testCase
+    isEqualTestCase
       "zero arguments"
-      State.initialExecutionState
       []
-      ( Right $ (Just $ BooleanValue true) /\
-          State.initialExecutionState
-      )
+      (Right true)
 
-    testCase
+    isEqualTestCase
       "one argument"
-      State.initialExecutionState
       [ NumberValue 1.0 ]
-      ( Right $ (Just $ BooleanValue true) /\
-          State.initialExecutionState
-      )
+      (Right true)
 
-    testCase
+    isEqualTestCase
       "two equal arguments"
-      State.initialExecutionState
       [ NumberValue 1.0, NumberValue 1.0 ]
-      ( Right $ (Just $ BooleanValue true) /\
-          State.initialExecutionState
-      )
+      (Right true)
 
-    testCase
+    isEqualTestCase
       "three equal arguments"
-      State.initialExecutionState
       [ NumberValue 1.0, NumberValue 1.0, NumberValue 1.0 ]
-      ( Right $ (Just $ BooleanValue true) /\
-          State.initialExecutionState
-      )
+      (Right true)
 
-    testCase
+    isEqualTestCase
       "two unequal arguments"
-      State.initialExecutionState
       [ NumberValue 1.0, NumberValue 2.0 ]
-      ( Right $ (Just $ BooleanValue false) /\
-          State.initialExecutionState
-      )
+      (Right false)
 
-    testCase
+    isEqualTestCase
       "three unequal arguments"
-      State.initialExecutionState
       [ NumberValue 1.0, NumberValue 1.0, NumberValue 2.0 ]
-      ( Right $ (Just $ BooleanValue false) /\
-          State.initialExecutionState
-      )
+      (Right false)
 
-{-
-    testCase
-      "two non-equal arguments"
-      Command.commandsByAlias."equal?"
+    sumTestCase
+      "zero arguments"
+      []
+      (Right 0.0)
 
-    testCase
-      "three non-equal arguments"
-      Command.commandsByAlias."equal?"
--}
+    sumTestCase
+      "one argument"
+      [ NumberValue 1.0 ]
+      (Right 1.0)
+
+    sumTestCase
+      "two arguments"
+      [ NumberValue 1.0, NumberValue 2.0 ]
+      (Right 3.0)
+
+    sumTestCase
+      "three arguments"
+      [ NumberValue 1.0, NumberValue 2.0, NumberValue 3.0 ]
+      (Right 6.0)
+
+isEqualTestCase
+  ∷ String
+  → Array Value
+  → String \/ Boolean
+  → Spec Unit
+isEqualTestCase title arguments expected =
+  commandTestCase
+    Command.isEqual
+    title
+    State.initialExecutionState
+    arguments
+    ( ((_ /\ State.initialExecutionState) <<< Just <<< BooleanValue) <$>
+        expected
+    )
+
+sumTestCase
+  ∷ String
+  → Array Value
+  → String \/ Number
+  → Spec Unit
+sumTestCase title arguments expected =
+  commandTestCase
+    Command.sum
+    title
+    State.initialExecutionState
+    arguments
+    ( ((_ /\ State.initialExecutionState) <<< Just <<< NumberValue) <$>
+        expected
+    )
 
 commandTestCase
   ∷ Command

@@ -3,6 +3,7 @@ module MLogo.Interpretation.Command
   , Interpret
   , commandsByAlias
   , isEqual
+  , sum
   ) where
 
 import Prelude
