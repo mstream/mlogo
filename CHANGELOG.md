@@ -1,5 +1,12 @@
 
 
+## [0.7.0](https://github.com/mstream/mlogo/compare/0.6.0...0.7.0) (2023-04-12)
+
+
+### Features
+
+* implement variable arguments input parser ([de60dfb](https://github.com/mstream/mlogo/commit/de60dfb8355eeed81efcd9306070c0896485cb59))
+
 ## [0.6.0](https://github.com/mstream/mlogo/compare/0.5.0...0.6.0) (2023-04-09)
 
 
