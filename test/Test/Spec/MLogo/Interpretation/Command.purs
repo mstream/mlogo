@@ -9,7 +9,12 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
-import MLogo.Interpretation.State (ExecutionState, Value(..))
+import MLogo.Interpretation.State
+  ( ExecutionState
+  , Line
+  , Position(..)
+  , Value(..)
+  )
 import MLogo.Interpretation.State as State
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -17,7 +22,6 @@ import Test.Spec.Assertions (shouldEqual)
 spec ∷ Spec Unit
 spec = describe "Command" do
   describe "isEqual" do
-
     isEqualTestCase
       "zero arguments"
       []
@@ -48,6 +52,61 @@ spec = describe "Command" do
       [ NumberValue 1.0, NumberValue 1.0, NumberValue 2.0 ]
       (Right false)
 
+  describe "moveBackward" do
+    moveBackwardTestCase
+      "by a positive steps number"
+      [ NumberValue 10.0 ]
+      ( Right
+          { lines:
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: (-10.0) }
+                }
+              ]
+          , pointerPosition: Position { x: 0.0, y: (-10.0) }
+          }
+      )
+
+    moveBackwardTestCase
+      "by a negative steps number"
+      [ NumberValue (-10.0) ]
+      ( Right
+          { lines:
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
+                }
+              ]
+          , pointerPosition: Position { x: 0.0, y: 10.0 }
+          }
+      )
+
+  describe "moveForward" do
+    moveForwardTestCase
+      "by a positive steps number"
+      [ NumberValue 10.0 ]
+      ( Right
+          { lines:
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
+                }
+              ]
+          , pointerPosition: Position { x: 0.0, y: 10.0 }
+          }
+      )
+
+    moveForwardTestCase
+      "by a negative steps number"
+      [ NumberValue (-10.0) ]
+      ( Right
+          { lines:
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: (-10.0) }
+                }
+              ]
+          , pointerPosition: Position { x: 0.0, y: (-10.0) }
+          }
+      )
+
+  describe "sum" do
     sumTestCase
       "zero arguments"
       []
@@ -81,6 +140,44 @@ isEqualTestCase title arguments expected =
     arguments
     ( ((_ /\ State.initialExecutionState) <<< Just <<< BooleanValue) <$>
         expected
+    )
+
+moveBackwardTestCase
+  ∷ String
+  → Array Value
+  → String \/ { lines ∷ Array Line, pointerPosition ∷ Position }
+  → Spec Unit
+moveBackwardTestCase title arguments expected =
+  commandTestCase
+    Command.moveBackward
+    title
+    State.initialExecutionState
+    arguments
+    ( ( \exp → Nothing /\ State.initialExecutionState
+          { pointer = State.initialExecutionState.pointer
+              { position = exp.pointerPosition }
+          , screen = List.fromFoldable exp.lines
+          }
+      ) <$> expected
+    )
+
+moveForwardTestCase
+  ∷ String
+  → Array Value
+  → String \/ { lines ∷ Array Line, pointerPosition ∷ Position }
+  → Spec Unit
+moveForwardTestCase title arguments expected =
+  commandTestCase
+    Command.moveForward
+    title
+    State.initialExecutionState
+    arguments
+    ( ( \exp → Nothing /\ State.initialExecutionState
+          { pointer = State.initialExecutionState.pointer
+              { position = exp.pointerPosition }
+          , screen = List.fromFoldable exp.lines
+          }
+      ) <$> expected
     )
 
 sumTestCase

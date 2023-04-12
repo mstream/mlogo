@@ -3,6 +3,8 @@ module MLogo.Interpretation.Command
   , Interpret
   , commandsByAlias
   , isEqual
+  , moveBackward
+  , moveForward
   , sum
   ) where
 
