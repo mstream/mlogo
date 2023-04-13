@@ -106,6 +106,28 @@ spec = describe "Command" do
           }
       )
 
+  describe "penDown" do
+    penDownTestCase
+      "pen previously up"
+      false
+      true
+
+    penDownTestCase
+      "pen previously down"
+      true
+      true
+
+  describe "penUp" do
+    penUpTestCase
+      "pen previously down"
+      true
+      false
+
+    penUpTestCase
+      "pen previously up"
+      false
+      false
+
   describe "sum" do
     sumTestCase
       "zero arguments"
@@ -178,6 +200,48 @@ moveForwardTestCase title arguments expected =
           , screen = List.fromFoldable exp.lines
           }
       ) <$> expected
+    )
+
+penDownTestCase
+  ∷ String
+  → Boolean
+  → Boolean
+  → Spec Unit
+penDownTestCase title isDown expected =
+  commandTestCase
+    Command.penDown
+    title
+    ( State.initialExecutionState
+        { pointer = State.initialExecutionState.pointer
+            { isDown = isDown }
+        }
+    )
+    []
+    ( Right $ Nothing /\ State.initialExecutionState
+        { pointer = State.initialExecutionState.pointer
+            { isDown = expected }
+        }
+    )
+
+penUpTestCase
+  ∷ String
+  → Boolean
+  → Boolean
+  → Spec Unit
+penUpTestCase title isDown expected =
+  commandTestCase
+    Command.penUp
+    title
+    ( State.initialExecutionState
+        { pointer = State.initialExecutionState.pointer
+            { isDown = isDown }
+        }
+    )
+    []
+    ( Right $ Nothing /\ State.initialExecutionState
+        { pointer = State.initialExecutionState.pointer
+            { isDown = expected }
+        }
     )
 
 sumTestCase

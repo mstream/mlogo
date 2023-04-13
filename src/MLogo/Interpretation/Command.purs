@@ -6,6 +6,8 @@ module MLogo.Interpretation.Command
   , isEqual
   , moveBackward
   , moveForward
+  , penDown
+  , penUp
   , runInterpret
   , sum
   ) where
