@@ -182,7 +182,10 @@ interpretProcedureCall state name arguments = do
   evaluatedArguments /\ newState ← evaluateArguments state arguments
   case Map.lookup name Command.commandsByAlias of
     Just (Command command) →
-      command.interpret newState evaluatedArguments
+      Command.runInterpret
+        command.interpret
+        newState
+        evaluatedArguments
     Nothing → do
       { body, parameters } ← Either.note
         ("Unknown procedure name: " <> name)

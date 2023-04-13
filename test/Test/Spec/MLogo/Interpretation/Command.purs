@@ -210,7 +210,11 @@ commandTestCase
   expected =
   it
     ("interprets \"" <> name <> "\" command: " <> title)
-    ( (interpret state (List.fromFoldable arguments))
+    ( ( Command.runInterpret
+          interpret
+          state
+          (List.fromFoldable arguments)
+      )
         `shouldEqual` expected
     )
 

@@ -1,15 +1,25 @@
 module MLogo.Interpretation.Command
   ( Command(..)
   , Interpret
+  , InterpretCommand
   , commandsByAlias
   , isEqual
   , moveBackward
   , moveForward
+  , runInterpret
   , sum
   ) where
 
 import Prelude
 
+import Control.Monad.Error.Class
+  ( class MonadError
+  , class MonadThrow
+  , throwError
+  )
+import Control.Monad.Except (Except, runExcept)
+import Control.Monad.State (StateT, get, modify_, runStateT)
+import Control.Monad.State.Class (class MonadState)
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Foldable (foldl)
@@ -19,7 +29,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Number as Number
 import Data.Symbol (class IsSymbol, reflectSymbol)
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested (type (/\))
 import Heterogeneous.Folding (class FoldingWithIndex)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command.Input (Parameters, ValueType(..))
@@ -33,16 +43,45 @@ import MLogo.Interpretation.State
 import MLogo.Interpretation.State as State
 import Type.Proxy (Proxy)
 
-type Interpret i =
-  ExecutionState → i → String \/ (Maybe Value /\ ExecutionState)
+type Interpret m i =
+  MonadError String m
+  ⇒ MonadState ExecutionState m
+  ⇒ i
+  → m (Maybe Value)
+
+type InterpretCommand =
+  List Value → StateT ExecutionState (Except String) (Maybe Value)
+
+runInterpret
+  ∷ ∀ i
+  . (i → StateT ExecutionState (Except String) (Maybe Value))
+  → ExecutionState
+  → i
+  → String \/ (Maybe Value /\ ExecutionState)
+runInterpret computation initialState input =
+  runExcept (runStateT (computation input) initialState)
 
 newtype Command = Command
   { description ∷ String
-  , interpret ∷ Interpret (List Value)
+  , interpret ∷ InterpretCommand
   , name ∷ String
   , outputValueType ∷ Maybe ValueType
   , parameters ∷ Parameters
   }
+
+parseAndInterpretInput
+  ∷ ∀ i m
+  . MonadThrow String m
+  ⇒ (List Value → String \/ i)
+  → (i → m (Maybe Value))
+  → List Value
+  → m (Maybe Value)
+parseAndInterpretInput parseInput interpretInput values =
+  case parseInput values of
+    Left errorMessage →
+      throwError errorMessage
+    Right input →
+      interpretInput input
 
 moveBackward ∷ Command
 moveBackward =
@@ -52,9 +91,9 @@ moveBackward =
     Command
       { description:
           "Move the cursor backward by the given amount of steps."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretMoveBackward state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretMoveBackward
       , name: "back"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -68,9 +107,9 @@ moveForward =
     Command
       { description:
           "Move the cursor forward by the given amount of steps."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretMoveForward state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretMoveForward
       , name: "forward"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -83,9 +122,9 @@ clean =
   in
     Command
       { description: "Clear the drawing area."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretClean state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretClean
       , name: "clean"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -99,9 +138,9 @@ clearScreen =
     Command
       { description:
           "Clear the drawing area and move the cursor to the initial position."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretClearScreen state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretClearScreen
       , name: "clearscreen"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -114,9 +153,9 @@ goHome =
   in
     Command
       { description: "Move the cursor to the initial position."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretGoHome state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretGoHome
       , name: "home"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -130,9 +169,9 @@ turnLeft =
     Command
       { description:
           "Rotate the cursor by the given angle counterclockwise."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretTurnLeft state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretTurnLeft
       , name: "left"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -145,9 +184,9 @@ turnRight =
   in
     Command
       { description: "Rotate the cursor by the given angle clockwise."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretTurnRight state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretTurnRight
       , name: "right"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -163,9 +202,9 @@ variableAssignment =
   in
     Command
       { description: "Set a global variable value."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretVariableAssignment state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretVariableAssignment
       , name: "make"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -178,9 +217,9 @@ penDown =
   in
     Command
       { description: "Make the cursor resume leaving a trail."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretPenDown state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretPenDown
       , name: "pendown"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -193,9 +232,9 @@ penUp =
   in
     Command
       { description: "Make the cursor stop leaving a trail."
-      , interpret: \state values → do
-          input ← Input.runFixedInputParser inputParser values
-          interpretPenUp state input
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretPenUp
       , name: "penup"
       , outputValueType: Nothing
       , parameters: Input.parametersFromFixedInputParser inputParser
@@ -208,9 +247,9 @@ sum =
   in
     Command
       { description: "Sums up given numbers."
-      , interpret: \state values → do
-          input ← Input.runVariableInputParser inputParser values
-          interpretSum state input
+      , interpret: parseAndInterpretInput
+          (Input.runVariableInputParser inputParser)
+          interpretSum
       , name: "sum"
       , outputValueType: Just NumberType
       , parameters: Input.parametersFromVariableInputParser inputParser
@@ -223,21 +262,22 @@ isEqual =
   in
     Command
       { description: "Tells if values are equal."
-      , interpret: \state values → do
-          input ← Input.runVariableInputParser inputParser values
-          interpretIsEqual state input
+      , interpret: \values →
+          case Input.runVariableInputParser inputParser values of
+            Left errorMessage →
+              throwError errorMessage
+            Right input →
+              interpretIsEqual input
       , name: "equal?"
       , outputValueType: Just BooleanType
       , parameters: Input.parametersFromVariableInputParser inputParser
       }
 
-interpretSum ∷ Interpret (List Number)
-interpretSum state numbers =
-  Right $ (Just $ NumberValue $ foldl (+) zero numbers) /\ state
+interpretSum ∷ ∀ m. Interpret m (List Number)
+interpretSum = pure <<< Just <<< NumberValue <<< foldl (+) zero
 
-interpretIsEqual ∷ Interpret (List Value)
-interpretIsEqual state values =
-  Right $ (Just $ BooleanValue $ go true Nothing values) /\ state
+interpretIsEqual ∷ ∀ m. Interpret m (List Value)
+interpretIsEqual = pure <<< Just <<< BooleanValue <<< go true Nothing
   where
   go ∷ Boolean → (Maybe Value) → (List Value) → Boolean
   go acc mbLast = case _ of
@@ -256,67 +296,77 @@ interpretIsEqual state values =
             else
               false
 
-interpretVariableAssignment ∷ Interpret { name ∷ String, value ∷ Value }
-interpretVariableAssignment state { name, value } =
-  Right $ Nothing /\ state
-    { variables = Map.insert name value state.variables }
+interpretVariableAssignment
+  ∷ ∀ m. Interpret m { name ∷ String, value ∷ Value }
+interpretVariableAssignment { name, value } = do
+  modify_ \state →
+    state { variables = Map.insert name value state.variables }
+  pure Nothing
 
-interpretMoveForward ∷ Interpret Number
-interpretMoveForward state steps =
+interpretMoveForward ∷ ∀ m. Interpret m Number
+interpretMoveForward steps = do
+  state ← get
+
   let
     rads = State.toRadians state.pointer.angle
     target = state.pointer.position + Position
       { x: steps * Number.sin rads, y: steps * Number.cos rads }
-  in
-    Right $ Nothing /\ moveTo state target
 
-interpretMoveBackward ∷ Interpret Number
-interpretMoveBackward state steps = interpretMoveForward state (-steps)
+  moveTo target
 
-interpretTurnRight ∷ Interpret Number
-interpretTurnRight state angle =
-  Right $ Nothing /\ state
-    { pointer = state.pointer
-        { angle = state.pointer.angle + Angle angle }
-    }
+interpretMoveBackward ∷ ∀ m. Interpret m Number
+interpretMoveBackward steps = interpretMoveForward (-steps)
 
-interpretTurnLeft ∷ Interpret Number
-interpretTurnLeft state angle = interpretTurnRight state (-angle)
+interpretTurnRight ∷ ∀ m. Interpret m Number
+interpretTurnRight angle = do
+  modify_ \state →
+    state
+      { pointer = state.pointer
+          { angle = state.pointer.angle + Angle angle }
+      }
+  pure Nothing
 
-interpretPenDown ∷ Interpret Unit
-interpretPenDown state _ =
-  Right $ Nothing /\ state
-    { pointer = state.pointer { isDown = true } }
+interpretTurnLeft ∷ ∀ m. Interpret m Number
+interpretTurnLeft angle = interpretTurnRight (-angle)
 
-interpretPenUp ∷ Interpret Unit
-interpretPenUp state _ =
-  Right $ Nothing /\ state
-    { pointer = state.pointer { isDown = false } }
+interpretPenDown ∷ ∀ m. Interpret m Unit
+interpretPenDown _ = do
+  modify_ \state → state { pointer = state.pointer { isDown = true } }
+  pure Nothing
 
-interpretGoHome ∷ Interpret Unit
-interpretGoHome state _ =
-  Right $ Nothing /\ state
+interpretPenUp ∷ ∀ m. Interpret m Unit
+interpretPenUp _ = do
+  modify_ \state → state { pointer = state.pointer { isDown = false } }
+  pure Nothing
+
+interpretGoHome ∷ ∀ m. Interpret m Unit
+interpretGoHome _ = do
+  modify_ \state → state
     { pointer = state.pointer { position = (zero ∷ Position) } }
+  pure Nothing
 
-interpretClean ∷ Interpret Unit
-interpretClean state _ =
-  Right $ Nothing /\ state { screen = Nil }
+interpretClean ∷ ∀ m. Interpret m Unit
+interpretClean _ = do
+  modify_ \state → state { screen = Nil }
+  pure Nothing
 
-interpretClearScreen ∷ Interpret Unit
-interpretClearScreen state _ = do
-  _ /\ newState ← interpretGoHome state unit
-  interpretClean newState unit
+interpretClearScreen ∷ ∀ m. Interpret m Unit
+interpretClearScreen _ = do
+  void $ interpretGoHome unit
+  interpretClean unit
 
-moveTo ∷ ExecutionState → Position → ExecutionState
-moveTo state target = state
-  { pointer = state.pointer { position = target }
-  , screen =
-      if state.pointer.isDown then
-        { p1: state.pointer.position
-        , p2: target
-        } : state.screen
-      else state.screen
-  }
+moveTo ∷ ∀ m. Interpret m Position
+moveTo target = do
+  modify_ \state → state
+    { pointer = state.pointer { position = target }
+    , screen =
+        if state.pointer.isDown then
+          { p1: state.pointer.position
+          , p2: target
+          } : state.screen
+        else state.screen
+    }
+  pure Nothing
 
 data ToMap = ToMap
 

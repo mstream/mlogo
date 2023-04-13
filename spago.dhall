@@ -30,6 +30,7 @@
   , "spec"
   , "string-parsers"
   , "strings"
+  , "transformers"
   , "tuples"
   , "web-dom"
   ]

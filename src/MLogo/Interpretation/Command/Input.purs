@@ -226,4 +226,3 @@ variableWordInputParser name = VariableInputParser
   (wordParameter name)
   State.extractString
 
-
