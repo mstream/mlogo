@@ -2,6 +2,8 @@ module MLogo.Interpretation (run) where
 
 import Prelude
 
+import Control.Monad.Error.Class (throwError)
+import Control.Monad.State (get)
 import Data.Either (Either(..))
 import Data.Either as Either
 import Data.Either.Nested (type (\/))
@@ -10,10 +12,13 @@ import Data.List (List(..), (:))
 import Data.List as List
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Newtype as Newtype
 import Data.Tuple as Tuple
 import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
+import MLogo.Interpretation.Interpret (Interpret)
+import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState(..), Value(..))
 import MLogo.Interpretation.State as State
 import MLogo.Parsing
@@ -64,8 +69,11 @@ interpretStatement state = case _ of
     newState ← interpretControlStructure state cs
     Right $ Nothing /\ newState
   ExpressionStatement expression → do
-    value /\ newState ← evaluateExpression state expression
-    Right $ Just value /\ newState
+    mbValue /\ newState ← Interpret.runInterpret
+      evaluateExpression
+      state
+      expression
+    Right $ mbValue /\ newState
   ProcedureCall name arguments →
     interpretProcedureCall state name arguments
   ProcedureDefinition name parameters body → do
@@ -189,7 +197,7 @@ interpretProcedureCall (ExecutionState state) name arguments = do
     arguments
   case Map.lookup name Command.commandsByAlias of
     Just (Command command) →
-      Command.runInterpret
+      Interpret.runInterpret
         command.interpret
         (ExecutionState newState)
         evaluatedArguments
@@ -236,23 +244,22 @@ interpretProcedureDefinition (ExecutionState state) name parameters body =
     { procedures = Map.insert name { body, parameters } state.procedures
     }
 
-evaluateExpression
-  ∷ ExecutionState → Expression → String \/ (Value /\ ExecutionState)
-evaluateExpression state = case _ of
+evaluateExpression ∷ ∀ m. Interpret m Expression
+evaluateExpression = case _ of
   BooleanLiteral b →
-    Right $ BooleanValue b /\ state
+    pure $ Just $ BooleanValue b
   ListLiteral _ →
-    Left "TODO"
+    throwError "TODO"
   NumericLiteralExpression (IntegerLiteral n) →
-    Right $ IntegerValue n /\ state
+    pure $ Just $ IntegerValue n
   NumericLiteralExpression (NumberLiteral x) →
-    Right $ NumberValue x /\ state
-  VariableReference s → do
-    value ← evaluateVariableReference state s
-    Right $ value /\ state
+    pure $ Just $ NumberValue x
+  VariableReference name →
+    evaluateVariableReference name
   WordLiteral s →
-    Right $ WordValue s /\ state
+    pure $ Just $ WordValue s
 
+{-
 evaluateVariableReference ∷ ExecutionState → String → String \/ Value
 evaluateVariableReference (ExecutionState state) name =
   case findInProcedureParameters of
@@ -270,4 +277,26 @@ evaluateVariableReference (ExecutionState state) name =
     Nothing →
       Nothing
   findInVariables = Map.lookup name state.variables
+  -}
+evaluateVariableReference ∷ ∀ m. Interpret m String
+evaluateVariableReference name = do
+  { callStack, variables } ← Newtype.unwrap <$> get
 
+  let
+    findInGlobalVariables = Map.lookup name variables
+
+    findInProcedureParameters = case List.head callStack of
+      Just { boundArguments } →
+        Map.lookup (Parameter name) boundArguments
+      Nothing →
+        Nothing
+
+  case findInProcedureParameters of
+    Just value →
+      pure $ Just value
+    Nothing →
+      case findInGlobalVariables of
+        Just value →
+          pure $ Just value
+        Nothing →
+          throwError $ "variable \"" <> name <> "\" not found"

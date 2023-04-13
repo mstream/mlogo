@@ -11,6 +11,7 @@ import Data.Newtype as Newtype
 import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
+import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State
   ( ExecutionState(..)
   , Line
@@ -30,7 +31,7 @@ spec = describe "Command" do
       quickCheck \(ExecutionState state) →
         let
           (Command { interpret }) = Command.clean
-          actual = Command.runInterpret
+          actual = Interpret.runInterpret
             interpret
             (ExecutionState state)
             Nil
@@ -43,7 +44,7 @@ spec = describe "Command" do
       quickCheck \(ExecutionState state) →
         let
           (Command { interpret }) = Command.clearScreen
-          actual = Command.runInterpret
+          actual = Interpret.runInterpret
             interpret
             (ExecutionState state)
             Nil
@@ -60,7 +61,7 @@ spec = describe "Command" do
       quickCheck \(ExecutionState state) →
         let
           (Command { interpret }) = Command.goHome
-          actual = Command.runInterpret
+          actual = Interpret.runInterpret
             interpret
             (ExecutionState state)
             Nil
@@ -336,7 +337,7 @@ commandTestCase
   expected =
   it
     ("interprets \"" <> name <> "\" command: " <> title)
-    ( ( Command.runInterpret
+    ( ( Interpret.runInterpret
           interpret
           state
           (List.fromFoldable arguments)

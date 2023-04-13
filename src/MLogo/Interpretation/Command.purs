@@ -1,6 +1,5 @@
 module MLogo.Interpretation.Command
   ( Command(..)
-  , Interpret
   , InterpretCommand
   , clean
   , clearScreen
@@ -11,20 +10,14 @@ module MLogo.Interpretation.Command
   , moveForward
   , penDown
   , penUp
-  , runInterpret
   , sum
   ) where
 
 import Prelude
 
-import Control.Monad.Error.Class
-  ( class MonadError
-  , class MonadThrow
-  , throwError
-  )
-import Control.Monad.Except (Except, runExcept)
-import Control.Monad.State (StateT, get, modify_, runStateT)
-import Control.Monad.State.Class (class MonadState)
+import Control.Monad.Error.Class (class MonadThrow, throwError)
+import Control.Monad.Except (Except)
+import Control.Monad.State (StateT, get, modify_)
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Foldable (foldl)
@@ -34,11 +27,11 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Number as Number
 import Data.Symbol (class IsSymbol, reflectSymbol)
-import Data.Tuple.Nested (type (/\))
 import Heterogeneous.Folding (class FoldingWithIndex)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command.Input (Parameters, ValueType(..))
 import MLogo.Interpretation.Command.Input as Input
+import MLogo.Interpretation.Interpret (Interpret)
 import MLogo.Interpretation.State
   ( Angle(..)
   , ExecutionState(..)
@@ -48,23 +41,8 @@ import MLogo.Interpretation.State
 import MLogo.Interpretation.State as State
 import Type.Proxy (Proxy)
 
-type Interpret m i =
-  MonadError String m
-  ⇒ MonadState ExecutionState m
-  ⇒ i
-  → m (Maybe Value)
-
 type InterpretCommand =
   List Value → StateT ExecutionState (Except String) (Maybe Value)
-
-runInterpret
-  ∷ ∀ i
-  . (i → StateT ExecutionState (Except String) (Maybe Value))
-  → ExecutionState
-  → i
-  → String \/ (Maybe Value /\ ExecutionState)
-runInterpret computation initialState input =
-  runExcept (runStateT (computation input) initialState)
 
 newtype Command = Command
   { description ∷ String
