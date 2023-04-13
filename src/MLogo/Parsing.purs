@@ -9,7 +9,6 @@ module MLogo.Parsing
 
 import Prelude
 
-import Control.Alt ((<|>))
 import Control.Lazy as Lazy
 import Data.Either.Nested (type (\/))
 import Data.Function.Uncurried (mkFn5, runFn2)
@@ -30,14 +29,9 @@ import Parsing
   , Position(..)
   )
 import Parsing (fail, runParser) as P
-import Parsing.Combinators
-  ( between
-  , choice
-  , many
-  , manyTill_
-  , optional
-  , sepBy
-  ) as P
+import Parsing.Combinators (choice, many, manyTill_, optional, sepBy) as P
+import Test.QuickCheck (class Arbitrary)
+import Test.QuickCheck.Arbitrary (genericArbitrary)
 
 keywords ∷ Set String
 keywords = Set.fromFoldable
@@ -70,11 +64,15 @@ derive instance Eq Statement
 instance Show Statement where
   show statement = genericShow statement
 
+instance Arbitrary Statement where
+  arbitrary = Lazy.defer \_ → genericArbitrary
+
 newtype Parameter = Parameter String
 
 derive newtype instance Eq Parameter
 derive newtype instance Ord Parameter
 derive newtype instance Show Parameter
+derive newtype instance Arbitrary Parameter
 
 data Expression
   = BooleanLiteral Boolean
@@ -89,6 +87,9 @@ derive instance Eq Expression
 instance Show Expression where
   show expression = genericShow expression
 
+instance Arbitrary Expression where
+  arbitrary = Lazy.defer \_ → genericArbitrary
+
 data NumericLiteral
   = IntegerLiteral Int
   | NumberLiteral Number
@@ -98,6 +99,9 @@ derive instance Eq NumericLiteral
 
 instance Show NumericLiteral where
   show = genericShow
+
+instance Arbitrary NumericLiteral where
+  arbitrary = genericArbitrary
 
 data ControlStructure
   = IfBlock Statement (List Statement)
@@ -110,6 +114,9 @@ derive instance Eq ControlStructure
 
 instance Show ControlStructure where
   show = genericShow
+
+instance Arbitrary ControlStructure where
+  arbitrary = Lazy.defer \_ → genericArbitrary
 
 procedureCallParser ∷ TokenParser Statement
 procedureCallParser = Lazy.defer \_ → do

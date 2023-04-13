@@ -1,6 +1,6 @@
 module MLogo.Interpretation.State
   ( Angle(..)
-  , ExecutionState
+  , ExecutionState(..)
   , Line
   , PointerState
   , Position(..)
@@ -18,17 +18,24 @@ module MLogo.Interpretation.State
 import Prelude
 
 import Data.Argonaut.Encode (class EncodeJson)
+import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Int as Int
 import Data.List (List(..))
+import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import MLogo.Parsing (Parameter, Statement)
+import Test.QuickCheck (class Arbitrary, arbitrary)
+import Test.QuickCheck.Arbitrary (genericArbitrary)
+import Test.QuickCheck.Gen (Gen)
+import Test.QuickCheck.Gen as Gen
 
 data Value
   = BooleanValue Boolean
@@ -37,11 +44,13 @@ data Value
   | WordValue String
 
 derive instance Generic Value _
-
 derive instance Eq Value
 
 instance Show Value where
   show = genericShow
+
+instance Arbitrary Value where
+  arbitrary = genericArbitrary
 
 newtype Angle = Angle Number
 
@@ -50,6 +59,7 @@ derive newtype instance Show Angle
 derive newtype instance Semiring Angle
 derive newtype instance Ring Angle
 derive newtype instance EncodeJson Angle
+derive newtype instance Arbitrary Angle
 
 extractBoolean ∷ Value → String \/ Boolean
 extractBoolean = case _ of
@@ -107,7 +117,7 @@ initialPointerState =
 
 type ScreenState = List Line
 
-type ExecutionState =
+newtype ExecutionState = ExecutionState
   { callStack ∷
       List
         { name ∷ String
@@ -124,6 +134,38 @@ type ExecutionState =
   , variables ∷ Map String Value
   }
 
+derive newtype instance Eq ExecutionState
+derive newtype instance Show ExecutionState
+
+derive instance Newtype ExecutionState _
+
+instance Arbitrary ExecutionState where
+  arbitrary = do
+    callStack ← List.fromFoldable <$> Gen.arrayOf genCallStackElement
+    outputtedValue ← arbitrary
+    pointer ← arbitrary
+    procedures ← pure Map.empty {- FIXME genMap arbitrary arbitrary-}
+    screen ← arbitrary
+    variables ← genMap arbitrary arbitrary
+    pure $ ExecutionState
+      { callStack
+      , outputtedValue
+      , pointer
+      , procedures
+      , screen
+      , variables
+      }
+    where
+    genMap ∷ ∀ k v. Ord k ⇒ Gen k → Gen v → Gen (Map k v)
+    genMap genKey genValue = do
+      keys ← Gen.arrayOf genKey
+      values ← Gen.arrayOf genValue
+      pure $ Map.fromFoldable $ Array.zip keys values
+    genCallStackElement = do
+      name ← arbitrary
+      boundArguments ← genMap arbitrary arbitrary
+      pure { boundArguments, name }
+
 type VisibleState =
   { pointer ∷ PointerState
   , screen ∷ ScreenState
@@ -131,13 +173,14 @@ type VisibleState =
 
 initialExecutionState ∷ ExecutionState
 initialExecutionState =
-  { callStack: Nil
-  , outputtedValue: Nothing
-  , pointer: initialPointerState
-  , procedures: Map.empty
-  , screen: Nil
-  , variables: Map.empty
-  }
+  ExecutionState
+    { callStack: Nil
+    , outputtedValue: Nothing
+    , pointer: initialPointerState
+    , procedures: Map.empty
+    , screen: Nil
+    , variables: Map.empty
+    }
 
 newtype Position = Position { x ∷ Number, y ∷ Number }
 
@@ -145,6 +188,7 @@ derive instance Generic Position _
 derive newtype instance Eq Position
 derive newtype instance Show Position
 derive newtype instance EncodeJson Position
+derive newtype instance Arbitrary Position
 
 instance Semiring Position where
   add (Position p1) (Position p2) = Position

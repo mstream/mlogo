@@ -4,23 +4,73 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
+import Data.List (List(..))
 import Data.List as List
 import Data.Maybe (Maybe(..))
+import Data.Newtype as Newtype
 import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.State
-  ( ExecutionState
+  ( ExecutionState(..)
   , Line
   , Position(..)
   , Value(..)
   )
 import MLogo.Interpretation.State as State
+import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
+import Test.Spec.QuickCheck (quickCheck)
 
 spec ∷ Spec Unit
 spec = describe "Command" do
+  describe "clean" do
+    it "interprets \"clean\" command" do
+      quickCheck \(ExecutionState state) →
+        let
+          (Command { interpret }) = Command.clean
+          actual = Command.runInterpret
+            interpret
+            (ExecutionState state)
+            Nil
+          expected = Right $ Nothing /\
+            (ExecutionState $ state { screen = Nil })
+        in
+          actual === expected
+
+    it "interprets \"clearscreen\" command" do
+      quickCheck \(ExecutionState state) →
+        let
+          (Command { interpret }) = Command.clearScreen
+          actual = Command.runInterpret
+            interpret
+            (ExecutionState state)
+            Nil
+          expected = Right $ Nothing /\
+            ( ExecutionState $ state
+                { pointer = state.pointer { position = zero }
+                , screen = Nil
+                }
+            )
+        in
+          actual === expected
+
+    it "interprets \"home\" command" do
+      quickCheck \(ExecutionState state) →
+        let
+          (Command { interpret }) = Command.goHome
+          actual = Command.runInterpret
+            interpret
+            (ExecutionState state)
+            Nil
+          expected = Right $ Nothing /\
+            ( ExecutionState $ state
+                { pointer = state.pointer { position = zero } }
+            )
+        in
+          actual === expected
+
   describe "isEqual" do
     isEqualTestCase
       "zero arguments"
@@ -175,13 +225,16 @@ moveBackwardTestCase title arguments expected =
     title
     State.initialExecutionState
     arguments
-    ( ( \exp → Nothing /\ State.initialExecutionState
-          { pointer = State.initialExecutionState.pointer
-              { position = exp.pointerPosition }
-          , screen = List.fromFoldable exp.lines
-          }
+    ( ( \exp → Nothing /\ (Newtype.over ExecutionState (f exp))
+          State.initialExecutionState
       ) <$> expected
     )
+  where
+  f exp state = state
+    { pointer = state.pointer
+        { position = exp.pointerPosition }
+    , screen = List.fromFoldable exp.lines
+    }
 
 moveForwardTestCase
   ∷ String
@@ -194,13 +247,16 @@ moveForwardTestCase title arguments expected =
     title
     State.initialExecutionState
     arguments
-    ( ( \exp → Nothing /\ State.initialExecutionState
-          { pointer = State.initialExecutionState.pointer
-              { position = exp.pointerPosition }
-          , screen = List.fromFoldable exp.lines
-          }
+    ( ( \exp → Nothing /\ (Newtype.over ExecutionState (f exp))
+          State.initialExecutionState
       ) <$> expected
     )
+  where
+  f exp state = state
+    { pointer = state.pointer
+        { position = exp.pointerPosition }
+    , screen = List.fromFoldable exp.lines
+    }
 
 penDownTestCase
   ∷ String
@@ -211,16 +267,19 @@ penDownTestCase title isDown expected =
   commandTestCase
     Command.penDown
     title
-    ( State.initialExecutionState
-        { pointer = State.initialExecutionState.pointer
-            { isDown = isDown }
-        }
+    ( ( Newtype.over ExecutionState \state → state
+          { pointer = state.pointer
+              { isDown = isDown }
+          }
+      ) State.initialExecutionState
     )
     []
-    ( Right $ Nothing /\ State.initialExecutionState
-        { pointer = State.initialExecutionState.pointer
-            { isDown = expected }
-        }
+    ( Right $ Nothing /\
+        ( Newtype.over ExecutionState \state → state
+            { pointer = state.pointer
+                { isDown = expected }
+            }
+        ) State.initialExecutionState
     )
 
 penUpTestCase
@@ -232,16 +291,19 @@ penUpTestCase title isDown expected =
   commandTestCase
     Command.penUp
     title
-    ( State.initialExecutionState
-        { pointer = State.initialExecutionState.pointer
-            { isDown = isDown }
-        }
+    ( ( Newtype.over ExecutionState \state → state
+          { pointer = state.pointer
+              { isDown = isDown }
+          }
+      ) State.initialExecutionState
     )
     []
-    ( Right $ Nothing /\ State.initialExecutionState
-        { pointer = State.initialExecutionState.pointer
-            { isDown = expected }
-        }
+    ( Right $ Nothing /\
+        ( Newtype.over ExecutionState \state → state
+            { pointer = state.pointer
+                { isDown = expected }
+            }
+        ) State.initialExecutionState
     )
 
 sumTestCase

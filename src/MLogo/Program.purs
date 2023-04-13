@@ -5,7 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import MLogo.Interpretation as Interpretation
-import MLogo.Interpretation.State (VisibleState)
+import MLogo.Interpretation.State (ExecutionState(..), VisibleState)
 import MLogo.Lexing as Lexing
 import MLogo.Parsing as Parsing
 import Parsing as P
@@ -30,12 +30,13 @@ run source = do
     Right statements →
       Right statements
 
-  { pointer, screen } ← case Interpretation.run statements of
-    Left interpretationError →
-      Left $ show statements
-        <> "\n\nInterpretation error: "
-        <> interpretationError
-    Right state →
-      Right state
+  (ExecutionState { pointer, screen }) ←
+    case Interpretation.run statements of
+      Left interpretationError →
+        Left $ show statements
+          <> "\n\nInterpretation error: "
+          <> interpretationError
+      Right state →
+        Right state
 
   pure { pointer, screen }

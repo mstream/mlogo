@@ -14,7 +14,7 @@ import Data.Tuple as Tuple
 import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
-import MLogo.Interpretation.State (ExecutionState, Value(..))
+import MLogo.Interpretation.State (ExecutionState(..), Value(..))
 import MLogo.Interpretation.State as State
 import MLogo.Parsing
   ( ControlStructure(..)
@@ -26,12 +26,12 @@ import MLogo.Parsing
 
 run ∷ List Statement → String \/ ExecutionState
 run statements = do
-  state ← Tuple.snd <$> interpretBlockOfStatements
+  (ExecutionState state) ← Tuple.snd <$> interpretBlockOfStatements
     State.initialExecutionState
     statements
 
   if List.null state.callStack then
-    Right state
+    Right (ExecutionState state)
   else Left "the call stack has not been cleared"
 
 interpretBlockOfStatements
@@ -45,13 +45,15 @@ interpretBlockOfStatements initialState =
     ∷ (Maybe Value /\ ExecutionState)
     → Statement
     → String \/ (Maybe Value /\ ExecutionState)
-  f (_ /\ state) statement =
+  f (_ /\ (ExecutionState state)) statement =
     case state.outputtedValue of
       Just value →
-        Right $ Just value /\ state
+        Right $ Just value /\ (ExecutionState state)
       Nothing → do
-        _ /\ newState ← interpretStatement state statement
-        Right $ newState.outputtedValue /\ newState
+        _ /\ (ExecutionState newState) ← interpretStatement
+          (ExecutionState state)
+          statement
+        Right $ newState.outputtedValue /\ (ExecutionState newState)
 
 interpretStatement
   ∷ ExecutionState
@@ -145,14 +147,17 @@ interpretOutputCall
   ∷ ExecutionState
   → Statement
   → String \/ ExecutionState
-interpretOutputCall state expression =
+interpretOutputCall (ExecutionState state) expression =
   if List.null state.callStack then
     Left "value output can be returned only from a procedure"
   else do
-    mbValue /\ newState ← interpretStatement state expression
+    mbValue /\ (ExecutionState newState) ← interpretStatement
+      (ExecutionState state)
+      expression
     case mbValue of
       Just value →
-        Right $ newState { outputtedValue = Just value }
+        Right $ ExecutionState $ newState
+          { outputtedValue = Just value }
       Nothing →
         Left "output called with no value"
 
@@ -178,13 +183,15 @@ interpretProcedureCall
   → String
   → List Statement
   → String \/ (Maybe Value /\ ExecutionState)
-interpretProcedureCall state name arguments = do
-  evaluatedArguments /\ newState ← evaluateArguments state arguments
+interpretProcedureCall (ExecutionState state) name arguments = do
+  evaluatedArguments /\ (ExecutionState newState) ← evaluateArguments
+    (ExecutionState state)
+    arguments
   case Map.lookup name Command.commandsByAlias of
     Just (Command command) →
       Command.runInterpret
         command.interpret
-        newState
+        (ExecutionState newState)
         evaluatedArguments
     Nothing → do
       { body, parameters } ← Either.note
@@ -206,14 +213,17 @@ interpretProcedureCall state name arguments = do
               , boundArguments
               } : newState.callStack
 
-          mbValue /\ newState' ← interpretBlockOfStatements
-            (newState { callStack = newCallStack })
-            body
+          mbValue /\ (ExecutionState newState') ←
+            interpretBlockOfStatements
+              (ExecutionState $ newState { callStack = newCallStack })
+              body
 
-          Right $ mbValue /\ newState'
-            { callStack = newState.callStack
-            , outputtedValue = Nothing
-            }
+          Right $ mbValue /\
+            ( ExecutionState $ newState'
+                { callStack = newState.callStack
+                , outputtedValue = Nothing
+                }
+            )
 
 interpretProcedureDefinition
   ∷ ExecutionState
@@ -221,8 +231,8 @@ interpretProcedureDefinition
   → List Parameter
   → List Statement
   → String \/ ExecutionState
-interpretProcedureDefinition state name parameters body =
-  Right $ state
+interpretProcedureDefinition (ExecutionState state) name parameters body =
+  Right $ ExecutionState $ state
     { procedures = Map.insert name { body, parameters } state.procedures
     }
 
@@ -244,14 +254,15 @@ evaluateExpression state = case _ of
     Right $ WordValue s /\ state
 
 evaluateVariableReference ∷ ExecutionState → String → String \/ Value
-evaluateVariableReference state name = case findInProcedureParameters of
-  Just value →
-    Right value
-  Nothing → case findInVariables of
+evaluateVariableReference (ExecutionState state) name =
+  case findInProcedureParameters of
     Just value →
       Right value
-    Nothing →
-      Left $ "variable \"" <> name <> "\" not found"
+    Nothing → case findInVariables of
+      Just value →
+        Right value
+      Nothing →
+        Left $ "variable \"" <> name <> "\" not found"
   where
   findInProcedureParameters = case List.head state.callStack of
     Just { boundArguments } →

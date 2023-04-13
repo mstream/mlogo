@@ -2,7 +2,10 @@ module MLogo.Interpretation.Command
   ( Command(..)
   , Interpret
   , InterpretCommand
+  , clean
+  , clearScreen
   , commandsByAlias
+  , goHome
   , isEqual
   , moveBackward
   , moveForward
@@ -38,7 +41,7 @@ import MLogo.Interpretation.Command.Input (Parameters, ValueType(..))
 import MLogo.Interpretation.Command.Input as Input
 import MLogo.Interpretation.State
   ( Angle(..)
-  , ExecutionState
+  , ExecutionState(..)
   , Position(..)
   , Value(..)
   )
@@ -301,13 +304,14 @@ interpretIsEqual = pure <<< Just <<< BooleanValue <<< go true Nothing
 interpretVariableAssignment
   ∷ ∀ m. Interpret m { name ∷ String, value ∷ Value }
 interpretVariableAssignment { name, value } = do
-  modify_ \state →
-    state { variables = Map.insert name value state.variables }
+  modify_ \(ExecutionState state) →
+    ExecutionState $ state
+      { variables = Map.insert name value state.variables }
   pure Nothing
 
 interpretMoveForward ∷ ∀ m. Interpret m Number
 interpretMoveForward steps = do
-  state ← get
+  (ExecutionState state) ← get
 
   let
     rads = State.toRadians state.pointer.angle
@@ -321,8 +325,8 @@ interpretMoveBackward steps = interpretMoveForward (-steps)
 
 interpretTurnRight ∷ ∀ m. Interpret m Number
 interpretTurnRight angle = do
-  modify_ \state →
-    state
+  modify_ \(ExecutionState state) →
+    ExecutionState $ state
       { pointer = state.pointer
           { angle = state.pointer.angle + Angle angle }
       }
@@ -333,23 +337,26 @@ interpretTurnLeft angle = interpretTurnRight (-angle)
 
 interpretPenDown ∷ ∀ m. Interpret m Unit
 interpretPenDown _ = do
-  modify_ \state → state { pointer = state.pointer { isDown = true } }
+  modify_ \(ExecutionState state) → ExecutionState $ state
+    { pointer = state.pointer { isDown = true } }
   pure Nothing
 
 interpretPenUp ∷ ∀ m. Interpret m Unit
 interpretPenUp _ = do
-  modify_ \state → state { pointer = state.pointer { isDown = false } }
+  modify_ \(ExecutionState state) → ExecutionState $ state
+    { pointer = state.pointer { isDown = false } }
   pure Nothing
 
 interpretGoHome ∷ ∀ m. Interpret m Unit
 interpretGoHome _ = do
-  modify_ \state → state
+  modify_ \(ExecutionState state) → ExecutionState $ state
     { pointer = state.pointer { position = (zero ∷ Position) } }
   pure Nothing
 
 interpretClean ∷ ∀ m. Interpret m Unit
 interpretClean _ = do
-  modify_ \state → state { screen = Nil }
+  modify_ \(ExecutionState state) → ExecutionState $ state
+    { screen = Nil }
   pure Nothing
 
 interpretClearScreen ∷ ∀ m. Interpret m Unit
@@ -359,7 +366,7 @@ interpretClearScreen _ = do
 
 moveTo ∷ ∀ m. Interpret m Position
 moveTo target = do
-  modify_ \state → state
+  modify_ \(ExecutionState state) → ExecutionState state
     { pointer = state.pointer { position = target }
     , screen =
         if state.pointer.isDown then

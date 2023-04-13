@@ -24,28 +24,14 @@ import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Exists (Exists)
 import Data.Exists as Exists
-import Data.Foldable (foldl)
 import Data.Generic.Rep (class Generic)
 import Data.List (List(..), (:))
 import Data.List as List
-import Data.Map (Map)
-import Data.Map as Map
-import Data.Maybe (Maybe(..))
-import Data.Number as Number
 import Data.Show.Generic (genericShow)
-import Data.Symbol (class IsSymbol, reflectSymbol)
 import Data.Traversable as Traversable
 import Data.Tuple.Nested (type (/\), (/\))
-import Heterogeneous.Folding (class FoldingWithIndex)
-import Heterogeneous.Folding as Heterogeneous
-import MLogo.Interpretation.State
-  ( Angle(..)
-  , ExecutionState
-  , Position(..)
-  , Value(..)
-  )
+import MLogo.Interpretation.State (Value)
 import MLogo.Interpretation.State as State
-import Type.Proxy (Proxy)
 
 data FixedInputParser a
   = NilParser a
