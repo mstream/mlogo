@@ -1,5 +1,12 @@
 
 
+## [0.9.0](https://github.com/mstream/mlogo/compare/0.8.1...0.9.0) (2023-04-14)
+
+
+### Features
+
+* implement call stack overflow prevention ([ab8a378](https://github.com/mstream/mlogo/commit/ab8a378bdfdb84d24c3dff5073eee1ed0bf7c126))
+
 ### [0.8.1](https://github.com/mstream/mlogo/compare/0.8.0...0.8.1) (2023-04-14)
 
 ## [0.8.0](https://github.com/mstream/mlogo/compare/0.7.6...0.8.0) (2023-04-14)
