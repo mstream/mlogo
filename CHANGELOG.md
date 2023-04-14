@@ -1,5 +1,12 @@
 
 
+## [0.8.0](https://github.com/mstream/mlogo/compare/0.7.6...0.8.0) (2023-04-14)
+
+
+### Features
+
+* add examples generation to the legend ([0997a0f](https://github.com/mstream/mlogo/commit/0997a0f09a9a63e2430894d32f31f434be975e72))
+
 ### [0.7.6](https://github.com/mstream/mlogo/compare/0.7.5...0.7.6) (2023-04-14)
 
 
