@@ -1,5 +1,12 @@
 
 
+### [0.7.6](https://github.com/mstream/mlogo/compare/0.7.5...0.7.6) (2023-04-14)
+
+
+### Bug Fixes
+
+* make the parser tolerate redundant line breaks ([e64ea76](https://github.com/mstream/mlogo/commit/e64ea766600ec7c950137e663588216f2ba4a5a9))
+
 ### [0.7.5](https://github.com/mstream/mlogo/compare/0.7.4...0.7.5) (2023-04-14)
 
 ### [0.7.4](https://github.com/mstream/mlogo/compare/0.7.3...0.7.4) (2023-04-13)
