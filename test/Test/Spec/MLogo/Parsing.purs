@@ -215,6 +215,51 @@ spec = describe "Parsing" do
       )
 
     testCase
+      "multiple procedure calls - separate lines, redundant line breaks"
+      [ UnquotedWord "proc1"
+      , ColonPrefixedWord "var1"
+      , LineBreak
+      , LineBreak
+      , UnquotedWord "proc2"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , LineBreak
+      , LineBreak
+      , UnquotedWord "proc3"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , ColonPrefixedWord "var3"
+      ]
+      ( Right $
+          [ ProcedureCall
+              "proc1"
+              ( List.fromFoldable
+                  [ ExpressionStatement $ VariableReference "var1" ]
+              )
+          , ProcedureCall
+              "proc2"
+              ( List.fromFoldable
+                  [ ExpressionStatement $ VariableReference
+                      "var1"
+                  , ExpressionStatement $ VariableReference
+                      "var2"
+                  ]
+              )
+          , ProcedureCall
+              "proc3"
+              ( List.fromFoldable
+                  [ ExpressionStatement $
+                      VariableReference "var1"
+                  , ExpressionStatement $
+                      VariableReference "var2"
+                  , ExpressionStatement $
+                      VariableReference "var3"
+                  ]
+              )
+          ]
+      )
+
+    testCase
       "multiple procedure calls - same line"
       [ UnquotedWord "proc1"
       , ColonPrefixedWord "var1"

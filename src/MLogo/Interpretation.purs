@@ -49,8 +49,8 @@ interpretBlockOfStatements
 interpretBlockOfStatements =
   foldM f Nothing
   where
-  {-f ∷ Maybe Value → Interpret m Statement-}
-  f mbValue statement = do
+  {- TODO: use a more suitable function than foldM -}
+  f _ statement = do
     state ← Newtype.unwrap <$> get
     case state.outputtedValue of
       Just value →

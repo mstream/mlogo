@@ -129,7 +129,7 @@ run tokens = P.runParser tokens programParser
 
 programParser ∷ ProgramParser
 programParser = Lazy.defer \_ →
-  statementParser `P.sepBy` skipLineBreak
+  statementParser `P.sepBy` skipLineBreaks
 
 statementParser ∷ TokenParser Statement
 statementParser = Lazy.defer \_ →
@@ -197,15 +197,18 @@ procedureDefinitionParser = do
   void $ consumeUnquotedWord (_ == "to")
   name ← consumeUnquotedWord isNotKeyword
   parameters ← P.many consumeColonPrefixedWord
-  skipLineBreak
+  skipLineBreaks
   body /\ _ ← P.manyTill_
     ( do
         statement ← statementParser
-        void $ P.optional skipLineBreak
+        void $ P.optional skipLineBreaks
         pure statement
     )
     (consumeUnquotedWord (_ == "end"))
   pure $ ProcedureDefinition name (Parameter <$> parameters) body
+
+skipLineBreaks ∷ TokenParser Unit
+skipLineBreaks = void $ P.many skipLineBreak
 
 skipLineBreak ∷ TokenParser Unit
 skipLineBreak = consumeToken case _ of
