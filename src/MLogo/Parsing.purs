@@ -29,7 +29,14 @@ import Parsing
   , Position(..)
   )
 import Parsing (fail, runParser) as P
-import Parsing.Combinators (choice, many, manyTill_, optional, sepBy) as P
+import Parsing.Combinators
+  ( between
+  , choice
+  , many
+  , manyTill_
+  , optional
+  , sepBy
+  ) as P
 import Test.QuickCheck (class Arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
 
@@ -121,8 +128,17 @@ instance Arbitrary ControlStructure where
 procedureCallParser ∷ TokenParser Statement
 procedureCallParser = Lazy.defer \_ → do
   name ← consumeUnquotedWord isNotKeyword
-  args ← P.many statementParser
+  args ← P.many procedureArgumentParser
   pure $ ProcedureCall name args
+
+procedureArgumentParser ∷ TokenParser Statement
+procedureArgumentParser = Lazy.defer \_ → P.choice
+  [ expressionStatementParser
+  , P.between
+      (consumeBracket (_ == RoundOpening))
+      (consumeBracket (_ == RoundClosing))
+      procedureCallParser
+  ]
 
 run ∷ List Token → ParseError \/ List Statement
 run tokens = P.runParser tokens programParser

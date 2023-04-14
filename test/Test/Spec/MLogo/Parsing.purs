@@ -275,6 +275,51 @@ spec = describe "Parsing" do
           [ ProcedureCall
               "proc1"
               ( List.fromFoldable
+                  [ ExpressionStatement $ VariableReference "var1" ]
+              )
+          , ProcedureCall
+              "proc2"
+              ( List.fromFoldable
+                  [ ExpressionStatement $ VariableReference
+                      "var1"
+                  , ExpressionStatement $ VariableReference
+                      "var2"
+                  ]
+              )
+          , ProcedureCall
+              "proc3"
+              ( List.fromFoldable
+                  [ ExpressionStatement $
+                      VariableReference "var1"
+                  , ExpressionStatement $
+                      VariableReference "var2"
+                  , ExpressionStatement $
+                      VariableReference "var3"
+                  ]
+              )
+          ]
+      )
+
+    testCase
+      "multiple procedure calls - same line, order determined by parenthesis"
+      [ UnquotedWord "proc1"
+      , ColonPrefixedWord "var1"
+      , Bracket RoundOpening
+      , UnquotedWord "proc2"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , Bracket RoundClosing
+      , Bracket RoundOpening
+      , UnquotedWord "proc3"
+      , ColonPrefixedWord "var1"
+      , ColonPrefixedWord "var2"
+      , ColonPrefixedWord "var3"
+      , Bracket RoundClosing
+      ]
+      ( Right $
+          [ ProcedureCall
+              "proc1"
+              ( List.fromFoldable
                   [ ExpressionStatement $ VariableReference "var1"
                   , ProcedureCall
                       "proc2"
@@ -283,17 +328,17 @@ spec = describe "Parsing" do
                               "var1"
                           , ExpressionStatement $ VariableReference
                               "var2"
-                          , ProcedureCall
-                              "proc3"
-                              ( List.fromFoldable
-                                  [ ExpressionStatement $
-                                      VariableReference "var1"
-                                  , ExpressionStatement $
-                                      VariableReference "var2"
-                                  , ExpressionStatement $
-                                      VariableReference "var3"
-                                  ]
-                              )
+                          ]
+                      )
+                  , ProcedureCall
+                      "proc3"
+                      ( List.fromFoldable
+                          [ ExpressionStatement $
+                              VariableReference "var1"
+                          , ExpressionStatement $
+                              VariableReference "var2"
+                          , ExpressionStatement $
+                              VariableReference "var3"
                           ]
                       )
                   ]
@@ -318,16 +363,15 @@ spec = describe "Parsing" do
           [ ProcedureCall
               "proc1"
               ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference "var1"
-                  , ProcedureCall
-                      "proc2"
-                      ( List.fromFoldable
-                          [ ExpressionStatement $ VariableReference
-                              "var1"
-                          , ExpressionStatement $ VariableReference
-                              "var2"
-                          ]
-                      )
+                  [ ExpressionStatement $ VariableReference "var1" ]
+              )
+          , ProcedureCall
+              "proc2"
+              ( List.fromFoldable
+                  [ ExpressionStatement $ VariableReference
+                      "var1"
+                  , ExpressionStatement $ VariableReference
+                      "var2"
                   ]
               )
           , ProcedureCall
@@ -348,7 +392,8 @@ testCase
   ∷ String → Array Token → ParseError \/ Array Statement → Spec Unit
 testCase title tokens expected = it
   ("parses \"" <> title <> "\"")
-  ( (Parsing.run $ List.fromFoldable tokens) `shouldEqual`
-      (List.fromFoldable <$> expected)
+  ( (Parsing.run $ List.fromFoldable tokens)
+      `shouldEqual`
+        (List.fromFoldable <$> expected)
   )
 
