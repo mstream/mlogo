@@ -138,7 +138,7 @@ derive instance Newtype ExecutionState _
 
 instance Arbitrary ExecutionState where
   arbitrary = do
-    callStack ← pure Nil {-List.fromFoldable <$> Gen.arrayOf genCallStackElement-}
+    callStack ← pure Nil {- FIXME List.fromFoldable <$> Gen.arrayOf genCallStackElement-}
     outputtedValue ← arbitrary
     pointer ← arbitrary
     procedures ← pure Map.empty {- FIXME genMap arbitrary arbitrary-}

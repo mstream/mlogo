@@ -212,6 +212,10 @@ interpetUserDefinedProcedureCall
     else do
       newState ← Newtype.unwrap <$> get
 
+      when
+        (List.length newState.callStack >= maximumCallStackSize)
+        (throwError "call stack overflow")
+
       modify_ $ Newtype.over
         ExecutionState
         ( \st → st
@@ -257,25 +261,6 @@ evaluateExpression = case _ of
   WordLiteral s →
     pure $ Just $ WordValue s
 
-{-
-evaluateVariableReference ∷ ExecutionState → String → String \/ Value
-evaluateVariableReference (ExecutionState state) name =
-  case findInProcedureParameters of
-    Just value →
-      Right value
-    Nothing → case findInVariables of
-      Just value →
-        Right value
-      Nothing →
-        Left $ "variable \"" <> name <> "\" not found"
-  where
-  findInProcedureParameters = case List.head state.callStack of
-    Just { boundArguments } →
-      Map.lookup (Parameter name) boundArguments
-    Nothing →
-      Nothing
-  findInVariables = Map.lookup name state.variables
-  -}
 evaluateVariableReference ∷ ∀ m. Interpret m String
 evaluateVariableReference name = do
   { callStack, variables } ← Newtype.unwrap <$> get
@@ -298,3 +283,6 @@ evaluateVariableReference name = do
           pure $ Just value
         Nothing →
           throwError $ "variable \"" <> name <> "\" not found"
+
+maximumCallStackSize ∷ Int
+maximumCallStackSize = 100

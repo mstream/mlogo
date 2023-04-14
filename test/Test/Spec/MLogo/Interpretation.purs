@@ -626,6 +626,25 @@ spec = describe "Interpretation" do
           )
     )
 
+    ( let
+        procedureName1 = "procedure1"
+        procedureParameters1 = Nil
+        procedureBody1 =
+          (List.fromFoldable [ ProcedureCall procedureName1 Nil ])
+      in
+        testCase
+          "endless recursion"
+          [ ProcedureDefinition
+              procedureName1
+              procedureParameters1
+              procedureBody1
+          , ProcedureCall
+              procedureName1
+              Nil
+          ]
+          (Left "call stack overflow")
+    )
+
 testCase
   ∷ String → Array Statement → String \/ ExecutionState → Spec Unit
 testCase title statements expected = it

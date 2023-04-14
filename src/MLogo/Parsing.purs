@@ -208,14 +208,15 @@ procedureDefinitionParser = do
   pure $ ProcedureDefinition name (Parameter <$> parameters) body
 
 skipLineBreaks ∷ TokenParser Unit
-skipLineBreaks = void $ P.many skipLineBreak
-
-skipLineBreak ∷ TokenParser Unit
-skipLineBreak = consumeToken case _ of
-  LineBreak →
-    Just unit
-  _ →
-    Nothing
+skipLineBreaks =
+  void $ P.many skipLineBreak
+  where
+  skipLineBreak ∷ TokenParser Unit
+  skipLineBreak = consumeToken case _ of
+    LineBreak →
+      Just unit
+    _ →
+      Nothing
 
 expressionParser ∷ TokenParser Expression
 expressionParser = Lazy.defer \_ →
