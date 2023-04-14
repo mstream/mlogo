@@ -1,5 +1,12 @@
 
 
+### [0.9.1](https://github.com/mstream/mlogo/compare/0.9.0...0.9.1) (2023-04-14)
+
+
+### Bug Fixes
+
+* correct the association rules of parsing ([4b28d37](https://github.com/mstream/mlogo/commit/4b28d375032954cb9a102162a30d06d2e0755c20))
+
 ## [0.9.0](https://github.com/mstream/mlogo/compare/0.8.1...0.9.0) (2023-04-14)
 
 
