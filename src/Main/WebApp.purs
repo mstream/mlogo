@@ -7,13 +7,11 @@ import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.List (List)
 import Data.List as List
-import Data.Map as Map
-import Data.Maybe (Maybe(..))
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Aff.Class (class MonadAff)
-import Halogen (ClassName(..), Component)
+import Halogen (ClassName(..), Component, Slot)
 import Halogen.Aff (selectElement)
 import Halogen.HTML (HTML)
 import Halogen.HTML as HH
@@ -23,13 +21,7 @@ import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
 import Halogen.Svg.Elements as SE
 import Halogen.VDom.Driver (runUI)
-import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
-import MLogo.Interpretation.Command.Input
-  ( Parameter
-  , Parameters(..)
-  , ValueType
-  )
 import MLogo.Interpretation.State
   ( Angle(..)
   , PointerState
@@ -40,6 +32,7 @@ import MLogo.Interpretation.State
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
 import MLogo.WebApp.AceComponent as AceComponent
+import MLogo.WebApp.LegendComponent as LegendComponent
 import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
@@ -47,9 +40,11 @@ type State = { text ∷ String }
 
 type ChildSlots =
   ( ace ∷ AceComponent.Slot Unit
+  , legend ∷ ∀ q slot. Slot q Void slot
   )
 
 _ace = Proxy ∷ Proxy "ace"
+_legend = Proxy ∷ Proxy "legend"
 
 main ∷ Effect Unit
 main = launchAff_ do
@@ -89,7 +84,11 @@ rootComp = Hooks.component \_ _ → Hooks.do
               AceComponent.component
               unit
               handleAceOutput
-          , renderLegend $ Map.toUnfoldable Command.commandsByAlias
+          , HH.slot_
+              _legend
+              unit
+              LegendComponent.component
+              Command.commandsByAlias
           ]
       , case Program.run source of
           Left errorMessage →
@@ -107,54 +106,6 @@ renderSvg state = SE.svg
   , SA.viewBox 0.0 0.0 canvasSize canvasSize
   ]
   (Array.fromFoldable $ renderState state)
-
-renderLegend ∷ ∀ i w. Array (String /\ Command) → HTML w i
-renderLegend commandsByName = HH.div
-  [ HP.classes [ ClassName "legend" ] ]
-  (Array.fromFoldable $ renderLegendEntry <$> commandsByName)
-
-renderLegendEntry ∷ ∀ i w. String /\ Command → HTML w i
-renderLegendEntry
-  (name /\ Command { description, outputValueType, parameters }) =
-  HH.div
-    [ HP.classes [ ClassName "legend-entry" ] ]
-    [ HH.div
-        [ HP.classes [ ClassName "command-header" ] ]
-        ( [ HH.text name
-          , HH.text " "
-          ] <> renderParameters <> renderOutputType
-        )
-    , HH.div_ [ HH.text description ]
-    ]
-  where
-  renderOutputType = case outputValueType of
-    Just ovt →
-      [ HH.span_ [ HH.text " -> " ], renderValueType ovt ]
-    Nothing →
-      []
-  renderParameters = case parameters of
-    FixedParameters ps →
-      Array.intersperse
-        (HH.span_ [ HH.text " " ])
-        (renderParameter <$> ps)
-    VariableParameters p →
-      [ renderParameter p, HH.text "..." ]
-
-renderParameter ∷ ∀ i w. Parameter → HTML w i
-renderParameter { name, valueType } =
-  HH.span_
-    [ HH.text ":"
-    , HH.span
-        [ HP.classes [ ClassName "command-header" ] ]
-        [ HH.text name ]
-    , renderValueType valueType
-    ]
-
-renderValueType ∷ ∀ i w. ValueType → HTML w i
-renderValueType valueType = HH.span
-  [ HP.classes [ ClassName "parameter-value-type" ] ]
-  [ HH.text $ "(" <> show valueType <> ")"
-  ]
 
 renderState ∷ ∀ i w. VisibleState → List (HTML w i)
 renderState state =

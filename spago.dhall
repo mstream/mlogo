@@ -23,6 +23,7 @@
   , "newtype"
   , "node-buffer"
   , "node-fs"
+  , "nonempty"
   , "numbers"
   , "optparse"
   , "ordered-collections"

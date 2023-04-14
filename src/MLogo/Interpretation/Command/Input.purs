@@ -8,6 +8,7 @@ module MLogo.Interpretation.Command.Input
   , fixedNoInputParser
   , fixedNumberInputParser
   , fixedWordInputParser
+  , generateValuesFromParameters
   , parametersFromFixedInputParser
   , parametersFromVariableInputParser
   , runFixedInputParser
@@ -20,18 +21,25 @@ module MLogo.Interpretation.Command.Input
 import Prelude
 
 import Data.Array as Array
+import Data.Array.NonEmpty as NEArray
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Exists (Exists)
 import Data.Exists as Exists
 import Data.Generic.Rep (class Generic)
+import Data.Int as Int
 import Data.List (List(..), (:))
 import Data.List as List
+import Data.NonEmpty ((:|))
 import Data.Show.Generic (genericShow)
+import Data.Traversable (sequence)
 import Data.Traversable as Traversable
 import Data.Tuple.Nested (type (/\), (/\))
-import MLogo.Interpretation.State (Value)
+import MLogo.Interpretation.State (Value(..))
 import MLogo.Interpretation.State as State
+import Test.QuickCheck (arbitrary)
+import Test.QuickCheck.Gen (Gen)
+import Test.QuickCheck.Gen as Gen
 
 data FixedInputParser a
   = NilParser a
@@ -147,6 +155,13 @@ derive instance Eq Parameters
 instance Show Parameters where
   show = genericShow
 
+generateValuesFromParameters ∷ Parameters → Gen (Array Value)
+generateValuesFromParameters = case _ of
+  FixedParameters parameters →
+    sequence $ generateValueFromParameter <$> parameters
+  VariableParameters parameter →
+    Gen.vectorOf 3 (generateValueFromParameter parameter)
+
 type Parameter =
   { name ∷ String
   , valueType ∷ ValueType
@@ -160,6 +175,9 @@ wordParameter name = { name, valueType: WordType }
 
 numberParameter ∷ String → Parameter
 numberParameter name = { name, valueType: NumberType }
+
+generateValueFromParameter ∷ Parameter → Gen Value
+generateValueFromParameter { valueType } = generateValueOfType valueType
 
 data ValueType
   = AnyType
@@ -182,6 +200,22 @@ instance Show ValueType where
       "number"
     WordType →
       "word"
+
+generateValueOfType ∷ ValueType → Gen Value
+generateValueOfType = case _ of
+  AnyType →
+    arbitrary
+  BooleanType →
+    BooleanValue <$> arbitrary
+  IntegerType →
+    IntegerValue <$> Gen.chooseInt 1 99
+  NumberType → do
+    x1 ← Gen.chooseInt 1 99
+    x2 ← Gen.chooseInt 1 9
+    pure $ NumberValue $ Int.toNumber x1 + (Int.toNumber $ x2 / 10)
+  WordType →
+    WordValue <$> Gen.oneOf
+      (pure <$> (NEArray.fromNonEmpty $ "foo" :| [ "bar", "biz" ]))
 
 fixedNoInputParser ∷ FixedInputParser Unit
 fixedNoInputParser = NilParser unit
