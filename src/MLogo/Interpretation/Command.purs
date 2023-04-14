@@ -1,6 +1,5 @@
 module MLogo.Interpretation.Command
   ( Command(..)
-  , InterpretCommand
   , clean
   , clearScreen
   , commandsByAlias
@@ -16,8 +15,7 @@ module MLogo.Interpretation.Command
 import Prelude
 
 import Control.Monad.Error.Class (class MonadThrow, throwError)
-import Control.Monad.Except (Except)
-import Control.Monad.State (StateT, get, modify_)
+import Control.Monad.State (get, modify_)
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Foldable (foldl)
@@ -25,6 +23,7 @@ import Data.List (List(..), (:))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Newtype as Newtype
 import Data.Number as Number
 import Data.Symbol (class IsSymbol, reflectSymbol)
 import Heterogeneous.Folding (class FoldingWithIndex)
@@ -41,12 +40,9 @@ import MLogo.Interpretation.State
 import MLogo.Interpretation.State as State
 import Type.Proxy (Proxy)
 
-type InterpretCommand =
-  List Value → StateT ExecutionState (Except String) (Maybe Value)
-
 newtype Command = Command
   { description ∷ String
-  , interpret ∷ InterpretCommand
+  , interpret ∷ ∀ m. Interpret m (List Value)
   , name ∷ String
   , outputValueType ∷ Maybe ValueType
   , parameters ∷ Parameters
@@ -333,8 +329,7 @@ interpretGoHome _ = do
 
 interpretClean ∷ ∀ m. Interpret m Unit
 interpretClean _ = do
-  modify_ \(ExecutionState state) → ExecutionState $ state
-    { screen = Nil }
+  modify_ $ Newtype.over ExecutionState _ { screen = Nil }
   pure Nothing
 
 interpretClearScreen ∷ ∀ m. Interpret m Unit

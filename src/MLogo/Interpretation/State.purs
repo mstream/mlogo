@@ -1,5 +1,6 @@
 module MLogo.Interpretation.State
   ( Angle(..)
+  , CallStackElement
   , ExecutionState(..)
   , Line
   , PointerState
@@ -24,7 +25,6 @@ import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Int as Int
 import Data.List (List(..))
-import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -40,6 +40,7 @@ import Test.QuickCheck.Gen as Gen
 data Value
   = BooleanValue Boolean
   | IntegerValue Int
+  {- FIXME  | ListValue (List Value) -}
   | NumberValue Number
   | WordValue String
 
@@ -47,7 +48,7 @@ derive instance Generic Value _
 derive instance Eq Value
 
 instance Show Value where
-  show = genericShow
+  show v = genericShow v
 
 instance Arbitrary Value where
   arbitrary = genericArbitrary
@@ -118,11 +119,7 @@ initialPointerState =
 type ScreenState = List Line
 
 newtype ExecutionState = ExecutionState
-  { callStack ∷
-      List
-        { name ∷ String
-        , boundArguments ∷ Map Parameter Value
-        }
+  { callStack ∷ List CallStackElement
   , outputtedValue ∷ Maybe Value
   , pointer ∷ PointerState
   , procedures ∷
@@ -141,7 +138,7 @@ derive instance Newtype ExecutionState _
 
 instance Arbitrary ExecutionState where
   arbitrary = do
-    callStack ← List.fromFoldable <$> Gen.arrayOf genCallStackElement
+    callStack ← pure Nil {-List.fromFoldable <$> Gen.arrayOf genCallStackElement-}
     outputtedValue ← arbitrary
     pointer ← arbitrary
     procedures ← pure Map.empty {- FIXME genMap arbitrary arbitrary-}
@@ -161,10 +158,17 @@ instance Arbitrary ExecutionState where
       keys ← Gen.arrayOf genKey
       values ← Gen.arrayOf genValue
       pure $ Map.fromFoldable $ Array.zip keys values
+
+    genCallStackElement ∷ Gen CallStackElement
     genCallStackElement = do
       name ← arbitrary
       boundArguments ← genMap arbitrary arbitrary
       pure { boundArguments, name }
+
+type CallStackElement =
+  { name ∷ String
+  , boundArguments ∷ Map Parameter Value
+  }
 
 type VisibleState =
   { pointer ∷ PointerState

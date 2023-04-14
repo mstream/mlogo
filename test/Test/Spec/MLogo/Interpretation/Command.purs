@@ -2,6 +2,8 @@ module Test.Spec.MLogo.Interpretation.Command (spec) where
 
 import Prelude
 
+import Control.Monad.Except (class MonadError)
+import Control.Monad.State (class MonadState)
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.List (List(..))
@@ -11,6 +13,7 @@ import Data.Newtype as Newtype
 import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
+import MLogo.Interpretation.Interpret (Interpret)
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State
   ( ExecutionState(..)
@@ -30,11 +33,10 @@ spec = describe "Command" do
     it "interprets \"clean\" command" do
       quickCheck \(ExecutionState state) →
         let
-          (Command { interpret }) = Command.clean
           actual = Interpret.runInterpret
-            interpret
-            (ExecutionState state)
-            Nil
+            interpretCommand
+            (Newtype.wrap state)
+            { arguments: Nil, command: Command.clean }
           expected = Right $ Nothing /\
             (ExecutionState $ state { screen = Nil })
         in
@@ -43,11 +45,10 @@ spec = describe "Command" do
     it "interprets \"clearscreen\" command" do
       quickCheck \(ExecutionState state) →
         let
-          (Command { interpret }) = Command.clearScreen
           actual = Interpret.runInterpret
-            interpret
-            (ExecutionState state)
-            Nil
+            interpretCommand
+            (Newtype.wrap state)
+            { arguments: Nil, command: Command.clearScreen }
           expected = Right $ Nothing /\
             ( ExecutionState $ state
                 { pointer = state.pointer { position = zero }
@@ -60,11 +61,10 @@ spec = describe "Command" do
     it "interprets \"home\" command" do
       quickCheck \(ExecutionState state) →
         let
-          (Command { interpret }) = Command.goHome
           actual = Interpret.runInterpret
-            interpret
-            (ExecutionState state)
-            Nil
+            interpretCommand
+            (Newtype.wrap state)
+            { arguments: Nil, command: Command.goHome }
           expected = Right $ Nothing /\
             ( ExecutionState $ state
                 { pointer = state.pointer { position = zero } }
@@ -330,7 +330,7 @@ commandTestCase
   → String \/ (Maybe Value /\ ExecutionState)
   → Spec Unit
 commandTestCase
-  (Command { interpret, name })
+  command@(Command { name })
   title
   state
   arguments
@@ -338,10 +338,17 @@ commandTestCase
   it
     ("interprets \"" <> name <> "\" command: " <> title)
     ( ( Interpret.runInterpret
-          interpret
+          interpretCommand
           state
-          (List.fromFoldable arguments)
+          { arguments: List.fromFoldable arguments, command }
       )
         `shouldEqual` expected
     )
 
+interpretCommand
+  ∷ ∀ m
+  . MonadError String m
+  ⇒ MonadState ExecutionState m
+  ⇒ Interpret m { arguments ∷ List Value, command ∷ Command }
+interpretCommand { arguments, command: (Command { interpret }) } =
+  interpret arguments

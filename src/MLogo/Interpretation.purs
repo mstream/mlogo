@@ -2,10 +2,11 @@ module MLogo.Interpretation (run) where
 
 import Prelude
 
-import Control.Monad.Error.Class (throwError)
-import Control.Monad.State (get)
+import Control.Monad.Error.Class (liftEither, throwError)
+import Control.Monad.Except (class MonadError, runExcept)
+import Control.Monad.RWS (put)
+import Control.Monad.State (class MonadState, get, modify_, runStateT)
 import Data.Either (Either(..))
-import Data.Either as Either
 import Data.Either.Nested (type (\/))
 import Data.Foldable (foldM)
 import Data.List (List(..), (:))
@@ -14,7 +15,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Newtype as Newtype
 import Data.Tuple as Tuple
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
@@ -31,218 +32,215 @@ import MLogo.Parsing
 
 run ∷ List Statement → String \/ ExecutionState
 run statements = do
-  (ExecutionState state) ← Tuple.snd <$> interpretBlockOfStatements
-    State.initialExecutionState
-    statements
+  (ExecutionState state) ← Tuple.snd <$>
+    Interpret.runInterpret interpretBlockOfStatements
+      State.initialExecutionState
+      statements
 
   if List.null state.callStack then
     Right (ExecutionState state)
   else Left "the call stack has not been cleared"
 
 interpretBlockOfStatements
-  ∷ ExecutionState
-  → List Statement
-  → String \/ (Maybe Value /\ ExecutionState)
-interpretBlockOfStatements initialState =
-  foldM f (Nothing /\ initialState)
+  ∷ ∀ m
+  . MonadError String m
+  ⇒ MonadState ExecutionState m
+  ⇒ Interpret m (List Statement)
+interpretBlockOfStatements =
+  foldM f Nothing
   where
-  f
-    ∷ (Maybe Value /\ ExecutionState)
-    → Statement
-    → String \/ (Maybe Value /\ ExecutionState)
-  f (_ /\ (ExecutionState state)) statement =
+  {-f ∷ Maybe Value → Interpret m Statement-}
+  f mbValue statement = do
+    state ← Newtype.unwrap <$> get
     case state.outputtedValue of
       Just value →
-        Right $ Just value /\ (ExecutionState state)
+        pure $ Just value
       Nothing → do
-        _ /\ (ExecutionState newState) ← interpretStatement
-          (ExecutionState state)
-          statement
-        Right $ newState.outputtedValue /\ (ExecutionState newState)
+        void $ interpretStatement statement
+        newState ← Newtype.unwrap <$> get
+        pure newState.outputtedValue
 
-interpretStatement
-  ∷ ExecutionState
-  → Statement
-  → String \/ (Maybe Value /\ ExecutionState)
-interpretStatement state = case _ of
-  ControlStructureStatement cs → do
-    newState ← interpretControlStructure state cs
-    Right $ Nothing /\ newState
-  ExpressionStatement expression → do
-    mbValue /\ newState ← Interpret.runInterpret
-      evaluateExpression
-      state
-      expression
-    Right $ mbValue /\ newState
+interpretStatement ∷ ∀ m. Interpret m Statement
+interpretStatement = case _ of
+  ControlStructureStatement cs →
+    interpretControlStructure cs
+  ExpressionStatement expression →
+    evaluateExpression expression
   ProcedureCall name arguments →
-    interpretProcedureCall state name arguments
+    interpretProcedureCall { arguments, name }
   ProcedureDefinition name parameters body → do
-    newState ← interpretProcedureDefinition state name parameters
-      body
-    Right $ Nothing /\ newState
+    interpretProcedureDefinition { body, name, parameters }
 
-interpretControlStructure
-  ∷ ExecutionState → ControlStructure → String \/ ExecutionState
-interpretControlStructure state = case _ of
-  IfBlock conditionExpression body →
-    interpretIfElseBlock
-      state
-      conditionExpression
-      body
-      Nil
+interpretControlStructure ∷ ∀ m. Interpret m ControlStructure
+interpretControlStructure = case _ of
+  IfBlock conditionExpr posBranch →
+    interpretIfElseBlock { conditionExpr, posBranch, negBranch: Nil }
 
-  IfElseBlock conditionExpression positiveBranch negativeBranch →
-    interpretIfElseBlock
-      state
-      conditionExpression
-      positiveBranch
-      negativeBranch
+  IfElseBlock conditionExpr posBranch negBranch →
+    interpretIfElseBlock { conditionExpr, posBranch, negBranch }
 
   OutputCall expression →
-    interpretOutputCall state expression
+    interpretOutputCall expression
 
   RepeatBlock timesExpression body →
-    interpretRepeatBlock state timesExpression body
+    interpretRepeatBlock { body, timesExpression }
 
 interpretRepeatBlock
-  ∷ ExecutionState
-  → Statement
-  → List Statement
-  → String \/ ExecutionState
-interpretRepeatBlock state timesExpression body = do
-  timesValue /\ newState ← interpretStatement state timesExpression
-  times ← State.extractInt =<< Either.note
-    "repeat counter expression does not evaluate to a value"
-    timesValue
-
-  if times > 0 then do
-    _ /\ newState' ← interpretBlockOfStatements newState body
-    interpretRepeatBlock
-      newState'
-      ( ExpressionStatement
-          $ NumericLiteralExpression
-          $ IntegerLiteral
-          $ times - 1
-      )
-      body
-  else Right newState
+  ∷ ∀ m
+  . Interpret m { body ∷ List Statement, timesExpression ∷ Statement }
+interpretRepeatBlock { body, timesExpression } = do
+  mbTimesValue ← interpretStatement timesExpression
+  case mbTimesValue of
+    Just timesValue → do
+      times ← liftEither $ State.extractInt timesValue
+      if times > 0 then do
+        void $ interpretBlockOfStatements body
+        interpretRepeatBlock
+          { body
+          , timesExpression:
+              ( ExpressionStatement
+                  $ NumericLiteralExpression
+                  $ IntegerLiteral
+                  $ times - 1
+              )
+          }
+      else pure Nothing
+    Nothing →
+      throwError
+        "repeat counter expression does not evaluate to a value"
 
 interpretIfElseBlock
-  ∷ ExecutionState
-  → Statement
-  → List Statement
-  → List Statement
-  → String \/ ExecutionState
-interpretIfElseBlock
-  state
-  conditionExpression
-  positiveBranch
-  negativeBranch =
-  do
-    conditionValue /\ newState ← interpretStatement
-      state
-      conditionExpression
+  ∷ ∀ m
+  . Interpret m
+      { conditionExpr ∷ Statement
+      , posBranch ∷ List Statement
+      , negBranch ∷ List Statement
+      }
+interpretIfElseBlock { conditionExpr, posBranch, negBranch } = do
+  mbConditionValue ← interpretStatement conditionExpr
 
-    b ← State.extractBoolean =<< Either.note
-      "condition does not evaluate to a value"
-      conditionValue
+  case mbConditionValue of
+    Nothing →
+      throwError "if statement condition does not evaluate to any value"
+    Just conditionValue → do
+      b ← liftEither $ State.extractBoolean conditionValue
 
-    Tuple.snd <$> interpretBlockOfStatements
-      newState
-      (if b then positiveBranch else negativeBranch)
+      let
+        chosenBranch = if b then posBranch else negBranch
 
-interpretOutputCall
-  ∷ ExecutionState
-  → Statement
-  → String \/ ExecutionState
-interpretOutputCall (ExecutionState state) expression =
+      interpretBlockOfStatements chosenBranch
+
+interpretOutputCall ∷ ∀ m. Interpret m Statement
+interpretOutputCall expression = do
+  state ← Newtype.unwrap <$> get
   if List.null state.callStack then
-    Left "value output can be returned only from a procedure"
+    throwError "value output can be returned only from a procedure"
   else do
-    mbValue /\ (ExecutionState newState) ← interpretStatement
-      (ExecutionState state)
-      expression
+    mbValue ← interpretStatement expression
     case mbValue of
-      Just value →
-        Right $ ExecutionState $ newState
-          { outputtedValue = Just value }
+      Just value → do
+        modify_ $ Newtype.over
+          ExecutionState
+          _ { outputtedValue = Just value }
+
+        pure Nothing
+
       Nothing →
-        Left "output called with no value"
+        throwError "output called with no value"
 
 evaluateArguments
-  ∷ ExecutionState
-  → List Statement
-  → String \/ (List Value /\ ExecutionState)
-evaluateArguments initialState arguments = do
-  values /\ state ← foldM f (Nil /\ initialState) arguments
-  Right $ List.reverse values /\ state
+  ∷ ∀ m
+  . MonadError String m
+  ⇒ MonadState ExecutionState m
+  ⇒ List Statement
+  → m (List Value)
+evaluateArguments arguments = do
+  values ← foldM f Nil arguments
+  pure $ List.reverse values
   where
-  f (values /\ state) expression = do
-    mbValue /\ newState ← interpretStatement state expression
+  f ∷ List Value → Statement → m (List Value)
+  f values expression = do
+    mbValue ← interpretStatement expression
     case mbValue of
       Just value →
-        Right $ (value : values) /\ newState
+        pure (value : values)
       Nothing →
-        Left $ "argument expression does not evaluate to a value: "
-          <> show expression
+        throwError $
+          "argument expression does not evaluate to a value: "
+            <> show expression
 
 interpretProcedureCall
-  ∷ ExecutionState
-  → String
-  → List Statement
-  → String \/ (Maybe Value /\ ExecutionState)
-interpretProcedureCall (ExecutionState state) name arguments = do
-  evaluatedArguments /\ (ExecutionState newState) ← evaluateArguments
-    (ExecutionState state)
-    arguments
-  case Map.lookup name Command.commandsByAlias of
-    Just (Command command) →
-      Interpret.runInterpret
-        command.interpret
-        (ExecutionState newState)
-        evaluatedArguments
-    Nothing → do
-      { body, parameters } ← Either.note
-        ("Unknown procedure name: " <> name)
-        (Map.lookup name newState.procedures)
-      let
-        boundArguments =
-          Map.fromFoldable $ List.zip parameters evaluatedArguments
-      if Map.size boundArguments /= List.length parameters then
-        Left $ "Expected "
-          <> (show $ List.length parameters)
-          <> " arguments but got "
-          <> (show $ List.length arguments)
-      else
-        do
-          let
-            newCallStack =
-              { name
-              , boundArguments
-              } : newState.callStack
+  ∷ ∀ m. Interpret m { arguments ∷ List Statement, name ∷ String }
+interpretProcedureCall { arguments, name } = do
+  state ← get
+  case runExcept $ runStateT (evaluateArguments arguments) state of
+    Left errorMessage →
+      throwError errorMessage
+    Right (evaluatedArguments /\ newState) → do
+      put newState
+      case Map.lookup name Command.commandsByAlias of
+        Just (Command command) →
+          command.interpret evaluatedArguments
+        Nothing → do
+          state ← Newtype.unwrap <$> get
+          case Map.lookup name state.procedures of
+            Nothing →
+              throwError $ "Unknown procedure name: " <> name
+            Just { body, parameters } →
+              interpetUserDefinedProcedureCall
+                { body, evaluatedArguments, name, parameters }
 
-          mbValue /\ (ExecutionState newState') ←
-            interpretBlockOfStatements
-              (ExecutionState $ newState { callStack = newCallStack })
-              body
+interpetUserDefinedProcedureCall
+  ∷ ∀ m
+  . Interpret m
+      { body ∷ List Statement
+      , evaluatedArguments ∷ List Value
+      , name ∷ String
+      , parameters ∷ List Parameter
+      }
+interpetUserDefinedProcedureCall
+  { body, evaluatedArguments, name, parameters } =
+  let
+    boundArguments =
+      Map.fromFoldable $ List.zip parameters evaluatedArguments
+  in
+    if Map.size boundArguments /= List.length parameters then
+      throwError $ "Expected "
+        <> (show $ List.length parameters)
+        <> " arguments but got "
+        <> (show $ Map.size boundArguments)
+    else do
+      newState ← Newtype.unwrap <$> get
 
-          Right $ mbValue /\
-            ( ExecutionState $ newState'
-                { callStack = newState.callStack
-                , outputtedValue = Nothing
-                }
-            )
+      modify_ $ Newtype.over
+        ExecutionState
+        ( \st → st
+            { callStack = { boundArguments, name } :
+                st.callStack
+            }
+        )
+
+      mbValue ← interpretBlockOfStatements body
+
+      modify_ $ Newtype.over ExecutionState _
+        { callStack = newState.callStack
+        , outputtedValue = Nothing
+        }
+
+      pure mbValue
 
 interpretProcedureDefinition
-  ∷ ExecutionState
-  → String
-  → List Parameter
-  → List Statement
-  → String \/ ExecutionState
-interpretProcedureDefinition (ExecutionState state) name parameters body =
-  Right $ ExecutionState $ state
+  ∷ ∀ m
+  . Interpret m
+      { body ∷ List Statement
+      , name ∷ String
+      , parameters ∷ List Parameter
+      }
+interpretProcedureDefinition { body, name, parameters } = do
+  modify_ \(ExecutionState state) → Newtype.wrap $ state
     { procedures = Map.insert name { body, parameters } state.procedures
     }
+  pure Nothing
 
 evaluateExpression ∷ ∀ m. Interpret m Expression
 evaluateExpression = case _ of
