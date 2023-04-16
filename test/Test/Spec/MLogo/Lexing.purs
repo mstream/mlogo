@@ -1,7 +1,7 @@
-module Test.Spec.MLogo.Lexing (spec) where
+module Test.Spec.MLogo.Lexing where
 
 import Prelude
-
+{-
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.List as List
@@ -135,4 +135,4 @@ testCase ∷ String → String → ParseError \/ Array Token → Spec Unit
 testCase title source expected = it
   ("lexes \"" <> title <> "\"")
   ((Lexing.run source) `shouldEqual` (List.fromFoldable <$> expected))
-
+-}

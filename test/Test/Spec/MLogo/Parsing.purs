@@ -2,6 +2,68 @@ module Test.Spec.MLogo.Parsing (spec) where
 
 import Prelude
 
+import Data.Array as Array
+import Data.Either (Either(..))
+import Data.Foldable (class Foldable, foldM)
+import Data.List (List(..), (:))
+import Data.List as List
+import Data.String (Pattern(..), Replacement(..))
+import Data.String as String
+import Effect.Class (liftEffect)
+import MLogo.Parsing (Expression(..))
+import MLogo.Parsing as Parsing
+import Parsing as P
+import Partial.Unsafe (unsafeCrashWith)
+import Test.QuickCheck (Result(..), quickCheckGen)
+import Test.QuickCheck.Gen (Gen)
+import Test.QuickCheck.Gen as Gen
+import Test.Spec (Spec, describe, it)
+
+spec ∷ Spec Unit
+spec = describe "Parsing" do
+  describe "expression" do
+    testCase
+      "multiplication"
+      [ "1.0", "*", "2.0" ]
+      ( Multiplication
+          (NumberLiteral 1.0)
+          (NumberLiteral 2.0)
+      )
+
+addRedundantSpaces ∷ ∀ f. Foldable f ⇒ f String → Gen String
+addRedundantSpaces parts = genSpaces >>= \spaces → foldM f spaces parts
+  where
+  f ∷ String → String → Gen String
+  f acc part = do
+    spaces ← genSpaces
+    pure $ acc <> part <> spaces
+
+  genSpaces ∷ Gen String
+  genSpaces = Gen.chooseInt 0 2 <#> \n →
+    String.joinWith "" (Array.replicate n " ")
+
+testCase ∷ ∀ f. Foldable f ⇒ String → f String → Expression → Spec Unit
+testCase title parts expected = it title do
+  liftEffect $ quickCheckGen do
+    source ← addRedundantSpaces parts
+
+    let
+      actual = P.runParser source Parsing.expression
+
+    pure $
+      if actual == Right expected then Success
+      else Failed $
+        show actual
+          <> "!!!\nis not equal to\n"
+          <> show expected
+          <> "\n--- source ---\n"
+          <> String.replaceAll
+            (Pattern " ")
+            (Replacement "␣")
+            source
+          <> "\n!!!"
+
+{-
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.List as List
@@ -396,4 +458,4 @@ testCase title tokens expected = it
       `shouldEqual`
         (List.fromFoldable <$> expected)
   )
-
+-}

@@ -1,45 +1,48 @@
-module MLogo.Parsing
-  ( ControlStructure(..)
-  , Expression(..)
-  , NumericLiteral(..)
-  , Parameter(..)
-  , Statement(..)
-  , run
-  ) where
+module MLogo.Parsing (Expression(..), expression) where
 
 import Prelude
 
 import Control.Lazy as Lazy
-import Data.Either.Nested (type (\/))
-import Data.Function.Uncurried (mkFn5, runFn2)
 import Data.Generic.Rep (class Generic)
-import Data.List (List)
-import Data.List as List
-import Data.Maybe (Maybe(..))
-import Data.Set (Set)
-import Data.Set as Set
 import Data.Show.Generic (genericShow)
-import Data.Tuple.Nested ((/\))
-import MLogo.Lexing (BracketType(..), Token(..))
-import Parsing
-  ( ParseError(..)
-  , ParseState(..)
-  , Parser
-  , ParserT(..)
-  , Position(..)
-  )
-import Parsing (fail, runParser) as P
-import Parsing.Combinators
-  ( between
-  , choice
-  , many
-  , manyTill_
-  , optional
-  , sepBy
-  ) as P
-import Test.QuickCheck (class Arbitrary)
-import Test.QuickCheck.Arbitrary (genericArbitrary)
+import MLogo.Lexing as Lexing
+import Parsing (Parser)
+import Parsing.Combinators as PC
+import Parsing.Expr (Assoc(..), Operator(..))
+import Parsing.Expr as PE
+import Parsing.String as PS
+import Parsing.String.Basic as PSB
 
+data Expression
+  = NumberLiteral Number
+  | Multiplication Expression Expression
+
+derive instance Generic Expression _
+
+derive instance Eq Expression
+
+instance Show Expression where
+  show s = genericShow s
+
+expression ∷ Parser String Expression
+expression = PSB.skipSpaces *> PE.buildExprParser operatorTable term
+  where
+  operatorTable =
+    [ [ Infix
+          ( Multiplication <$ PC.between
+              (PC.optional PSB.skipSpaces)
+              (PC.optional PSB.skipSpaces)
+              (PS.string "*")
+          )
+          AssocRight
+      ]
+    ]
+  term = PC.choice
+    [ Lazy.defer \_ → Lexing.tokenParser.parens expression
+    , NumberLiteral <$> Lexing.tokenParser.float
+    ]
+
+{-
 keywords ∷ Set String
 keywords = Set.fromFoldable
   [ "end"
@@ -330,3 +333,4 @@ consumeToken f = ParserT
                 (ParseError ("unexpected token " <> show head) pos)
   )
 
+-}

@@ -1,8 +1,4 @@
-module MLogo.Lexing
-  ( BracketType(..)
-  , Token(..)
-  , run
-  ) where
+module MLogo.Lexing (tokenParser) where
 
 import Prelude
 
@@ -10,15 +6,28 @@ import Data.Array as Array
 import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
 import Data.Generic.Rep (class Generic)
+import Data.Identity (Identity)
 import Data.Int as Int
 import Data.List (List, (:))
 import Data.Maybe (Maybe(..))
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import Data.String as String
+import Parsing.Language as PL
+import Parsing.Token (GenLanguageDef(..), GenTokenParser, LanguageDef)
+import Parsing.Token as PT
 import StringParser (ParseError, Parser)
 import StringParser as SP
 
+languageDef ∷ LanguageDef
+languageDef = LanguageDef (PT.unGenLanguageDef PL.emptyDef)
+  { reservedOpNames = [ "if", "to" ]
+  }
+
+tokenParser ∷ GenTokenParser String Identity
+tokenParser = PT.makeTokenParser languageDef
+
+{-
 data Token
   = Bracket BracketType
   | ColonPrefixedWord String
@@ -141,3 +150,4 @@ charsToString ∷ ∀ f. Foldable f ⇒ Functor f ⇒ f Char → String
 charsToString = String.fromCodePointArray
   <<< Array.fromFoldable
   <<< map String.codePointFromChar
+-}

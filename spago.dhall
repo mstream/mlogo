@@ -9,14 +9,17 @@
   , "control"
   , "effect"
   , "either"
+  , "exceptions"
   , "exists"
   , "foldable-traversable"
   , "functions"
+  , "gen"
   , "halogen"
   , "halogen-hooks"
   , "halogen-subscriptions"
   , "halogen-svg-elems"
   , "heterogeneous"
+  , "identity"
   , "integers"
   , "lists"
   , "maybe"
@@ -28,6 +31,7 @@
   , "optparse"
   , "ordered-collections"
   , "parsing"
+  , "partial"
   , "prelude"
   , "quickcheck"
   , "spec"
@@ -39,5 +43,10 @@
   , "web-dom"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs", "test/**/*.purs" ]
+, sources =
+  [ "src/**/Lexing.purs"
+  , "src/**/Parsing.purs"
+  , "test/**/Main.purs"
+  , "test/**/Parsing.purs"
+  ]
 }
