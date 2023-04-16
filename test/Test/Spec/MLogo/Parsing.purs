@@ -2,18 +2,19 @@ module Test.Spec.MLogo.Parsing (spec) where
 
 import Prelude
 
+import Data.Array ((!!))
 import Data.Array as Array
-import Data.Either (Either(..))
+import Data.Either (Either(..), note)
+import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable, foldM)
-import Data.List (List(..), (:))
-import Data.List as List
+import Data.Number as Number
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as String
+import Data.Traversable (class Traversable, sequence)
 import Effect.Class (liftEffect)
 import MLogo.Parsing (Expression(..))
 import MLogo.Parsing as Parsing
 import Parsing as P
-import Partial.Unsafe (unsafeCrashWith)
 import Test.QuickCheck (Result(..), quickCheckGen)
 import Test.QuickCheck.Gen (Gen)
 import Test.QuickCheck.Gen as Gen
@@ -22,13 +23,77 @@ import Test.Spec (Spec, describe, it)
 spec ∷ Spec Unit
 spec = describe "Parsing" do
   describe "expression" do
-    testCase
-      "multiplication"
-      [ "1.0", "*", "2.0" ]
-      ( Multiplication
-          (NumberLiteral 1.0)
-          (NumberLiteral 2.0)
-      )
+    arithmeticalBinaryOperatorTestCase
+      "+"
+      Addition
+
+    arithmeticalBinaryOperatorTestCase
+      "*"
+      Multiplication
+
+arithmeticalBinaryOperatorTestCase
+  ∷ String
+  → (Expression → Expression → Expression)
+  → Spec Unit
+arithmeticalBinaryOperatorTestCase symbol expected =
+  testCase
+    ("\"" <> symbol <> "\" symbol")
+    [ genFloat, pure symbol, genFloat ]
+    ( \parts → ado
+        leftOperand ← note
+          "can't parse left operand back"
+          (Number.fromString =<< parts !! 0)
+        rightOperand ← note
+          "can't parse right operand back"
+          (Number.fromString =<< parts !! 2)
+        in
+          expected
+            (NumberLiteral leftOperand)
+            (NumberLiteral rightOperand)
+    )
+
+genFloat ∷ Gen String
+genFloat = do
+  n1 ← Gen.chooseInt 0 9
+  n2 ← Gen.chooseInt 0 9
+  pure $ show n1 <> "." <> show n2
+
+testCase
+  ∷ ∀ f
+  . Foldable f
+  ⇒ Traversable f
+  ⇒ String
+  → f (Gen String)
+  → (Array String → String \/ Expression)
+  → Spec Unit
+testCase title partGenerators makeExpected = it title do
+  liftEffect $ quickCheckGen do
+    parts ← sequence partGenerators
+    source ← addRedundantSpaces parts
+
+    let
+      actual = case P.runParser source Parsing.expression of
+        Left parseError →
+          Left $ P.parseErrorMessage parseError
+        Right expression →
+          Right $ expression
+
+      expected = makeExpected $ Array.fromFoldable parts
+
+    pure $
+      if actual == expected then Success
+      else Failed $
+        "--- error >>> ---\n"
+          <> show actual
+          <> "\nis not equal to\n"
+          <> show expected
+          <> "\n--- source >>> ---\n"
+          <> String.replaceAll
+            (Pattern " ")
+            (Replacement "␣")
+            source
+          <> "\n--- <<< source ---"
+          <> "\n--- <<< error ---"
 
 addRedundantSpaces ∷ ∀ f. Foldable f ⇒ f String → Gen String
 addRedundantSpaces parts = genSpaces >>= \spaces → foldM f spaces parts
@@ -41,421 +106,3 @@ addRedundantSpaces parts = genSpaces >>= \spaces → foldM f spaces parts
   genSpaces ∷ Gen String
   genSpaces = Gen.chooseInt 0 2 <#> \n →
     String.joinWith "" (Array.replicate n " ")
-
-testCase ∷ ∀ f. Foldable f ⇒ String → f String → Expression → Spec Unit
-testCase title parts expected = it title do
-  liftEffect $ quickCheckGen do
-    source ← addRedundantSpaces parts
-
-    let
-      actual = P.runParser source Parsing.expression
-
-    pure $
-      if actual == Right expected then Success
-      else Failed $
-        show actual
-          <> "!!!\nis not equal to\n"
-          <> show expected
-          <> "\n--- source ---\n"
-          <> String.replaceAll
-            (Pattern " ")
-            (Replacement "␣")
-            source
-          <> "\n!!!"
-
-{-
-import Data.Either (Either(..))
-import Data.Either.Nested (type (\/))
-import Data.List as List
-import MLogo.Lexing (BracketType(..), Token(..))
-import MLogo.Parsing
-  ( ControlStructure(..)
-  , Expression(..)
-  , NumericLiteral(..)
-  , Parameter(..)
-  , Statement(..)
-  )
-import MLogo.Parsing as Parsing
-import Parsing (ParseError)
-import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (shouldEqual)
-
-spec ∷ Spec Unit
-spec = describe "Parsing" do
-  describe "run" do
-
-    testCase
-      "procedure call with a numeric literal"
-      [ UnquotedWord "proc1"
-      , NumberToken 1.0
-      ]
-      ( Right $
-          [ ProcedureCall
-              "proc1"
-              ( List.fromFoldable
-                  [ ExpressionStatement
-                      $ NumericLiteralExpression
-                      $ NumberLiteral 1.0
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "procedure call with a numeric literal - question mark suffix"
-      [ UnquotedWord "proc1?"
-      , NumberToken 1.0
-      ]
-      ( Right $
-          [ ProcedureCall
-              "proc1?"
-              ( List.fromFoldable
-                  [ ExpressionStatement
-                      $ NumericLiteralExpression
-                      $ NumberLiteral 1.0
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "procedure call with a colon-prefixed word"
-      [ UnquotedWord "proc1"
-      , ColonPrefixedWord "var1"
-      ]
-      ( Right $
-          [ ProcedureCall
-              "proc1"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference "var1"
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "procedure definition"
-      [ UnquotedWord "to"
-      , UnquotedWord "proc1"
-      , ColonPrefixedWord "param1"
-      , ColonPrefixedWord "param2"
-      , LineBreak
-      , UnquotedWord "proc2"
-      , ColonPrefixedWord "param1"
-      , LineBreak
-      , UnquotedWord "proc3"
-      , ColonPrefixedWord "param2"
-      , LineBreak
-      , UnquotedWord "output"
-      , NumberToken 1.0
-      , LineBreak
-      , UnquotedWord "end"
-      ]
-      ( Right $
-          [ ProcedureDefinition
-              "proc1"
-              ( List.fromFoldable
-                  [ Parameter "param1"
-                  , Parameter "param2"
-                  ]
-              )
-              ( List.fromFoldable
-                  [ ProcedureCall
-                      "proc2"
-                      ( List.fromFoldable
-                          [ ExpressionStatement
-                              $ VariableReference "param1"
-                          ]
-                      )
-                  , ProcedureCall
-                      "proc3"
-                      ( List.fromFoldable
-                          [ ExpressionStatement
-                              $ VariableReference "param2"
-                          ]
-                      )
-                  , ControlStructureStatement
-                      $ OutputCall
-                      $ ExpressionStatement
-                      $ NumericLiteralExpression
-                      $ NumberLiteral 1.0
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "if block"
-      [ UnquotedWord "if"
-      , Bracket RoundOpening
-      , UnquotedWord "equal?"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , Bracket RoundClosing
-      , Bracket SquareOpening
-      , UnquotedWord "proc1"
-      , NumberToken 1.0
-      , LineBreak
-      , UnquotedWord "proc2"
-      , NumberToken 2.0
-      , Bracket SquareClosing
-      ]
-      ( Right $
-          [ ControlStructureStatement $ IfBlock
-              ( ProcedureCall "equal?"
-                  ( List.fromFoldable
-                      [ ExpressionStatement $ VariableReference
-                          "var1"
-                      , ExpressionStatement $ VariableReference
-                          "var2"
-                      ]
-                  )
-              )
-              ( List.fromFoldable
-                  [ ProcedureCall
-                      "proc1"
-                      ( List.fromFoldable
-                          [ ExpressionStatement
-                              $ NumericLiteralExpression
-                              $ NumberLiteral 1.0
-                          ]
-                      )
-                  , ProcedureCall
-                      "proc2"
-                      ( List.fromFoldable
-                          [ ExpressionStatement
-                              $ NumericLiteralExpression
-                              $ NumberLiteral 2.0
-                          ]
-                      )
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "multiple procedure calls - separate lines"
-      [ UnquotedWord "proc1"
-      , ColonPrefixedWord "var1"
-      , LineBreak
-      , UnquotedWord "proc2"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , LineBreak
-      , UnquotedWord "proc3"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , ColonPrefixedWord "var3"
-      ]
-      ( Right $
-          [ ProcedureCall
-              "proc1"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference "var1" ]
-              )
-          , ProcedureCall
-              "proc2"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference
-                      "var1"
-                  , ExpressionStatement $ VariableReference
-                      "var2"
-                  ]
-              )
-          , ProcedureCall
-              "proc3"
-              ( List.fromFoldable
-                  [ ExpressionStatement $
-                      VariableReference "var1"
-                  , ExpressionStatement $
-                      VariableReference "var2"
-                  , ExpressionStatement $
-                      VariableReference "var3"
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "multiple procedure calls - separate lines, redundant line breaks"
-      [ UnquotedWord "proc1"
-      , ColonPrefixedWord "var1"
-      , LineBreak
-      , LineBreak
-      , UnquotedWord "proc2"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , LineBreak
-      , LineBreak
-      , UnquotedWord "proc3"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , ColonPrefixedWord "var3"
-      ]
-      ( Right $
-          [ ProcedureCall
-              "proc1"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference "var1" ]
-              )
-          , ProcedureCall
-              "proc2"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference
-                      "var1"
-                  , ExpressionStatement $ VariableReference
-                      "var2"
-                  ]
-              )
-          , ProcedureCall
-              "proc3"
-              ( List.fromFoldable
-                  [ ExpressionStatement $
-                      VariableReference "var1"
-                  , ExpressionStatement $
-                      VariableReference "var2"
-                  , ExpressionStatement $
-                      VariableReference "var3"
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "multiple procedure calls - same line"
-      [ UnquotedWord "proc1"
-      , ColonPrefixedWord "var1"
-      , UnquotedWord "proc2"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , UnquotedWord "proc3"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , ColonPrefixedWord "var3"
-      ]
-      ( Right $
-          [ ProcedureCall
-              "proc1"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference "var1" ]
-              )
-          , ProcedureCall
-              "proc2"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference
-                      "var1"
-                  , ExpressionStatement $ VariableReference
-                      "var2"
-                  ]
-              )
-          , ProcedureCall
-              "proc3"
-              ( List.fromFoldable
-                  [ ExpressionStatement $
-                      VariableReference "var1"
-                  , ExpressionStatement $
-                      VariableReference "var2"
-                  , ExpressionStatement $
-                      VariableReference "var3"
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "multiple procedure calls - same line, order determined by parenthesis"
-      [ UnquotedWord "proc1"
-      , ColonPrefixedWord "var1"
-      , Bracket RoundOpening
-      , UnquotedWord "proc2"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , Bracket RoundClosing
-      , Bracket RoundOpening
-      , UnquotedWord "proc3"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , ColonPrefixedWord "var3"
-      , Bracket RoundClosing
-      ]
-      ( Right $
-          [ ProcedureCall
-              "proc1"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference "var1"
-                  , ProcedureCall
-                      "proc2"
-                      ( List.fromFoldable
-                          [ ExpressionStatement $ VariableReference
-                              "var1"
-                          , ExpressionStatement $ VariableReference
-                              "var2"
-                          ]
-                      )
-                  , ProcedureCall
-                      "proc3"
-                      ( List.fromFoldable
-                          [ ExpressionStatement $
-                              VariableReference "var1"
-                          , ExpressionStatement $
-                              VariableReference "var2"
-                          , ExpressionStatement $
-                              VariableReference "var3"
-                          ]
-                      )
-                  ]
-              )
-          ]
-      )
-
-    testCase
-      "multiple procedure calls - mixed arrangement"
-      [ UnquotedWord "proc1"
-      , ColonPrefixedWord "var1"
-      , UnquotedWord "proc2"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , LineBreak
-      , UnquotedWord "proc3"
-      , ColonPrefixedWord "var1"
-      , ColonPrefixedWord "var2"
-      , ColonPrefixedWord "var3"
-      ]
-      ( Right $
-          [ ProcedureCall
-              "proc1"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference "var1" ]
-              )
-          , ProcedureCall
-              "proc2"
-              ( List.fromFoldable
-                  [ ExpressionStatement $ VariableReference
-                      "var1"
-                  , ExpressionStatement $ VariableReference
-                      "var2"
-                  ]
-              )
-          , ProcedureCall
-              "proc3"
-              ( List.fromFoldable
-                  [ ExpressionStatement $
-                      VariableReference "var1"
-                  , ExpressionStatement $
-                      VariableReference "var2"
-                  , ExpressionStatement $
-                      VariableReference "var3"
-                  ]
-              )
-          ]
-      )
-
-testCase
-  ∷ String → Array Token → ParseError \/ Array Statement → Spec Unit
-testCase title tokens expected = it
-  ("parses \"" <> title <> "\"")
-  ( (Parsing.run $ List.fromFoldable tokens)
-      `shouldEqual`
-        (List.fromFoldable <$> expected)
-  )
--}

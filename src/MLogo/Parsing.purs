@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Lazy as Lazy
 import Data.Generic.Rep (class Generic)
+import Data.Identity (Identity)
 import Data.Show.Generic (genericShow)
 import MLogo.Lexing as Lexing
 import Parsing (Parser)
@@ -14,7 +15,8 @@ import Parsing.String as PS
 import Parsing.String.Basic as PSB
 
 data Expression
-  = NumberLiteral Number
+  = Addition Expression Expression
+  | NumberLiteral Number
   | Multiplication Expression Expression
 
 derive instance Generic Expression _
@@ -24,18 +26,27 @@ derive instance Eq Expression
 instance Show Expression where
   show s = genericShow s
 
+arithmeticalBinary
+  ∷ String
+  → (Expression → Expression → Expression)
+  → Assoc
+  → Array (Operator Identity String Expression)
+arithmeticalBinary symbol constructor assoc =
+  [ Infix
+      ( constructor <$ PC.between
+          (PC.optional PSB.skipSpaces)
+          (PC.optional PSB.skipSpaces)
+          (PS.string symbol)
+      )
+      assoc
+  ]
+
 expression ∷ Parser String Expression
 expression = PSB.skipSpaces *> PE.buildExprParser operatorTable term
   where
   operatorTable =
-    [ [ Infix
-          ( Multiplication <$ PC.between
-              (PC.optional PSB.skipSpaces)
-              (PC.optional PSB.skipSpaces)
-              (PS.string "*")
-          )
-          AssocRight
-      ]
+    [ arithmeticalBinary "+" Addition AssocRight
+    , arithmeticalBinary "*" Multiplication AssocRight
     ]
   term = PC.choice
     [ Lazy.defer \_ → Lexing.tokenParser.parens expression
