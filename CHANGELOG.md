@@ -1,5 +1,13 @@
 
 
+## [0.10.0](https://github.com/mstream/mlogo/compare/0.9.1...0.10.0) (2023-04-17)
+
+
+### Features
+
+* add addition ([ec9955a](https://github.com/mstream/mlogo/commit/ec9955a6d71aa4462266d1f140864399a6a68b99))
+* add multiplication parsing ([d15dc97](https://github.com/mstream/mlogo/commit/d15dc97566330f7abd59050b733b842d2739badb))
+
 ### [0.9.1](https://github.com/mstream/mlogo/compare/0.9.0...0.9.1) (2023-04-14)
 
 
