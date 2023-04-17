@@ -89,7 +89,37 @@ spec = describe "Parsing" do
       )
 
     testCase
-      "a procedure call"
+      "a procedure call with an operation argument"
+      [ genProcedureName
+      , pure " "
+      , genFloat
+      , pure " "
+      , pure "+"
+      , pure " "
+      , genFloat
+      ]
+      ( \parts → ado
+          procedureName ← note
+            "can't parse the procedure name back"
+            (parts !! 0)
+          firstOperationArgument ← note
+            "can't parse the first argument back"
+            (Number.fromString =<< parts !! 2)
+          secondOperationArgument ← note
+            "can't parse the second argument back"
+            (Number.fromString =<< parts !! 6)
+          in
+            ProcedureCall
+              procedureName
+              ( List.fromFoldable
+                  [ Addition (FloatLiteral firstOperationArgument)
+                      (FloatLiteral secondOperationArgument)
+                  ]
+              )
+      )
+
+    testCase
+      "a procedure call with a literal argument"
       [ genProcedureName, pure " ", genFloat, pure " ", genFloat ]
       ( \parts → ado
           procedureName ← note

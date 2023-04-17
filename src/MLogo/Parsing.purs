@@ -52,25 +52,9 @@ expressions = Lazy.defer \_ →
   Lexing.lexer.whiteSpace *> PC.many expression
 
 expression ∷ Parser String Expression
-expression = Lazy.defer \_ → Lexing.lexer.whiteSpace *>
-  PE.buildExprParser
-    operatorTable
-    term
+expression = Lexing.lexer.whiteSpace *>
+  PE.buildExprParser operatorTable term
   where
-  operatorTable =
-    [ arithmeticalBinaryOperator
-        Lexing.plusSymbol
-        Addition
-        AssocRight
-    , arithmeticalBinaryOperator
-        Lexing.equalSymbol
-        Equation
-        AssocNone
-    , arithmeticalBinaryOperator
-        Lexing.asteriskSymbol
-        Multiplication
-        AssocRight
-    ]
   term = Lazy.defer \_ → PC.choice
     [ Lexing.lexer.parens expression
     , ifBlock
@@ -120,12 +104,14 @@ procedureCall = Lazy.defer \_ → do
   pure $ ProcedureCall name arguments
 
 argument ∷ Parser String Expression
-argument = Lazy.defer \_ → PC.choice
-  [ Lexing.lexer.parens argument
-  , literal
-  , Lexing.lexer.parens procedureCall
-  , valueReference
-  ]
+argument = PE.buildExprParser operatorTable term
+  where
+  term = Lazy.defer \_ → PC.choice
+    [ Lexing.lexer.parens argument
+    , literal
+    , Lexing.lexer.parens procedureCall
+    , valueReference
+    ]
 
 procedureDefinition ∷ Parser String Expression
 procedureDefinition = do
@@ -146,7 +132,7 @@ parameter = do
 
 repeatBlock ∷ Parser String Expression
 repeatBlock = Lazy.defer \_ → do
-  name ← Lexing.lexer.reserved Lexing.repeatKeyword
+  Lexing.lexer.reserved Lexing.repeatKeyword
   Lexing.lexer.whiteSpace
   times ← argument
   Lexing.lexer.whiteSpace
@@ -190,3 +176,18 @@ derive newtype instance Ord Parameter
 derive newtype instance Show Parameter
 derive newtype instance Arbitrary Parameter
 
+operatorTable ∷ Array (Array (Operator Identity String Expression))
+operatorTable =
+  [ arithmeticalBinaryOperator
+      Lexing.plusSymbol
+      Addition
+      AssocRight
+  , arithmeticalBinaryOperator
+      Lexing.equalSymbol
+      Equation
+      AssocNone
+  , arithmeticalBinaryOperator
+      Lexing.asteriskSymbol
+      Multiplication
+      AssocRight
+  ]
