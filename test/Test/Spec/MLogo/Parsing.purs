@@ -269,6 +269,39 @@ spec = describe "Parsing" do
           )
       )
 
+    testCase
+      "a for block"
+      [ pure "for"
+      , pure " "
+      , pure "["
+      , pure "idx"
+      , pure " "
+      , pure "1"
+      , pure " "
+      , pure "5"
+      , pure "]"
+      , pure " "
+      , pure "["
+      , pure "proc1"
+      , pure " "
+      , pure "1"
+      , pure " "
+      , pure "proc2"
+      , pure " "
+      , pure "2"
+      , pure "]"
+      ]
+      ( \parts → pure $ ForBlock
+          { binder: "idx", initialValue: 1, terminalValue: 5 }
+          ( List.fromFoldable
+              [ ProcedureCall "proc1"
+                  (List.fromFoldable [ IntegerLiteral 1 ])
+              , ProcedureCall "proc2"
+                  (List.fromFoldable [ IntegerLiteral 2 ])
+              ]
+          )
+      )
+
 arithmeticalBinaryOperatorTestCase
   ∷ String
   → (Expression → Expression → Expression)

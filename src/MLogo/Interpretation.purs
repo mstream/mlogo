@@ -27,7 +27,7 @@ import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
 import MLogo.Interpretation.State (ExecutionState(..), Value(..))
 import MLogo.Interpretation.State as State
-import MLogo.Parsing (Expression(..), Parameter(..))
+import MLogo.Parsing (Expression(..), ForBlockSpec, Parameter(..))
 
 interpretExpressions
   ∷ ∀ f m
@@ -59,6 +59,8 @@ interpretExpression = case _ of
     interpretEquation { leftOperand, rightOperand }
   FloatLiteral x →
     pure $ Just $ FloatValue x
+  ForBlock spec body →
+    interpretForBlock { body, spec }
   IfBlock condition positiveBranch →
     interpretIfElseBlock
       { condition, positiveBranch, negativeBranch: Nil }
@@ -116,6 +118,15 @@ interpretMultiplication { leftOperand, rightOperand } =
     { arguments: List.fromFoldable [ leftOperand, rightOperand ]
     , name: "product"
     }
+
+interpretForBlock
+  ∷ ∀ m
+  . Interpret m
+      { body ∷ List Expression
+      , spec ∷ ForBlockSpec
+      }
+interpretForBlock { body, spec } = do
+  throwError "TODO"
 
 interpretIfElseBlock
   ∷ ∀ m

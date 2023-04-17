@@ -1,5 +1,6 @@
 module MLogo.Parsing
   ( Expression(..)
+  , ForBlockSpec
   , Parameter(..)
   , expression
   , expressions
@@ -29,6 +30,7 @@ data Expression
   | IfElseBlock Expression (List Expression) (List Expression)
   | IntegerLiteral Int
   | FloatLiteral Number
+  | ForBlock ForBlockSpec (List Expression)
   | Multiplication Expression Expression
   | ProcedureCall String (List Expression)
   | ProcedureDefinition String (List Parameter) (List Expression)
@@ -36,6 +38,12 @@ data Expression
   | StringLiteral String
   | ValueReference String
   | VariableAssignment String Expression
+
+type ForBlockSpec =
+  { binder ∷ String
+  , initialValue ∷ Int
+  , terminalValue ∷ Int
+  }
 
 derive instance Generic Expression _
 
@@ -57,6 +65,7 @@ expression = Lexing.lexer.whiteSpace *>
   where
   term = Lazy.defer \_ → PC.choice
     [ Lexing.lexer.parens expression
+    , forBlock
     , ifBlock
     , ifElseBlock
     , literal
@@ -66,6 +75,24 @@ expression = Lexing.lexer.whiteSpace *>
     , valueReference
     , variableAssignment
     ]
+
+forBlock ∷ Parser String Expression
+forBlock = Lazy.defer \_ → do
+  Lexing.lexer.reserved Lexing.forKeyword
+  Lexing.lexer.whiteSpace
+  spec ← Lexing.lexer.brackets forBlockSpec
+  Lexing.lexer.whiteSpace
+  body ← Lexing.lexer.brackets expressions
+  pure $ ForBlock spec body
+
+forBlockSpec ∷ Parser String ForBlockSpec
+forBlockSpec = do
+  binder ← Lexing.lexer.identifier
+  Lexing.lexer.whiteSpace
+  initialValue ← Lexing.lexer.integer
+  Lexing.lexer.whiteSpace
+  terminalValue ← Lexing.lexer.integer
+  pure { binder, initialValue, terminalValue }
 
 ifBlock ∷ Parser String Expression
 ifBlock = Lazy.defer \_ → do

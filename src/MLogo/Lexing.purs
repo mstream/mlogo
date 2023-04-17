@@ -3,6 +3,7 @@ module MLogo.Lexing
   , endKeyword
   , equalSymbol
   , falseKeyword
+  , forKeyword
   , ifElseKeyword
   , ifKeyword
   , lexer
@@ -30,6 +31,9 @@ equalSymbol = "="
 
 falseKeyword ∷ String
 falseKeyword = "false"
+
+forKeyword ∷ String
+forKeyword = "for"
 
 ifElseKeyword ∷ String
 ifElseKeyword = "ifelse"
@@ -60,6 +64,7 @@ languageDef = LanguageDef (PT.unGenLanguageDef PL.emptyDef)
       [ ifKeyword
       , endKeyword
       , falseKeyword
+      , forKeyword
       , ifElseKeyword
       , ifKeyword
       , makeKeyword

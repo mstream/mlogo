@@ -9,6 +9,7 @@ module MLogo.Interpretation.Command
   , moveForward
   , penDown
   , penUp
+  , sinus
   , sum
   ) where
 
@@ -138,6 +139,22 @@ goHome =
           interpretGoHome
       , name: "home"
       , outputValueType: Nothing
+      , parameters: Input.parametersFromFixedInputParser inputParser
+      }
+
+sinus ∷ Command
+sinus =
+  let
+    inputParser = Input.fixedNumberInputParser "angle"
+  in
+    Command
+      { description:
+          "Calculates sinus of a given angle."
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretSinus
+      , name: "sin"
+      , outputValueType: Just NumberType
       , parameters: Input.parametersFromFixedInputParser inputParser
       }
 
@@ -306,6 +323,9 @@ interpretTurnRight angle = do
           { angle = state.pointer.angle + Angle angle }
       }
   pure Nothing
+interpretSinus ∷ ∀ m. Interpret m Number
+interpretSinus =
+  pure <<< Just <<< FloatValue <<< Number.sin <<< degreesToRadians
 
 interpretTurnLeft ∷ ∀ m. Interpret m Number
 interpretTurnLeft angle = interpretTurnRight (-angle)
