@@ -85,7 +85,7 @@ spec = describe "Input" do
           number ← Input.fixedNumberInputParser "number"
           in { number }
       )
-      [ NumberValue 10.0 ]
+      [ FloatValue 10.0 ]
       (Right $ { number: 10.0 })
 
     runFixedInputParserTestCase
@@ -95,7 +95,7 @@ spec = describe "Input" do
           number2 ← Input.fixedNumberInputParser "number2"
           in { number1, number2 }
       )
-      [ NumberValue 10.0, NumberValue 20.0 ]
+      [ FloatValue 10.0, FloatValue 20.0 ]
       (Right $ { number1: 10.0, number2: 20.0 })
 
     runFixedInputParserTestCase
@@ -124,7 +124,7 @@ spec = describe "Input" do
           word ← Input.fixedWordInputParser "word"
           in { number, word }
       )
-      [ NumberValue 10.0, WordValue "aaa" ]
+      [ FloatValue 10.0, WordValue "aaa" ]
       (Right $ { number: 10.0, word: "aaa" })
 
   describe "runVariableInputParser" do
@@ -138,13 +138,13 @@ spec = describe "Input" do
     runVariableInputParserTestCase
       "single number argument"
       (Input.variableNumberInputParser "number")
-      [ NumberValue 10.0 ]
+      [ FloatValue 10.0 ]
       (Right [ 10.0 ])
 
     runVariableInputParserTestCase
       "two number arguments"
       (Input.variableNumberInputParser "number")
-      [ NumberValue 10.0, NumberValue 20.0 ]
+      [ FloatValue 10.0, FloatValue 20.0 ]
       (Right [ 10.0, 20.0 ])
 
     runVariableInputParserTestCase
@@ -162,8 +162,8 @@ spec = describe "Input" do
     runVariableInputParserTestCase
       "a number follow by a word"
       (Input.variableAnyInputParser "value")
-      [ NumberValue 10.0, WordValue "aaa" ]
-      (Right [ NumberValue 10.0, WordValue "aaa" ])
+      [ FloatValue 10.0, WordValue "aaa" ]
+      (Right [ FloatValue 10.0, WordValue "aaa" ])
 
 parametersFromFixedInputParserTestCase
   ∷ ∀ a

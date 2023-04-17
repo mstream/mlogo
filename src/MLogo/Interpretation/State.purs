@@ -31,7 +31,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
-import MLogo.Parsing (Parameter, Statement)
+import MLogo.Parsing (Expression, Parameter)
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
 import Test.QuickCheck.Gen (Gen)
@@ -39,9 +39,9 @@ import Test.QuickCheck.Gen as Gen
 
 data Value
   = BooleanValue Boolean
+  | FloatValue Number
   | IntegerValue Int
   {- FIXME  | ListValue (List Value) -}
-  | NumberValue Number
   | WordValue String
 
 derive instance Generic Value _
@@ -78,10 +78,10 @@ extractInt = case _ of
 
 extractNumber ∷ Value → String \/ Number
 extractNumber = case _ of
+  FloatValue x →
+    Right x
   IntegerValue n →
     Right $ Int.toNumber n
-  NumberValue x →
-    Right x
   otherValue →
     Left $ "\"" <> show otherValue <> "\" is not a number value"
 
@@ -124,7 +124,7 @@ newtype ExecutionState = ExecutionState
   , pointer ∷ PointerState
   , procedures ∷
       Map String
-        { body ∷ List Statement
+        { body ∷ List Expression
         , parameters ∷ List Parameter
         }
   , screen ∷ ScreenState

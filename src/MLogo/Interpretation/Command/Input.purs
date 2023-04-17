@@ -212,7 +212,7 @@ generateValueOfType = case _ of
   NumberType → do
     x1 ← Gen.chooseInt 1 99
     x2 ← Gen.chooseInt 1 9
-    pure $ NumberValue $ Int.toNumber x1 + (Int.toNumber $ x2 / 10)
+    pure $ FloatValue $ Int.toNumber x1 + (Int.toNumber $ x2 / 10)
   WordType →
     WordValue <$> Gen.oneOf
       (pure <$> (NEArray.fromNonEmpty $ "foo" :| [ "bar", "biz" ]))

@@ -10,7 +10,8 @@ import Data.String as String
 import MLogo.Interpretation.State (Position(..), VisibleState)
 import MLogo.Program as Program
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (shouldEqual)
+import Test.Spec.Assertions (fail, shouldEqual)
+import Test.Utils as Utils
 
 spec ∷ Spec Unit
 spec = describe "Program" do
@@ -53,138 +54,148 @@ spec = describe "Program" do
           }
       )
 
-  testCase
-    "moving forward by 10 using a custom procedure"
-    ( String.joinWith
-        "\n"
-        [ "to go :steps"
-        , "forward :steps"
-        , "end"
-        , "go 10"
-        ]
-    )
-    ( Right $
-        { pointer:
-            { angle: zero
-            , isDown: true
-            , position:
-                Position
-                  { x: 0.0
-                  , y: 10.0
-                  }
-            }
-        , screen: List.fromFoldable
-            [ { p1: Position { x: 0.0, y: 0.0 }
-              , p2: Position { x: 0.0, y: 10.0 }
+    testCase
+      "moving forward by 10 using a custom procedure"
+      ( String.joinWith
+          "\n"
+          [ "to go :steps"
+          , "forward :steps"
+          , "end"
+          , "go 10"
+          ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 10.0
+                    }
               }
-            ]
-        }
-    )
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
+                }
+              ]
+          }
+      )
 
-  testCase
-    "moving forward by 10 using variable assignments and conditionals"
-    ( String.joinWith
-        "\n"
-        [ "make \"steps 5"
-        , "make \"t true"
-        , "make \"f false"
-        , "if (:f) [ back :steps ]"
-        , "if (:t) [ forward :steps ]"
-        , "ifelse (:t) [ forward :steps ] [ back :steps ]"
-        ]
-    )
-    ( Right $
-        { pointer:
-            { angle: zero
-            , isDown: true
-            , position:
-                Position
-                  { x: 0.0
-                  , y: 10.0
-                  }
-            }
-        , screen: List.fromFoldable
-            [ { p1: Position { x: 0.0, y: 5.0 }
-              , p2: Position { x: 0.0, y: 10.0 }
+    testCase
+      "moving forward by 10 using variable assignments and conditionals"
+      ( String.joinWith
+          "\n"
+          [ "make \"steps 5"
+          , "make \"t true"
+          , "make \"f false"
+          , "if (:f) [ back :steps ]"
+          , "if (:t) [ forward :steps ]"
+          , "ifelse (:t) [ forward :steps ] [ back :steps ]"
+          ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 10.0
+                    }
               }
-            , { p1: Position { x: 0.0, y: 0.0 }
-              , p2: Position { x: 0.0, y: 5.0 }
-              }
-            ]
-        }
-    )
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 5.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
+                }
+              , { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 5.0 }
+                }
+              ]
+          }
+      )
 
-  testCase
-    "moving forward by 10 using the repeat statement"
-    ( String.joinWith
-        "\n"
-        [ "repeat 2 [ forward 5 ]"
-        ]
-    )
-    ( Right $
-        { pointer:
-            { angle: zero
-            , isDown: true
-            , position:
-                Position
-                  { x: 0.0
-                  , y: 10.0
-                  }
-            }
-        , screen: List.fromFoldable
-            [ { p1: Position { x: 0.0, y: 5.0 }
-              , p2: Position { x: 0.0, y: 10.0 }
+    testCase
+      "moving forward by 10 using the repeat statement"
+      ( String.joinWith
+          "\n"
+          [ "repeat 2 [ forward 5 ]"
+          ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 10.0
+                    }
               }
-            , { p1: Position { x: 0.0, y: 0.0 }
-              , p2: Position { x: 0.0, y: 5.0 }
-              }
-            ]
-        }
-    )
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 5.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
+                }
+              , { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 5.0 }
+                }
+              ]
+          }
+      )
 
-  testCase
-    "moving forward by 10 using a conditional with a predicate"
-    ( String.joinWith
-        "\n"
-        [ "if (equal? 1 1) [ fd 10 ]" ]
-    )
-    ( Right $
-        { pointer:
-            { angle: zero
-            , isDown: true
-            , position:
-                Position
-                  { x: 0.0
-                  , y: 10.0
-                  }
-            }
-        , screen: List.fromFoldable
-            [ { p1: Position { x: 0.0, y: 0.0 }
-              , p2: Position { x: 0.0, y: 10.0 }
+    testCase
+      "moving forward by 10 using a conditional with a predicate"
+      ( String.joinWith
+          "\n"
+          [ "if (1 = 1) [ fd 10 ]" ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 10.0
+                    }
               }
-            ]
-        }
-    )
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 10.0 }
+                }
+              ]
+          }
+      )
 
-  testCase
-    "not moving forward using a conditional with a predicate"
-    ( String.joinWith
-        "\n"
-        [ "if (equal? 1 2) [ fd 10 ]" ]
-    )
-    ( Right $
-        { pointer:
-            { angle: zero
-            , isDown: true
-            , position: zero
-            }
-        , screen: Nil
-        }
-    )
+    testCase
+      "not moving forward using a conditional with a predicate"
+      ( String.joinWith
+          "\n"
+          [ "if (1 = 2) [ fd 10 ]" ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position: zero
+              }
+          , screen: Nil
+          }
+      )
 
 testCase
   ∷ String → String → String \/ VisibleState → Spec Unit
-testCase title source expected = it
-  ("executes \"" <> title <> "\"")
-  ((Program.run source) `shouldEqual` expected)
+testCase title source expected = it ("executes \"" <> title <> "\"") do
+  let
+    actual = Program.run source
+  if actual == expected then pure unit
+  else fail $
+    "--- error >>> ---\n"
+      <> show actual
+      <> "\nis not equal to\n"
+      <> show expected
+      <> "\n--- source >>> ---\n"
+      <> Utils.emphasizeWhitespaces source
+      <> "\n--- <<< source ---"
+      <> "\n--- <<< error ---"
 

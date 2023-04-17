@@ -9,11 +9,8 @@
   , "control"
   , "effect"
   , "either"
-  , "exceptions"
   , "exists"
   , "foldable-traversable"
-  , "functions"
-  , "gen"
   , "halogen"
   , "halogen-hooks"
   , "halogen-subscriptions"
@@ -31,22 +28,15 @@
   , "optparse"
   , "ordered-collections"
   , "parsing"
-  , "partial"
   , "prelude"
   , "quickcheck"
   , "spec"
   , "spec-quickcheck"
-  , "string-parsers"
   , "strings"
   , "transformers"
   , "tuples"
   , "web-dom"
   ]
 , packages = ./packages.dhall
-, sources =
-  [ "src/**/Lexing.purs"
-  , "src/**/Parsing.purs"
-  , "test/**/Main.purs"
-  , "test/**/Parsing.purs"
-  ]
+, sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }

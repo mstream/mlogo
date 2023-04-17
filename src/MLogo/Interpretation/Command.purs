@@ -23,6 +23,7 @@ import Data.List (List(..), (:))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Newtype (wrap)
 import Data.Newtype as Newtype
 import Data.Number as Number
 import Data.Symbol (class IsSymbol, reflectSymbol)
@@ -247,13 +248,13 @@ isEqual =
               throwError errorMessage
             Right input →
               interpretIsEqual input
-      , name: "equal?"
+      , name: "equalp"
       , outputValueType: Just BooleanType
       , parameters: Input.parametersFromVariableInputParser inputParser
       }
 
 interpretSum ∷ ∀ m. Interpret m (List Number)
-interpretSum = pure <<< Just <<< NumberValue <<< foldl (+) zero
+interpretSum = pure <<< Just <<< FloatValue <<< foldl (+) zero
 
 interpretIsEqual ∷ ∀ m. Interpret m (List Value)
 interpretIsEqual = pure <<< Just <<< BooleanValue <<< go true Nothing
@@ -373,7 +374,7 @@ commandsByAlias = Heterogeneous.hfoldlWithIndex
   , clean: clean
   , clearscreen: clearScreen
   , cs: clearScreen
-  , "equal?": isEqual
+  , equalp: isEqual
   , fd: moveForward
   , forward: moveForward
   , home: goHome

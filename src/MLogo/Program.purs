@@ -4,39 +4,38 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
+import Data.List as List
+import Data.Newtype (unwrap)
+import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation as Interpretation
-import MLogo.Interpretation.State (ExecutionState(..), VisibleState)
-import MLogo.Lexing as Lexing
+import MLogo.Interpretation.Interpret as Interpret
+import MLogo.Interpretation.State (VisibleState)
+import MLogo.Interpretation.State as State
 import MLogo.Parsing as Parsing
 import Parsing as P
-import StringParser as SP
 
-run
-  ∷ String → String \/ VisibleState
+run ∷ String → String \/ VisibleState
 run source = do
-  tokens ← case Lexing.run source of
+  expressions ← case P.runParser source Parsing.expressions of
     Left parseError →
-      Left $ show source
-        <> "\n\nLexing error: "
-        <> SP.printParserError parseError
-    Right tokens →
-      Right tokens
+      Left $ "Syntax error:\n" <> show parseError
+    Right expressions →
+      Right expressions
 
-  statements ← case Parsing.run tokens of
-    Left parseError →
-      Left $ show tokens
-        <> "\n\nParsing error: "
-        <> P.parseErrorMessage parseError
-    Right statements →
-      Right statements
+  let
+    result = Interpret.runInterpret
+      Interpretation.interpretExpressions
+      State.initialExecutionState
+      expressions
 
-  (ExecutionState { pointer, screen }) ←
-    case Interpretation.run statements of
-      Left interpretationError →
-        Left $ show statements
-          <> "\n\nInterpretation error: "
-          <> interpretationError
-      Right state →
-        Right state
+  { callStack, pointer, screen } ← unwrap <$> case result of
+    Left interpretationError →
+      Left $ "\n\nRuntime error: "
+        <> interpretationError
+    Right (_ /\ state) →
+      Right state
 
-  pure { pointer, screen }
+  if List.null callStack then
+    Right { pointer, screen }
+  else Left "call stack not cleared"
+

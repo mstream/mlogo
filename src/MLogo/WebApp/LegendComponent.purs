@@ -121,10 +121,10 @@ renderValue ∷ ∀ i w. Value → HTML w i
 renderValue = HH.text <<< case _ of
   BooleanValue b →
     show b
+  FloatValue x →
+    show x
   IntegerValue n →
     show n
-  NumberValue x →
-    show x
   WordValue s →
     "\"" <> s
 

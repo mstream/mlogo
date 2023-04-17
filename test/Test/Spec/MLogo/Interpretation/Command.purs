@@ -80,33 +80,33 @@ spec = describe "Command" do
 
     isEqualTestCase
       "one argument"
-      [ NumberValue 1.0 ]
+      [ FloatValue 1.0 ]
       (Right true)
 
     isEqualTestCase
       "two equal arguments"
-      [ NumberValue 1.0, NumberValue 1.0 ]
+      [ FloatValue 1.0, FloatValue 1.0 ]
       (Right true)
 
     isEqualTestCase
       "three equal arguments"
-      [ NumberValue 1.0, NumberValue 1.0, NumberValue 1.0 ]
+      [ FloatValue 1.0, FloatValue 1.0, FloatValue 1.0 ]
       (Right true)
 
     isEqualTestCase
       "two unequal arguments"
-      [ NumberValue 1.0, NumberValue 2.0 ]
+      [ FloatValue 1.0, FloatValue 2.0 ]
       (Right false)
 
     isEqualTestCase
       "three unequal arguments"
-      [ NumberValue 1.0, NumberValue 1.0, NumberValue 2.0 ]
+      [ FloatValue 1.0, FloatValue 1.0, FloatValue 2.0 ]
       (Right false)
 
   describe "moveBackward" do
     moveBackwardTestCase
       "by a positive steps number"
-      [ NumberValue 10.0 ]
+      [ FloatValue 10.0 ]
       ( Right
           { lines:
               [ { p1: Position { x: 0.0, y: 0.0 }
@@ -119,7 +119,7 @@ spec = describe "Command" do
 
     moveBackwardTestCase
       "by a negative steps number"
-      [ NumberValue (-10.0) ]
+      [ FloatValue (-10.0) ]
       ( Right
           { lines:
               [ { p1: Position { x: 0.0, y: 0.0 }
@@ -133,7 +133,7 @@ spec = describe "Command" do
   describe "moveForward" do
     moveForwardTestCase
       "by a positive steps number"
-      [ NumberValue 10.0 ]
+      [ FloatValue 10.0 ]
       ( Right
           { lines:
               [ { p1: Position { x: 0.0, y: 0.0 }
@@ -146,7 +146,7 @@ spec = describe "Command" do
 
     moveForwardTestCase
       "by a negative steps number"
-      [ NumberValue (-10.0) ]
+      [ FloatValue (-10.0) ]
       ( Right
           { lines:
               [ { p1: Position { x: 0.0, y: 0.0 }
@@ -187,17 +187,17 @@ spec = describe "Command" do
 
     sumTestCase
       "one argument"
-      [ NumberValue 1.0 ]
+      [ FloatValue 1.0 ]
       (Right 1.0)
 
     sumTestCase
       "two arguments"
-      [ NumberValue 1.0, NumberValue 2.0 ]
+      [ FloatValue 1.0, FloatValue 2.0 ]
       (Right 3.0)
 
     sumTestCase
       "three arguments"
-      [ NumberValue 1.0, NumberValue 2.0, NumberValue 3.0 ]
+      [ FloatValue 1.0, FloatValue 2.0, FloatValue 3.0 ]
       (Right 6.0)
 
 isEqualTestCase
@@ -318,7 +318,7 @@ sumTestCase title arguments expected =
     title
     State.initialExecutionState
     arguments
-    ( ((_ /\ State.initialExecutionState) <<< Just <<< NumberValue) <$>
+    ( ((_ /\ State.initialExecutionState) <<< Just <<< FloatValue) <$>
         expected
     )
 
