@@ -116,7 +116,7 @@ spec = describe "Program" do
       )
 
     testCase
-      "moving forward by 10 using the repeat statement"
+      "moving forward by 10 using the repeat loop block"
       ( String.joinWith
           "\n"
           [ "repeat 2 [ forward 5 ]"
@@ -138,6 +138,37 @@ spec = describe "Program" do
                 }
               , { p1: Position { x: 0.0, y: 0.0 }
                 , p2: Position { x: 0.0, y: 5.0 }
+                }
+              ]
+          }
+      )
+
+    testCase
+      "moving forward multiple times using the repeat loop block and its repcount"
+      ( String.joinWith
+          "\n"
+          [ "repeat 3 [ forward repcount ]"
+          ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 6.0
+                    }
+              }
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 3.0 }
+                , p2: Position { x: 0.0, y: 6.0 }
+                }
+              , { p1: Position { x: 0.0, y: 1.0 }
+                , p2: Position { x: 0.0, y: 3.0 }
+                }
+              , { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 1.0 }
                 }
               ]
           }

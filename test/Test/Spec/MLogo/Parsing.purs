@@ -693,6 +693,32 @@ spec = describe "Parsing" do
           )
       ]
 
+    expressionsTestCase
+      "Growing Scrolls variation 4, by M.H. Elhefni, Egypt (13 words)"
+      "for [i 1 18 2] [repeat 720 [fd :i rt repcount] lt 45]"
+      [ ForBlock
+          { binder: "i", initialValue: 1, step: 2, terminalValue: 18 }
+          ( List.fromFoldable
+              [ RepeatBlock
+                  (IntegerLiteral 720)
+                  ( List.fromFoldable
+                      [ ProcedureCall
+                          "fd"
+                          (List.fromFoldable [ ValueReference "i" ])
+                      , ProcedureCall
+                          "rt"
+                          ( List.fromFoldable
+                              [ ProcedureCall "repcount" Nil ]
+                          )
+                      ]
+                  )
+              , ProcedureCall
+                  "lt"
+                  (List.fromFoldable [ IntegerLiteral 45 ])
+              ]
+          )
+      ]
+
   describe "procedureSignature" do
     procedureSignatureTestCase
       "no parameters"

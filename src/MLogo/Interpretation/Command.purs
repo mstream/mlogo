@@ -227,6 +227,22 @@ penDown =
       , parameters: Input.parametersFromFixedInputParser inputParser
       }
 
+repCount ∷ Command
+repCount =
+  let
+    inputParser = Input.fixedNoInputParser
+  in
+    Command
+      { description:
+          "outputs the repetition count of the innermost current REPEAT or FOREVER, starting from 1"
+      , interpret: parseAndInterpretInput
+          (Input.runFixedInputParser inputParser)
+          interpretRepCount
+      , name: "repcount"
+      , outputValueType: Just IntegerType
+      , parameters: Input.parametersFromFixedInputParser inputParser
+      }
+
 penUp ∷ Command
 penUp =
   let
@@ -351,6 +367,11 @@ interpretPenUp _ = do
     { pointer = state.pointer { isDown = false } }
   pure Nothing
 
+interpretRepCount ∷ ∀ m. Interpret m Unit
+interpretRepCount _ = do
+  (ExecutionState state) ← get
+  pure $ Just $ IntegerValue state.repCount
+
 interpretGoHome ∷ ∀ m. Interpret m Unit
 interpretGoHome _ = do
   modify_ \(ExecutionState state) → ExecutionState $ state
@@ -422,6 +443,7 @@ commandsByAlias = Heterogeneous.hfoldlWithIndex
   , pendown: penDown
   , penup: penUp
   , pu: penUp
+  , repcount: repCount
   , right: turnRight
   , rt: turnRight
   , sin: sinus

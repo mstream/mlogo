@@ -131,6 +131,7 @@ newtype ExecutionState = ExecutionState
         { body ∷ List Expression
         , parameters ∷ List Parameter
         }
+  , repCount ∷ Int
   , screen ∷ ScreenState
   }
 
@@ -146,6 +147,7 @@ instance Arbitrary ExecutionState where
     outputtedValue ← arbitrary
     pointer ← arbitrary
     procedures ← pure Map.empty {- FIXME genMap arbitrary arbitrary-}
+    repCount ← arbitrary
     screen ← arbitrary
     pure $ ExecutionState
       { callStack
@@ -153,6 +155,7 @@ instance Arbitrary ExecutionState where
       , outputtedValue
       , pointer
       , procedures
+      , repCount
       , screen
       }
     where
@@ -186,6 +189,7 @@ initialExecutionState =
     , outputtedValue: Nothing
     , pointer: initialPointerState
     , procedures: Map.empty
+    , repCount: -1
     , screen: Nil
     }
 

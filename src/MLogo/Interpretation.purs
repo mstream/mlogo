@@ -210,11 +210,24 @@ interpretRepeatBlock { body, times } = do
   mbTimesValue ← interpretExpression times
   case mbTimesValue of
     Just timesValue → do
-      n ← liftEither $ State.extractInt timesValue
-      if n > 0 then do
-        void $ interpretExpressions body
-        interpretRepeatBlock { body, times: IntegerLiteral $ n - 1 }
-      else pure Nothing
+      repCountMax ← liftEither $ State.extractInt timesValue
+      (ExecutionState state) ← get
+      let
+        go repCount =
+          if repCount <= repCountMax then do
+            modify_ $ over
+              ExecutionState
+              (\st → st { repCount = repCount })
+
+            void $ interpretExpressions body
+            go $ repCount + 1
+          else do
+            modify_ $ over
+              ExecutionState
+              (\st → st { repCount = state.repCount })
+
+            pure Nothing
+      go 1
     Nothing →
       throwError
         "repeat counter expression does not evaluate to a value"
