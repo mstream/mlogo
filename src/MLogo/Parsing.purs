@@ -23,6 +23,7 @@ import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import Data.Tuple as Tuple
 import Data.Unfoldable (replicateA)
@@ -251,6 +252,8 @@ derive newtype instance Eq Parameter
 derive newtype instance Ord Parameter
 derive newtype instance Show Parameter
 derive newtype instance Arbitrary Parameter
+
+derive instance Newtype Parameter _
 
 operatorTable ∷ Array (Array (Operator Identity String Expression))
 operatorTable =

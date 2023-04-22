@@ -15,10 +15,9 @@ import Control.Monad.State
   , runStateT
   )
 import Data.Either (Either(..))
-import Data.Foldable (class Foldable, foldM)
+import Data.Foldable (class Foldable, foldM, foldl)
 import Data.List (List(..), (:))
 import Data.List as List
-import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Newtype (over, unwrap, wrap)
@@ -26,9 +25,13 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (ExecutionState(..), Value(..))
+import MLogo.Interpretation.State
+  ( ExecutionState(..)
+  , Value(..)
+  , Variables
+  )
 import MLogo.Interpretation.State as State
-import MLogo.Parsing (Expression(..), ForBlockSpec, Parameter(..))
+import MLogo.Parsing (Expression(..), ForBlockSpec, Parameter)
 
 interpretExpressions
   ∷ ∀ f m
@@ -133,10 +136,8 @@ interpretForBlock { body, spec } =
   go n = do
     if n <= spec.terminalValue then do
       let
-        boundArguments ∷ Map Parameter Value
-        boundArguments = Map.singleton
-          (Parameter spec.binder)
-          (IntegerValue n)
+        localVariables ∷ Variables
+        localVariables = Map.singleton spec.binder (IntegerValue n)
 
       state ← unwrap <$> get
 
@@ -147,7 +148,7 @@ interpretForBlock { body, spec } =
       modify_ $ over
         ExecutionState
         ( \st → st
-            { callStack = { boundArguments, name: "for loop" } :
+            { callStack = { localVariables, name: "for loop" } :
                 st.callStack
             }
         )
@@ -229,15 +230,15 @@ interpetUserDefinedProcedureCall
 interpetUserDefinedProcedureCall
   { body, evaluatedArguments, name, parameters } =
   let
-    boundArguments ∷ Map Parameter Value
-    boundArguments =
-      Map.fromFoldable $ List.zip parameters evaluatedArguments
+    localVariables ∷ Variables
+    localVariables = Map.fromFoldable
+      $ List.zip (unwrap <$> parameters) evaluatedArguments
   in
-    if Map.size boundArguments /= List.length parameters then
+    if Map.size localVariables /= List.length parameters then
       throwError $ "Expected "
         <> (show $ List.length parameters)
         <> " arguments but got "
-        <> (show $ Map.size boundArguments)
+        <> (show $ Map.size localVariables)
     else do
       state ← unwrap <$> get
 
@@ -248,9 +249,7 @@ interpetUserDefinedProcedureCall
       modify_ $ over
         ExecutionState
         ( \st → st
-            { callStack = { boundArguments, name } :
-                st.callStack
-            }
+            { callStack = { localVariables, name } : st.callStack }
         )
 
       mbValue ← interpretExpressions body
@@ -298,26 +297,24 @@ interpretProcedureDefinition { body, name, parameters } = do
 
 interpretValueReference ∷ ∀ m. Interpret m String
 interpretValueReference name = do
-  { callStack, variables } ← unwrap <$> get
+  { callStack, globalVariables } ← unwrap <$> get
 
   let
-    findInGlobalVariables = Map.lookup name variables
+    localVariables ∷ Variables
+    localVariables = foldl
+      Map.union
+      Map.empty
+      (_.localVariables <$> callStack)
 
-    findInProcedureParameters = case List.head callStack of
-      Just { boundArguments } →
-        Map.lookup (Parameter name) boundArguments
-      Nothing →
-        Nothing
-
-  case findInProcedureParameters of
+  case Map.lookup name localVariables of
     Just value →
       pure $ Just value
     Nothing →
-      case findInGlobalVariables of
+      case Map.lookup name globalVariables of
         Just value →
           pure $ Just value
         Nothing →
-          throwError $ "value refered by \""
+          throwError $ "value referred by \""
             <> name
             <> "\" name not found"
 

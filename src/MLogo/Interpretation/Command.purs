@@ -303,7 +303,7 @@ interpretVariableAssignment
 interpretVariableAssignment { name, value } = do
   modify_ \(ExecutionState state) →
     ExecutionState $ state
-      { variables = Map.insert name value state.variables }
+      { globalVariables = Map.insert name value state.globalVariables }
   pure Nothing
 
 interpretMoveForward ∷ ∀ m. Interpret m Number

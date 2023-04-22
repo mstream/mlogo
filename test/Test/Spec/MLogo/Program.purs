@@ -213,6 +213,31 @@ spec = describe "Program" do
           }
       )
 
+    testCase
+      "moving forward depending on a lexical scope of the for loop"
+      ( String.joinWith
+          "\n"
+          [ "for [i 1 1] [for [j 2 2] [for [k 3 3] [fd :i + :j + :k]]]"
+          ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 6.0
+                    }
+              }
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 6.0 }
+                }
+              ]
+          }
+      )
+
 testCase
   ∷ String → String → String \/ VisibleState → Spec Unit
 testCase title source expected = it ("executes \"" <> title <> "\"") do

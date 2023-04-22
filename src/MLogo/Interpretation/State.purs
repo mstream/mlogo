@@ -7,6 +7,7 @@ module MLogo.Interpretation.State
   , Position(..)
   , ScreenState
   , Value(..)
+  , Variables
   , VisibleState
   , extractBoolean
   , extractInt
@@ -36,6 +37,8 @@ import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
 import Test.QuickCheck.Gen (Gen)
 import Test.QuickCheck.Gen as Gen
+
+type Variables = Map String Value
 
 data Value
   = BooleanValue Boolean
@@ -120,6 +123,7 @@ type ScreenState = List Line
 
 newtype ExecutionState = ExecutionState
   { callStack ∷ List CallStackElement
+  , globalVariables ∷ Variables
   , outputtedValue ∷ Maybe Value
   , pointer ∷ PointerState
   , procedures ∷
@@ -128,7 +132,6 @@ newtype ExecutionState = ExecutionState
         , parameters ∷ List Parameter
         }
   , screen ∷ ScreenState
-  , variables ∷ Map String Value
   }
 
 derive newtype instance Eq ExecutionState
@@ -139,18 +142,18 @@ derive instance Newtype ExecutionState _
 instance Arbitrary ExecutionState where
   arbitrary = do
     callStack ← pure Nil {- FIXME List.fromFoldable <$> Gen.arrayOf genCallStackElement-}
+    globalVariables ← genMap arbitrary arbitrary
     outputtedValue ← arbitrary
     pointer ← arbitrary
     procedures ← pure Map.empty {- FIXME genMap arbitrary arbitrary-}
     screen ← arbitrary
-    variables ← genMap arbitrary arbitrary
     pure $ ExecutionState
       { callStack
+      , globalVariables
       , outputtedValue
       , pointer
       , procedures
       , screen
-      , variables
       }
     where
     genMap ∷ ∀ k v. Ord k ⇒ Gen k → Gen v → Gen (Map k v)
@@ -161,13 +164,13 @@ instance Arbitrary ExecutionState where
 
     genCallStackElement ∷ Gen CallStackElement
     genCallStackElement = do
+      localVariables ← genMap arbitrary arbitrary
       name ← arbitrary
-      boundArguments ← genMap arbitrary arbitrary
-      pure { boundArguments, name }
+      pure { localVariables, name }
 
 type CallStackElement =
   { name ∷ String
-  , boundArguments ∷ Map Parameter Value
+  , localVariables ∷ Variables
   }
 
 type VisibleState =
@@ -179,11 +182,11 @@ initialExecutionState ∷ ExecutionState
 initialExecutionState =
   ExecutionState
     { callStack: Nil
+    , globalVariables: Map.empty
     , outputtedValue: Nothing
     , pointer: initialPointerState
     , procedures: Map.empty
     , screen: Nil
-    , variables: Map.empty
     }
 
 newtype Position = Position { x ∷ Number, y ∷ Number }
