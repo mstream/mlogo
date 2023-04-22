@@ -1,5 +1,13 @@
 
 
+## [0.11.0](https://github.com/mstream/mlogo/compare/0.10.0...0.11.0) (2023-04-22)
+
+
+### Features
+
+* allow for binary operations as arguments ([11dff10](https://github.com/mstream/mlogo/commit/11dff1071a28846a95a989c43259fe9a1c30d240))
+* implement the for loop ([924f855](https://github.com/mstream/mlogo/commit/924f8559abfdae22db0fa9939b7d1eacddee4418))
+
 ## [0.10.0](https://github.com/mstream/mlogo/compare/0.9.1...0.10.0) (2023-04-17)
 
 
