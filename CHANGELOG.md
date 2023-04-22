@@ -1,5 +1,12 @@
 
 
+## [0.12.0](https://github.com/mstream/mlogo/compare/0.11.0...0.12.0) (2023-04-22)
+
+
+### Features
+
+* implement lexical scoping ([10b41e1](https://github.com/mstream/mlogo/commit/10b41e15a5ff71a724b1a5ccfb36b8f54d7df553))
+
 ## [0.11.0](https://github.com/mstream/mlogo/compare/0.10.0...0.11.0) (2023-04-22)
 
 
