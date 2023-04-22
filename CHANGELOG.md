@@ -1,5 +1,12 @@
 
 
+## [0.13.0](https://github.com/mstream/mlogo/compare/0.12.0...0.13.0) (2023-04-22)
+
+
+### Features
+
+* implement a custom step for the for loop block ([5e66c85](https://github.com/mstream/mlogo/commit/5e66c8516d779031a9d5e0bbd5362e289947983b))
+
 ## [0.12.0](https://github.com/mstream/mlogo/compare/0.11.0...0.12.0) (2023-04-22)
 
 
