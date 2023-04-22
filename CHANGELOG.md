@@ -1,5 +1,12 @@
 
 
+## [0.14.0](https://github.com/mstream/mlogo/compare/0.13.0...0.14.0) (2023-04-22)
+
+
+### Features
+
+* implement "repcount" command ([9fc9e85](https://github.com/mstream/mlogo/commit/9fc9e852411ab34e48dfd4024c24a7a767593cd2))
+
 ## [0.13.0](https://github.com/mstream/mlogo/compare/0.12.0...0.13.0) (2023-04-22)
 
 
