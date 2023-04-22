@@ -73,6 +73,7 @@ procedureSignaturesToParsingContext = foldl f Map.empty
 type ForBlockSpec =
   { binder ∷ String
   , initialValue ∷ Int
+  , step ∷ Int
   , terminalValue ∷ Int
   }
 
@@ -128,7 +129,10 @@ forBlockSpec = do
   initialValue ← Lexing.lexer.integer
   Lexing.lexer.whiteSpace
   terminalValue ← Lexing.lexer.integer
-  pure { binder, initialValue, terminalValue }
+  step ← PC.option 1 do
+    Lexing.lexer.whiteSpace
+    Lexing.lexer.integer
+  pure { binder, initialValue, step, terminalValue }
 
 ifBlock ∷ ParsingContext → Parser String Expression
 ifBlock context = Lazy.defer \_ → do

@@ -536,7 +536,7 @@ spec = describe "Parsing" do
                 Map.fromFoldable
                   [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
             , expected: ForBlock
-                { binder: "idx", initialValue, terminalValue }
+                { binder: "idx", initialValue, step: 1, terminalValue }
                 ( List.fromFoldable
                     [ ProcedureCall "proc1"
                         (List.fromFoldable [ IntegerLiteral 1 ])
@@ -641,7 +641,7 @@ spec = describe "Parsing" do
       "Hairy Star"
       "for [i 0 4700] [fd 10 rt (180 * sin (:i * :i))]"
       [ ForBlock
-          { binder: "i", initialValue: 0, terminalValue: 4700 }
+          { binder: "i", initialValue: 0, step: 1, terminalValue: 4700 }
           ( List.fromFoldable
               [ ProcedureCall
                   "fd"
@@ -662,6 +662,33 @@ spec = describe "Parsing" do
                           )
                       ]
                   )
+              ]
+          )
+      ]
+
+    expressionsTestCase
+      "Octa-star Spiral, by M.H. Elhefni, Egypt"
+      "for [l 0 120 4] [repeat 8 [fd :l rt 135] fd :l rt 30]"
+      [ ForBlock
+          { binder: "l", initialValue: 0, step: 4, terminalValue: 120 }
+          ( List.fromFoldable
+              [ RepeatBlock
+                  (IntegerLiteral 8)
+                  ( List.fromFoldable
+                      [ ProcedureCall
+                          "fd"
+                          (List.fromFoldable [ ValueReference "l" ])
+                      , ProcedureCall
+                          "rt"
+                          (List.fromFoldable [ IntegerLiteral 135 ])
+                      ]
+                  )
+              , ProcedureCall
+                  "fd"
+                  (List.fromFoldable [ ValueReference "l" ])
+              , ProcedureCall
+                  "rt"
+                  (List.fromFoldable [ IntegerLiteral 30 ])
               ]
           )
       ]

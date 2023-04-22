@@ -187,7 +187,7 @@ spec = describe "Program" do
       "moving forward multiple times using a for loop block"
       ( String.joinWith
           "\n"
-          [ "for [i 4 6] [ fd :i ]" ]
+          [ "for [i 4 6] [fd :i]" ]
       )
       ( Right $
           { pointer:
@@ -208,6 +208,36 @@ spec = describe "Program" do
                 }
               , { p1: Position { x: 0.0, y: 0.0 }
                 , p2: Position { x: 0.0, y: 4.0 }
+                }
+              ]
+          }
+      )
+
+    testCase
+      "moving forward multiple times using a for loop block with a custom step"
+      ( String.joinWith
+          "\n"
+          [ "for [i 1 6 2] [fd :i]" ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 9.0
+                    }
+              }
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 4.0 }
+                , p2: Position { x: 0.0, y: 9.0 }
+                }
+              , { p1: Position { x: 0.0, y: 1.0 }
+                , p2: Position { x: 0.0, y: 4.0 }
+                }
+              , { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 1.0 }
                 }
               ]
           }
