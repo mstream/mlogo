@@ -35,6 +35,7 @@
   , "strings"
   , "transformers"
   , "tuples"
+  , "unfoldable"
   , "web-dom"
   ]
 , packages = ./packages.dhall

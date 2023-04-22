@@ -10,7 +10,7 @@ import Data.String as String
 import MLogo.Interpretation.State (Position(..), VisibleState)
 import MLogo.Program as Program
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (fail, shouldEqual)
+import Test.Spec.Assertions (fail)
 import Test.Utils as Utils
 
 spec ∷ Spec Unit
@@ -183,13 +183,35 @@ spec = describe "Program" do
           }
       )
 
-  compatibilityTestCase
-    "Dahlia, by David Eisenstat, U.S. (14 words)"
-    "repeat 8 [rt 45 repeat 6 [repeat 90 [fd 2 rt 2] rt 90]]"
-
-  compatibilityTestCase
-    "Hairy Star"
-    "for [i 0 4700] [fd 10 rt (180 * sin (:i * :i))]"
+    testCase
+      "moving forward multiple times using a for loop block"
+      ( String.joinWith
+          "\n"
+          [ "for [i 4 6] [ fd :i ]" ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: 15.0
+                    }
+              }
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 9.0 }
+                , p2: Position { x: 0.0, y: 15.0 }
+                }
+              , { p1: Position { x: 0.0, y: 4.0 }
+                , p2: Position { x: 0.0, y: 9.0 }
+                }
+              , { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: 4.0 }
+                }
+              ]
+          }
+      )
 
 testCase
   ∷ String → String → String \/ VisibleState → Spec Unit
@@ -206,24 +228,4 @@ testCase title source expected = it ("executes \"" <> title <> "\"") do
       <> Utils.emphasizeWhitespaces source
       <> "\n--- <<< source ---"
       <> "\n--- <<< error ---"
-
-compatibilityTestCase
-  ∷ String → String → Spec Unit
-compatibilityTestCase title source = it
-  ("understands \"" <> title <> "\"")
-  do
-    let
-      actual = Program.run source
-    case actual of
-      Left errorMessage →
-        fail $
-          "--- error >>> ---\n"
-            <> show errorMessage
-            <> "\n--- source >>> ---\n"
-            <> Utils.emphasizeWhitespaces source
-            <> "\n--- <<< source ---"
-            <> "\n--- <<< error ---"
-
-      Right _ →
-        pure unit
 

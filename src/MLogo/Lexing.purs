@@ -10,6 +10,7 @@ module MLogo.Lexing
   , makeKeyword
   , plusSymbol
   , repeatKeyword
+  , reservedNames
   , toKeyword
   , trueKeyword
   ) where
@@ -19,6 +20,31 @@ import Parsing.Language as PL
 import Parsing.String.Basic as PSB
 import Parsing.Token (GenLanguageDef(..), GenTokenParser, LanguageDef)
 import Parsing.Token as PT
+
+lexer ∷ GenTokenParser String Identity
+lexer = PT.makeTokenParser languageDef
+
+languageDef ∷ LanguageDef
+languageDef = LanguageDef (PT.unGenLanguageDef PL.emptyDef)
+  { identLetter = PSB.alphaNum
+  , identStart = PSB.letter
+  , reservedNames = reservedNames
+  , reservedOpNames = [ asteriskSymbol, equalSymbol, plusSymbol ]
+  }
+
+reservedNames ∷ Array String
+reservedNames =
+  [ ifKeyword
+  , endKeyword
+  , falseKeyword
+  , forKeyword
+  , ifElseKeyword
+  , ifKeyword
+  , makeKeyword
+  , repeatKeyword
+  , toKeyword
+  , trueKeyword
+  ]
 
 asteriskSymbol ∷ String
 asteriskSymbol = "*"
@@ -55,26 +81,4 @@ toKeyword = "to"
 
 trueKeyword ∷ String
 trueKeyword = "true"
-
-languageDef ∷ LanguageDef
-languageDef = LanguageDef (PT.unGenLanguageDef PL.emptyDef)
-  { identLetter = PSB.alphaNum
-  , identStart = PSB.letter
-  , reservedNames =
-      [ ifKeyword
-      , endKeyword
-      , falseKeyword
-      , forKeyword
-      , ifElseKeyword
-      , ifKeyword
-      , makeKeyword
-      , repeatKeyword
-      , toKeyword
-      , trueKeyword
-      ]
-  , reservedOpNames = [ asteriskSymbol, equalSymbol, plusSymbol ]
-  }
-
-lexer ∷ GenTokenParser String Identity
-lexer = PT.makeTokenParser languageDef
 

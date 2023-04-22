@@ -18,6 +18,7 @@ import Data.Either (Either(..))
 import Data.Foldable (class Foldable, foldM)
 import Data.List (List(..), (:))
 import Data.List as List
+import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Newtype (over, unwrap, wrap)
@@ -72,7 +73,7 @@ interpretExpression = case _ of
     interpretMultiplication { leftOperand, rightOperand }
   ProcedureCall name arguments →
     interpretProcedureCall { arguments, name }
-  ProcedureDefinition name parameters body →
+  ProcedureDefinition { name, parameters } body →
     interpretProcedureDefinition { body, name, parameters }
   RepeatBlock times body →
     interpretRepeatBlock { body, times }
@@ -125,8 +126,41 @@ interpretForBlock
       { body ∷ List Expression
       , spec ∷ ForBlockSpec
       }
-interpretForBlock { body, spec } = do
-  throwError "TODO"
+interpretForBlock { body, spec } =
+  go spec.initialValue
+  where
+  go ∷ Interpret m Int
+  go n = do
+    if n <= spec.terminalValue then do
+      let
+        boundArguments ∷ Map Parameter Value
+        boundArguments = Map.singleton
+          (Parameter spec.binder)
+          (IntegerValue n)
+
+      state ← unwrap <$> get
+
+      when
+        (List.length state.callStack >= maximumCallStackSize)
+        (throwError "call stack overflow")
+
+      modify_ $ over
+        ExecutionState
+        ( \st → st
+            { callStack = { boundArguments, name: "for loop" } :
+                st.callStack
+            }
+        )
+
+      void $ interpretExpressions body
+
+      modify_ $ over ExecutionState _
+        { callStack = state.callStack
+        , outputtedValue = Nothing
+        }
+
+      go $ n + 1
+    else pure Nothing
 
 interpretIfElseBlock
   ∷ ∀ m
@@ -195,6 +229,7 @@ interpetUserDefinedProcedureCall
 interpetUserDefinedProcedureCall
   { body, evaluatedArguments, name, parameters } =
   let
+    boundArguments ∷ Map Parameter Value
     boundArguments =
       Map.fromFoldable $ List.zip parameters evaluatedArguments
   in
@@ -204,10 +239,10 @@ interpetUserDefinedProcedureCall
         <> " arguments but got "
         <> (show $ Map.size boundArguments)
     else do
-      newState ← unwrap <$> get
+      state ← unwrap <$> get
 
       when
-        (List.length newState.callStack >= maximumCallStackSize)
+        (List.length state.callStack >= maximumCallStackSize)
         (throwError "call stack overflow")
 
       modify_ $ over
@@ -221,7 +256,7 @@ interpetUserDefinedProcedureCall
       mbValue ← interpretExpressions body
 
       modify_ $ over ExecutionState _
-        { callStack = newState.callStack
+        { callStack = state.callStack
         , outputtedValue = Nothing
         }
 

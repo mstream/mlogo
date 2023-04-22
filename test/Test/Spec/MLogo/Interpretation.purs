@@ -2,10 +2,8 @@ module Test.Spec.MLogo.Interpretation (spec) where
 
 import Prelude
 
-import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
-import Data.Foldable (class Foldable)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import MLogo.Interpretation as Interpretation
@@ -52,33 +50,5 @@ expressionTestCase title state expression expected = it title
           <> "\n--- expression >>> ---\n"
           <> show expression
           <> "\n--- <<< expression ---"
-          <> "\n--- <<< error ---"
-
-expressionsTestCase
-  ∷ ∀ f
-  . Foldable f
-  ⇒ String
-  → ExecutionState
-  → f Expression
-  → String \/ (Maybe Value /\ ExecutionState)
-  → Spec Unit
-expressionsTestCase title state expressions expected = it title
-  do
-    let
-      actual = Interpret.runInterpret
-        Interpretation.interpretExpressions
-        state
-        expressions
-
-    if actual == expected then pure unit
-    else
-      fail $
-        "--- error >>> ---\n"
-          <> show actual
-          <> "\nis not equal to\n"
-          <> show expected
-          <> "\n--- expressions >>> ---\n"
-          <> (show $ Array.fromFoldable expressions)
-          <> "\n--- <<< expressions ---"
           <> "\n--- <<< error ---"
 

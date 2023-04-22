@@ -5,46 +5,43 @@ import Prelude
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.Char.Gen as CharGen
-import Data.Either (Either(..), note)
+import Data.Either (Either(..))
+import Data.Either as Either
 import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
+import Data.Int as Int
 import Data.List (List(..))
 import Data.List as List
+import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Data.Number as Number
+import Data.String (Pattern(..))
 import Data.String as String
 import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.Traversable (class Traversable, sequence)
+import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
-import MLogo.Parsing (Expression(..), Parameter(..))
+import MLogo.Interpretation.Command as Command
+import MLogo.Lexing as Lexing
+import MLogo.Parsing
+  ( Expression(..)
+  , Parameter(..)
+  , ParsingContext
+  , ProcedureSignature
+  )
 import MLogo.Parsing as Parsing
 import Parsing as P
 import Test.QuickCheck (Result(..), quickCheckGen)
 import Test.QuickCheck.Gen (Gen)
 import Test.QuickCheck.Gen as Gen
 import Test.Spec (Spec, describe, it)
+import Test.Spec.Assertions (fail)
 import Test.Utils as Utils
 
 spec ∷ Spec Unit
 spec = describe "Parsing" do
   describe "expression" do
-    testCase
-      "a boolean literal"
-      [ genBoolean ]
-      ( \parts → do
-          booleanString ← note
-            "can't parse the boolean back"
-            (parts !! 0)
-          boolean ← case booleanString of
-            "false" →
-              Right false
-            "true" →
-              Right true
-            other →
-              Left $ "\"" <> other <> "\" is not a boolean value"
-          pure $ BooleanLiteral boolean
-      )
-
     arithmeticalBinaryOperatorTestCase
       "="
       Equation
@@ -57,39 +54,57 @@ spec = describe "Parsing" do
       "*"
       Multiplication
 
-    testCase
+    expressionTestCase
+      "a boolean literal"
+      [ genBoolean ]
+      ( \parts → ado
+          boolean ← parseBackBoolean parts "boolean" 0
+          in { context: Map.empty, expected: BooleanLiteral boolean }
+      )
+
+    expressionTestCase
       "a value reference"
       [ genParameter ]
       ( \parts → ado
-          name ← String.drop 1 <$> note
-            "can't parse the reference name back"
-            (parts !! 0)
+          name ← parseBackPrefixedIdentifier parts "reference" 0
           in
-            ValueReference name
+            { context: Map.empty, expected: ValueReference name }
       )
 
-    testCase
+    expressionTestCase
       "a variable assignment"
       [ pure "make", pure " ", genString, pure " ", genBoolean ]
-      ( \parts → do
-          name ← String.drop 1 <$> note
-            "can't parse the variable name back"
-            (parts !! 2)
-          booleanString ← note
-            "can't parse the boolean back"
-            (parts !! 4)
-          boolean ← case booleanString of
-            "false" →
-              Right false
-            "true" →
-              Right true
-            other →
-              Left $ "\"" <> other <> "\" is not a boolean value"
-          pure $ VariableAssignment name (BooleanLiteral boolean)
+      ( \parts → ado
+          name ← parseBackPrefixedIdentifier parts "variable name" 2
+          boolean ← parseBackBoolean parts "boolean" 4
+          in
+            { context: Map.empty
+            , expected: VariableAssignment name (BooleanLiteral boolean)
+            }
       )
 
-    testCase
-      "a procedure call with an operation argument"
+    expressionTestCase
+      "a procedure call with literal arguments"
+      [ genProcedureName, pure " ", genFloat, pure " ", genFloat ]
+      ( \parts → ado
+          procedureName ← parseBackIdentifier parts "procedure name" 0
+          firstArgument ← parseBackFloat parts "first argument" 2
+          secondArgument ← parseBackFloat parts "second argument" 4
+          in
+            { context: Map.fromFoldable [ procedureName /\ Just 2 ]
+            , expected:
+                ProcedureCall
+                  procedureName
+                  ( List.fromFoldable
+                      [ FloatLiteral firstArgument
+                      , FloatLiteral secondArgument
+                      ]
+                  )
+            }
+      )
+
+    expressionTestCase
+      "a procedure call with an operation argument 1"
       [ genProcedureName
       , pure " "
       , genFloat
@@ -99,49 +114,246 @@ spec = describe "Parsing" do
       , genFloat
       ]
       ( \parts → ado
-          procedureName ← note
-            "can't parse the procedure name back"
-            (parts !! 0)
-          firstOperationArgument ← note
-            "can't parse the first argument back"
-            (Number.fromString =<< parts !! 2)
-          secondOperationArgument ← note
-            "can't parse the second argument back"
-            (Number.fromString =<< parts !! 6)
+          procedureName ← parseBackIdentifier parts "procedure name" 0
+          firstOperationArgument ← parseBackFloat
+            parts
+            "first operation argument"
+            2
+          secondOperationArgument ← parseBackFloat
+            parts
+            "second operation argument"
+            6
           in
-            ProcedureCall
-              procedureName
-              ( List.fromFoldable
-                  [ Addition (FloatLiteral firstOperationArgument)
-                      (FloatLiteral secondOperationArgument)
-                  ]
-              )
+            { context: Map.fromFoldable [ procedureName /\ Just 1 ]
+            , expected: ProcedureCall
+                procedureName
+                ( List.fromFoldable
+                    [ Addition (FloatLiteral firstOperationArgument)
+                        (FloatLiteral secondOperationArgument)
+                    ]
+                )
+            }
       )
 
-    testCase
-      "a procedure call with a literal argument"
-      [ genProcedureName, pure " ", genFloat, pure " ", genFloat ]
+    expressionTestCase
+      "a procedure call with an operation argument 2"
+      [ genProcedureName
+      , pure " "
+      , pure "("
+      , genFloat
+      , pure " "
+      , pure "+"
+      , pure " "
+      , genFloat
+      , pure ")"
+      ]
       ( \parts → ado
-          procedureName ← note
-            "can't parse the procedure name back"
-            (parts !! 0)
-          firstArgument ← note
-            "can't parse the first argument back"
-            (Number.fromString =<< parts !! 2)
-          secondArgument ← note
-            "can't parse the second argument back"
-            (Number.fromString =<< parts !! 4)
+          procedureName ← parseBackIdentifier parts "procedure name" 0
+          firstOperationArgument ← parseBackFloat
+            parts
+            "first operation argument"
+            3
+          secondOperationArgument ← parseBackFloat
+            parts
+            "second operation argument"
+            7
           in
-            ProcedureCall
-              procedureName
-              ( List.fromFoldable
-                  [ FloatLiteral firstArgument
-                  , FloatLiteral secondArgument
-                  ]
-              )
+            { context: Map.fromFoldable [ procedureName /\ Just 1 ]
+            , expected: ProcedureCall
+                procedureName
+                ( List.fromFoldable
+                    [ Addition (FloatLiteral firstOperationArgument)
+                        (FloatLiteral secondOperationArgument)
+                    ]
+                )
+            }
       )
 
-    testCase
+    expressionTestCase
+      "a procedure call with an operation argument 3"
+      [ genProcedureName
+      , pure " "
+      , pure "("
+      , genValueReference
+      , pure " "
+      , pure "+"
+      , pure " "
+      , genValueReference
+      , pure ")"
+      ]
+      ( \parts → ado
+          procedureName ← parseBackIdentifier
+            parts
+            "procedure name"
+            0
+          firstOperationArgument ← parseBackPrefixedIdentifier
+            parts
+            "first operation argument"
+            3
+          secondOperationArgument ← parseBackPrefixedIdentifier
+            parts
+            "second operation argument"
+            7
+          in
+            { context: Map.fromFoldable [ procedureName /\ Just 1 ]
+            , expected: ProcedureCall
+                procedureName
+                ( List.fromFoldable
+                    [ Addition
+                        (ValueReference firstOperationArgument)
+                        (ValueReference secondOperationArgument)
+                    ]
+                )
+            }
+      )
+
+    expressionTestCase
+      "an operation with a literal and procedure call argument 1"
+      [ genFloat, pure "+", genProcedureName, pure " ", genFloat ]
+      ( \parts → ado
+          firstOperationArgument ← parseBackFloat
+            parts
+            "first operation argument"
+            0
+          procedureName ← parseBackIdentifier
+            parts
+            "procedure name"
+            2
+          procedureArgument ← parseBackFloat
+            parts
+            "procedure argument"
+            4
+          in
+            { context: Map.fromFoldable [ procedureName /\ Just 1 ]
+            , expected: Addition
+                (FloatLiteral firstOperationArgument)
+                ( ProcedureCall
+                    procedureName
+                    ( List.fromFoldable
+                        [ FloatLiteral procedureArgument ]
+                    )
+                )
+            }
+      )
+
+    expressionTestCase
+      "an operation with a literal and procedure call argument 2"
+      [ genFloat
+      , pure "+"
+      , genProcedureName
+      , pure " "
+      , pure "("
+      , genFloat
+      , pure ")"
+      ]
+      ( \parts → ado
+          firstOperationArgument ← parseBackFloat
+            parts
+            "first operation argument"
+            0
+          procedureName ← parseBackIdentifier parts "procedure name" 2
+          procedureArgument ← parseBackFloat
+            parts
+            "procedure argument"
+            5
+          in
+            { context: Map.fromFoldable [ procedureName /\ Just 1 ]
+            , expected: Addition
+                (FloatLiteral firstOperationArgument)
+                ( ProcedureCall
+                    procedureName
+                    ( List.fromFoldable
+                        [ FloatLiteral procedureArgument ]
+                    )
+                )
+            }
+      )
+
+    expressionTestCase
+      "an operation with a literal and procedure call argument 3"
+      [ genFloat
+      , pure "+"
+      , genProcedureName
+      , pure " "
+      , pure "("
+      , genFloat
+      , pure "+"
+      , genFloat
+      , pure ")"
+      ]
+      ( \parts → ado
+          firstOperationArgument ← parseBackFloat
+            parts
+            "first operation argument"
+            0
+          procedureName ← parseBackIdentifier parts "procedure name" 2
+          firstProcedureArgument ← parseBackFloat
+            parts
+            "first procedure argument"
+            5
+          secondProcedureArgument ← parseBackFloat
+            parts
+            "second procedure argument"
+            7
+          in
+            { context: Map.fromFoldable [ procedureName /\ Just 1 ]
+            , expected: Addition
+                (FloatLiteral firstOperationArgument)
+                ( ProcedureCall
+                    procedureName
+                    ( List.fromFoldable
+                        [ Addition
+                            (FloatLiteral firstProcedureArgument)
+                            (FloatLiteral secondProcedureArgument)
+                        ]
+                    )
+                )
+            }
+      )
+
+    expressionTestCase
+      "an operation with a literal and procedure call argument 4"
+      [ genFloat
+      , pure "+"
+      , genProcedureName
+      , pure " "
+      , pure "("
+      , genValueReference
+      , pure "+"
+      , genValueReference
+      , pure ")"
+      ]
+      ( \parts → ado
+          firstOperationArgument ← parseBackFloat
+            parts
+            "first operation argument"
+            0
+          procedureName ← parseBackIdentifier parts "procedure name" 2
+          firstProcedureArgument ← parseBackPrefixedIdentifier
+            parts
+            "first procedure argument"
+            5
+          secondProcedureArgument ← parseBackPrefixedIdentifier
+            parts
+            "second procedure argument"
+            7
+          in
+            { context: Map.fromFoldable [ procedureName /\ Just 1 ]
+            , expected: Addition
+                (FloatLiteral firstOperationArgument)
+                ( ProcedureCall
+                    procedureName
+                    ( List.fromFoldable
+                        [ Addition
+                            (ValueReference firstProcedureArgument)
+                            (ValueReference secondProcedureArgument)
+                        ]
+                    )
+                )
+            }
+      )
+
+    expressionTestCase
       "a procedure definition"
       [ pure "to"
       , pure " "
@@ -161,36 +373,36 @@ spec = describe "Parsing" do
       , pure "end"
       ]
       ( \parts → do
-          procedureName ← note
-            "can't parse the procedure name back"
-            (parts !! 2)
-
+          name ← parseBackIdentifier parts "procedure name" 2
           whitespacesRegex ← Regex.regex "\\s+" RegexFlags.global
 
-          parameters ← Array.filter (_ /= "")
+          parameters ← List.fromFoldable
+            <$> map (Parameter <<< String.drop 1)
+            <$> Array.filter (_ /= "")
             <$> Regex.split whitespacesRegex
             <$> String.trim
-            <$> note "can't parse parameters back" (parts !! 4)
+            <$> Either.note "can't parse parameters back" (parts !! 4)
 
-          pure $ ProcedureDefinition
-            procedureName
-            ( List.fromFoldable
-                $ Parameter <$> String.drop 1 <$> parameters
-            )
-            ( List.fromFoldable
-                [ ProcedureCall "proc1"
-                    (List.fromFoldable [ IntegerLiteral 1 ])
-                , ProcedureCall "proc2"
-                    (List.fromFoldable [ IntegerLiteral 2 ])
-                ]
-            )
+          pure $
+            { context: Map.fromFoldable
+                [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
+            , expected: ProcedureDefinition
+                { name, parameters }
+                ( List.fromFoldable
+                    [ ProcedureCall "proc1"
+                        (List.fromFoldable [ IntegerLiteral 1 ])
+                    , ProcedureCall "proc2"
+                        (List.fromFoldable [ IntegerLiteral 2 ])
+                    ]
+                )
+            }
       )
 
-    testCase
+    expressionTestCase
       "an if block"
       [ pure "if"
       , pure " "
-      , pure "true"
+      , genBoolean
       , pure " "
       , pure "["
       , pure "proc1"
@@ -202,24 +414,31 @@ spec = describe "Parsing" do
       , pure "2"
       , pure "]"
       ]
-      ( \parts → pure $ IfBlock (BooleanLiteral true)
-          ( List.fromFoldable
-              [ ProcedureCall "proc1"
-                  (List.fromFoldable [ IntegerLiteral 1 ])
-              , ProcedureCall "proc2"
-                  (List.fromFoldable [ IntegerLiteral 2 ])
-              ]
-          )
+      ( \parts → ado
+          boolean ← parseBackBoolean parts "condition" 2
+          in
+            { context:
+                Map.fromFoldable
+                  [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
+            , expected: IfBlock (BooleanLiteral boolean)
+                ( List.fromFoldable
+                    [ ProcedureCall "proc1"
+                        (List.fromFoldable [ IntegerLiteral 1 ])
+                    , ProcedureCall "proc2"
+                        (List.fromFoldable [ IntegerLiteral 2 ])
+                    ]
+                )
+            }
       )
 
-    testCase
+    expressionTestCase
       "an if block with a integer equation"
       [ pure "if"
       , pure " "
       , pure "("
-      , pure "1"
+      , genInteger
       , pure "="
-      , pure "2"
+      , genInteger
       , pure ")"
       , pure " "
       , pure "["
@@ -232,22 +451,33 @@ spec = describe "Parsing" do
       , pure "2"
       , pure "]"
       ]
-      ( \parts → pure $ IfBlock
-          (Equation (IntegerLiteral 1) (IntegerLiteral 2))
-          ( List.fromFoldable
-              [ ProcedureCall "proc1"
-                  (List.fromFoldable [ IntegerLiteral 1 ])
-              , ProcedureCall "proc2"
-                  (List.fromFoldable [ IntegerLiteral 2 ])
-              ]
-          )
+      ( \parts → ado
+          firstInteger ← parseBackInteger parts "first integer" 3
+          secondInteger ← parseBackInteger parts "second integer" 5
+          in
+            { context:
+                Map.fromFoldable
+                  [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
+            , expected: IfBlock
+                ( Equation
+                    (IntegerLiteral firstInteger)
+                    (IntegerLiteral secondInteger)
+                )
+                ( List.fromFoldable
+                    [ ProcedureCall "proc1"
+                        (List.fromFoldable [ IntegerLiteral 1 ])
+                    , ProcedureCall "proc2"
+                        (List.fromFoldable [ IntegerLiteral 2 ])
+                    ]
+                )
+            }
       )
 
-    testCase
+    expressionTestCase
       "a repeat block"
       [ pure "repeat"
       , pure " "
-      , pure "4"
+      , genInteger
       , pure " "
       , pure "["
       , pure "proc1"
@@ -259,26 +489,33 @@ spec = describe "Parsing" do
       , pure "2"
       , pure "]"
       ]
-      ( \parts → pure $ RepeatBlock (IntegerLiteral 4)
-          ( List.fromFoldable
-              [ ProcedureCall "proc1"
-                  (List.fromFoldable [ IntegerLiteral 1 ])
-              , ProcedureCall "proc2"
-                  (List.fromFoldable [ IntegerLiteral 2 ])
-              ]
-          )
+      ( \parts → ado
+          times ← parseBackInteger parts "times" 2
+          in
+            { context:
+                Map.fromFoldable
+                  [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
+            , expected: RepeatBlock (IntegerLiteral times)
+                ( List.fromFoldable
+                    [ ProcedureCall "proc1"
+                        (List.fromFoldable [ IntegerLiteral 1 ])
+                    , ProcedureCall "proc2"
+                        (List.fromFoldable [ IntegerLiteral 2 ])
+                    ]
+                )
+            }
       )
 
-    testCase
+    expressionTestCase
       "a for block"
       [ pure "for"
       , pure " "
       , pure "["
       , pure "idx"
       , pure " "
-      , pure "1"
+      , genInteger
       , pure " "
-      , pure "5"
+      , genInteger
       , pure "]"
       , pure " "
       , pure "["
@@ -291,42 +528,256 @@ spec = describe "Parsing" do
       , pure "2"
       , pure "]"
       ]
-      ( \parts → pure $ ForBlock
-          { binder: "idx", initialValue: 1, terminalValue: 5 }
+      ( \parts → ado
+          initialValue ← parseBackInteger parts "initial value" 5
+          terminalValue ← parseBackInteger parts "terminal value" 7
+          in
+            { context:
+                Map.fromFoldable
+                  [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
+            , expected: ForBlock
+                { binder: "idx", initialValue, terminalValue }
+                ( List.fromFoldable
+                    [ ProcedureCall "proc1"
+                        (List.fromFoldable [ IntegerLiteral 1 ])
+                    , ProcedureCall "proc2"
+                        (List.fromFoldable [ IntegerLiteral 2 ])
+                    ]
+                )
+            }
+      )
+
+  arityTestCase
+    "the second procedure takes 0 arguments"
+    ( \{ argument1, argument2, procedureName1, procedureName2 } →
+        { context:
+            Map.fromFoldable
+              [ procedureName1 /\ Just 3, procedureName2 /\ Just 0 ]
+        , expected: ProcedureCall procedureName1
+            ( List.fromFoldable
+                [ ProcedureCall procedureName2 Nil
+                , IntegerLiteral argument1
+                , IntegerLiteral argument2
+                ]
+            )
+        }
+    )
+
+  arityTestCase
+    "the second procedure takes 1 argument"
+    ( \{ argument1, argument2, procedureName1, procedureName2 } →
+        { context:
+            Map.fromFoldable
+              [ procedureName1 /\ Just 2, procedureName2 /\ Just 1 ]
+        , expected: ProcedureCall procedureName1
+            ( List.fromFoldable
+                [ ProcedureCall
+                    procedureName2
+                    (List.fromFoldable [ IntegerLiteral argument1 ])
+                , IntegerLiteral argument2
+                ]
+            )
+        }
+    )
+
+  arityTestCase
+    "the second procedure takes 2 arguments"
+    ( \{ argument1, argument2, procedureName1, procedureName2 } →
+        { context:
+            Map.fromFoldable
+              [ procedureName1 /\ Just 1, procedureName2 /\ Just 2 ]
+        , expected: ProcedureCall procedureName1
+            ( List.fromFoldable
+                [ ProcedureCall
+                    procedureName2
+                    ( List.fromFoldable
+                        [ IntegerLiteral argument1
+                        , IntegerLiteral argument2
+                        ]
+                    )
+                ]
+            )
+        }
+    )
+
+  describe "expressions" do
+    expressionsTestCase
+      "Dahlia, by David Eisenstat, U.S. (14 words)"
+      "repeat 8 [rt 45 repeat 6 [repeat 90 [fd 2 rt 2] rt 90]]"
+      [ RepeatBlock
+          (IntegerLiteral 8)
           ( List.fromFoldable
-              [ ProcedureCall "proc1"
-                  (List.fromFoldable [ IntegerLiteral 1 ])
-              , ProcedureCall "proc2"
-                  (List.fromFoldable [ IntegerLiteral 2 ])
+              [ ProcedureCall
+                  "rt"
+                  (List.fromFoldable [ IntegerLiteral 45 ])
+              , RepeatBlock
+                  (IntegerLiteral 6)
+                  ( List.fromFoldable
+                      [ RepeatBlock
+                          (IntegerLiteral 90)
+                          ( List.fromFoldable
+                              [ ProcedureCall
+                                  "fd"
+                                  ( List.fromFoldable
+                                      [ IntegerLiteral 2 ]
+                                  )
+                              , ProcedureCall
+                                  "rt"
+                                  ( List.fromFoldable
+                                      [ IntegerLiteral 2 ]
+                                  )
+                              ]
+                          )
+                      , ProcedureCall
+                          "rt"
+                          (List.fromFoldable [ IntegerLiteral 90 ])
+                      ]
+                  )
               ]
           )
+      ]
+
+    expressionsTestCase
+      "Hairy Star"
+      "for [i 0 4700] [fd 10 rt (180 * sin (:i * :i))]"
+      [ ForBlock
+          { binder: "i", initialValue: 0, terminalValue: 4700 }
+          ( List.fromFoldable
+              [ ProcedureCall
+                  "fd"
+                  (List.fromFoldable [ IntegerLiteral 10 ])
+              , ProcedureCall
+                  "rt"
+                  ( List.fromFoldable
+                      [ Multiplication
+                          (IntegerLiteral 180)
+                          ( ProcedureCall
+                              "sin"
+                              ( List.fromFoldable
+                                  [ Multiplication
+                                      (ValueReference "i")
+                                      (ValueReference "i")
+                                  ]
+                              )
+                          )
+                      ]
+                  )
+              ]
+          )
+      ]
+
+  describe "procedureSignature" do
+    procedureSignatureTestCase
+      "no parameters"
+      [ pure "to", pure " ", genProcedureName ]
+      ( \parts → do
+          name ← parseBackIdentifier parts "procedure name" 2
+          pure { name, parameters: Nil }
       )
+    procedureSignatureTestCase
+      "one parameters"
+      [ pure "to", pure " ", genProcedureName, genParameter ]
+      ( \parts → do
+          name ← parseBackIdentifier parts "procedure name" 2
+          firstParameter ← Parameter <$> parseBackPrefixedIdentifier
+            parts
+            "first parameter"
+            3
+          pure
+            { name, parameters: List.fromFoldable [ firstParameter ] }
+      )
+
+    procedureSignatureTestCase
+      "two parameters"
+      [ pure "to"
+      , pure " "
+      , genProcedureName
+      , genParameter
+      , genParameter
+      ]
+      ( \parts → do
+          name ← parseBackIdentifier parts "procedure name" 2
+          firstParameter ← Parameter <$> parseBackPrefixedIdentifier
+            parts
+            "first parameter"
+            3
+          secondParameter ← Parameter <$> parseBackPrefixedIdentifier
+            parts
+            "second parameter"
+            4
+          pure
+            { name
+            , parameters: List.fromFoldable
+                [ firstParameter, secondParameter ]
+            }
+      )
+
+  describe "procedureSignatures" do
+    procedureSignaturesTestCase
+      "multiple procedures of various arity"
+      [ "forward 1"
+      , "to proc0"
+      , "clearscreen"
+      , "end"
+      , "forward 2"
+      , "proc0"
+      , "forward 3"
+      , "to proc1 :param1"
+      , "forward :param1"
+      , "end"
+      , "forward 4"
+      , "proc1 10"
+      , "forward 5"
+      , "to proc2 :param1 :param2"
+      , "forward :param1"
+      , "forward :param2"
+      , "end"
+      , "forward 6"
+      , "proc2 10 20"
+      , "forward 7"
+      ]
+      [ { name: "proc0"
+        , parameters: Nil
+        }
+      , { name: "proc1"
+        , parameters: List.fromFoldable [ Parameter "param1" ]
+        }
+      , { name: "proc2"
+        , parameters: List.fromFoldable
+            [ Parameter "param1", Parameter "param2" ]
+        }
+      ]
 
 arithmeticalBinaryOperatorTestCase
   ∷ String
   → (Expression → Expression → Expression)
   → Spec Unit
 arithmeticalBinaryOperatorTestCase symbol expected =
-  testCase
+  expressionTestCase
     ("\"" <> symbol <> "\" symbol")
     [ genFloat, pure symbol, genFloat ]
     ( \parts → ado
-        leftOperand ← note
+        leftOperand ← Either.note
           "can't parse left operand back"
           (Number.fromString =<< parts !! 0)
-        rightOperand ← note
+        rightOperand ← Either.note
           "can't parse right operand back"
           (Number.fromString =<< parts !! 2)
         in
-          expected
-            (FloatLiteral leftOperand)
-            (FloatLiteral rightOperand)
+          { context: Map.empty
+          , expected: expected
+              (FloatLiteral leftOperand)
+              (FloatLiteral rightOperand)
+          }
     )
 
 genBoolean ∷ Gen String
 genBoolean = do
   n ← Gen.chooseInt 0 1
   pure $ if n == 0 then "false" else "true"
+
+genInteger ∷ Gen String
+genInteger = show <$> Gen.chooseInt 0 9
 
 genFloat ∷ Gen String
 genFloat = do
@@ -339,6 +790,9 @@ genString = do
   identifier ← genIdentifier
   pure $ "\"" <> identifier
 
+genValueReference ∷ Gen String
+genValueReference = genParameter
+
 genParameter ∷ Gen String
 genParameter = do
   identifier ← genIdentifier
@@ -347,46 +801,228 @@ genParameter = do
 genProcedureName ∷ Gen String
 genProcedureName = genIdentifier
 
-{- TODO: exclude reserved words -}
 genIdentifier ∷ Gen String
-genIdentifier = do
-  chars ← Gen.arrayOf1 CharGen.genAlpha
-  pure
-    $ String.fromCodePointArray
-    $ String.codePointFromChar <$> Array.fromFoldable chars
+genIdentifier =
+  gen `Gen.suchThat` (_ `Array.notElem` Lexing.reservedNames)
+  where
+  gen = do
+    chars ← Gen.arrayOf1 CharGen.genAlpha
+    pure
+      $ String.fromCodePointArray
+      $ String.codePointFromChar <$> Array.fromFoldable chars
 
-testCase
+expressionTestCase
   ∷ ∀ f
   . Foldable f
   ⇒ Traversable f
   ⇒ String
   → f (Gen String)
-  → (Array String → String \/ Expression)
+  → ( Array String
+      → String \/ { expected ∷ Expression, context ∷ ParsingContext }
+    )
   → Spec Unit
-testCase title partGenerators makeExpected = it title do
+expressionTestCase title partGenerators makeExpected = it title do
   liftEffect $ quickCheckGen do
     parts ← sequence partGenerators
+
     source ← Utils.addRedundantParentheses
       =<< Utils.addRedundantSpaces parts
 
-    let
-      actual = case P.runParser source Parsing.expression of
+    case makeExpected $ Array.fromFoldable parts of
+      Left errorMessage →
+        pure $ Failed errorMessage
+      Right { expected, context } → do
+        let
+          actual =
+            case
+              P.runParser source (Parsing.expression context)
+              of
+              Left parseError →
+                Left $ show parseError
+              Right expression →
+                Right expression
+
+        pure $
+          if actual == (Right expected) then Success
+          else Failed $
+            "--- error >>> ---\n"
+              <> show actual
+              <> "\nis not equal to\n"
+              <> show expected
+              <> "\n--- source >>> ---\n"
+              <> Utils.emphasizeWhitespaces source
+              <> "\n--- <<< source ---"
+              <> "\n--- <<< error ---"
+
+arityTestCase
+  ∷ String
+  → ( { argument1 ∷ Int
+      , argument2 ∷ Int
+      , procedureName1 ∷ String
+      , procedureName2 ∷ String
+      }
+      → { expected ∷ Expression, context ∷ ParsingContext }
+    )
+  → Spec Unit
+arityTestCase title makeExpected = expressionTestCase
+  ("arity - " <> title)
+  [ do
+      procedureName1 ← genProcedureName
+      procedureName2 ← genProcedureName
+        `Gen.suchThat` (_ /= procedureName1)
+      pure $ procedureName1 <> " " <> procedureName2
+  , pure " "
+  , genInteger
+  , pure " "
+  , genInteger
+  ]
+  ( \parts → do
+      procedureNames ← String.split (Pattern " ")
+        <$> parseBackIdentifier parts "procedure names" 0
+      procedureName1 ← Either.note
+        "procedure name 1"
+        (procedureNames !! 0)
+      procedureName2 ← Either.note
+        "procedure name 2"
+        (procedureNames !! 1)
+      argument1 ← parseBackInteger parts "argument 1" 2
+      argument2 ← parseBackInteger parts "argument 2" 4
+      pure $ makeExpected
+        { argument1, argument2, procedureName1, procedureName2 }
+  )
+
+expressionsTestCase
+  ∷ ∀ f
+  . Foldable f
+  ⇒ Show (f Expression)
+  ⇒ String
+  → String
+  → f Expression
+  → Spec Unit
+expressionsTestCase title source expected = it title do
+  let
+    actual =
+      case
+        P.runParser source (Parsing.expressions Command.parsingContext)
+        of
         Left parseError →
           Left $ show parseError
-        Right expression →
-          Right $ expression
+        Right expressions →
+          Right expressions
 
-      expected = makeExpected $ Array.fromFoldable parts
+  if actual == (Right $ List.fromFoldable expected) then pure unit
+  else
+    fail $ "--- error >>> ---\n"
+      <> show actual
+      <> "\nis not equal to\n"
+      <> show expected
+      <> "\n--- source >>> ---\n"
+      <> Utils.emphasizeWhitespaces source
+      <> "\n--- <<< source ---"
+      <> "\n--- <<< error ---"
 
-    pure $
-      if actual == expected then Success
-      else Failed $
-        "--- error >>> ---\n"
-          <> show actual
-          <> "\nis not equal to\n"
-          <> show expected
-          <> "\n--- source >>> ---\n"
-          <> Utils.emphasizeWhitespaces source
-          <> "\n--- <<< source ---"
-          <> "\n--- <<< error ---"
+procedureSignatureTestCase
+  ∷ ∀ f
+  . Foldable f
+  ⇒ Traversable f
+  ⇒ String
+  → f (Gen String)
+  → (Array String → String \/ ProcedureSignature)
+  → Spec Unit
+procedureSignatureTestCase title partGenerators makeExpected = it title
+  do
+    liftEffect $ quickCheckGen do
+      parts ← sequence partGenerators
+      source ← Utils.addRedundantSpaces parts
 
+      let
+        actual = case P.runParser source Parsing.procedureSignature of
+          Left parseError →
+            Left $ show parseError
+          Right procedureSignature →
+            Right procedureSignature
+
+        expected = makeExpected $ Array.fromFoldable parts
+
+      pure $
+        if actual == expected then Success
+        else Failed $
+          "--- error >>> ---\n"
+            <> show actual
+            <> "\nis not equal to\n"
+            <> show expected
+            <> "\n--- source >>> ---\n"
+            <> Utils.emphasizeWhitespaces source
+            <> "\n--- <<< source ---"
+            <> "\n--- <<< error ---"
+
+procedureSignaturesTestCase
+  ∷ ∀ f
+  . Foldable f
+  ⇒ Show (f ProcedureSignature)
+  ⇒ Traversable f
+  ⇒ String
+  → f String
+  → f ProcedureSignature
+  → Spec Unit
+procedureSignaturesTestCase title sourceLines expected = it title do
+  let
+    source = String.joinWith "\n" (Array.fromFoldable sourceLines)
+    actual = case P.runParser source Parsing.procedureSignatures of
+      Left parseError →
+        Left $ show parseError
+      Right signatures →
+        Right signatures
+
+  if actual == (Right $ List.fromFoldable expected) then pure unit
+  else
+    fail $ "--- error >>> ---\n"
+      <> show actual
+      <> "\nis not equal to\n"
+      <> show expected
+      <> "\n--- source >>> ---\n"
+      <> Utils.emphasizeWhitespaces source
+      <> "\n--- <<< source ---"
+      <> "\n--- <<< error ---"
+
+parseBackPrefixedIdentifier
+  ∷ Array String → String → Int → String \/ String
+parseBackPrefixedIdentifier parts name index =
+  String.drop 1 <$> parseBackIdentifier parts name index
+
+parseBackIdentifier
+  ∷ Array String → String → Int → String \/ String
+parseBackIdentifier parts name index =
+  parseBack parts name index pure
+
+parseBackBoolean
+  ∷ Array String → String → Int → String \/ Boolean
+parseBackBoolean parts name index =
+  parseBack parts name index case _ of
+    "false" →
+      Just false
+    "true" →
+      Just true
+    _ →
+      Nothing
+
+parseBackInteger
+  ∷ Array String → String → Int → String \/ Int
+parseBackInteger parts name index =
+  parseBack parts name index Int.fromString
+
+parseBackFloat
+  ∷ Array String → String → Int → String \/ Number
+parseBackFloat parts name index =
+  parseBack parts name index Number.fromString
+
+parseBack
+  ∷ ∀ a
+  . Array String
+  → String
+  → Int
+  → (String → Maybe a)
+  → String \/ a
+parseBack parts name index fromString = Either.note
+  ("can't parse back the " <> name)
+  (fromString =<< parts !! index)

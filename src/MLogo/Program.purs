@@ -4,19 +4,24 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
+import Data.List (List)
 import Data.List as List
+import Data.Map as Map
 import Data.Newtype (unwrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation as Interpretation
+import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (VisibleState)
 import MLogo.Interpretation.State as State
+import MLogo.Parsing (Expression, ParsingContext)
 import MLogo.Parsing as Parsing
+import Parsing (ParseError)
 import Parsing as P
 
 run ∷ String → String \/ VisibleState
 run source = do
-  expressions ← case P.runParser source Parsing.expressions of
+  expressions ← case parseExpressions source of
     Left parseError →
       Left $ "Syntax error:\n" <> show parseError
     Right expressions →
@@ -38,4 +43,16 @@ run source = do
   if List.null callStack then
     Right { pointer, screen }
   else Left "call stack not cleared"
+
+parseExpressions ∷ String → ParseError \/ List Expression
+parseExpressions source = do
+  procedureSignatures ← P.runParser source Parsing.procedureSignatures
+
+  let
+    parsingContext ∷ ParsingContext
+    parsingContext = Map.union
+      (Parsing.procedureSignaturesToParsingContext procedureSignatures)
+      Command.parsingContext
+
+  P.runParser source (Parsing.expressions parsingContext)
 

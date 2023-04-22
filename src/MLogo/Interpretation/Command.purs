@@ -7,6 +7,7 @@ module MLogo.Interpretation.Command
   , isEqual
   , moveBackward
   , moveForward
+  , parsingContext
   , penDown
   , penUp
   , sinus
@@ -17,6 +18,7 @@ import Prelude
 
 import Control.Monad.Error.Class (class MonadThrow, throwError)
 import Control.Monad.State (get, modify_)
+import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Foldable (foldl)
@@ -24,13 +26,15 @@ import Data.List (List(..), (:))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.Newtype as Newtype
 import Data.Number as Number
 import Data.Symbol (class IsSymbol, reflectSymbol)
 import Heterogeneous.Folding (class FoldingWithIndex)
 import Heterogeneous.Folding as Heterogeneous
-import MLogo.Interpretation.Command.Input (Parameters, ValueType(..))
+import MLogo.Interpretation.Command.Input
+  ( Parameters(..)
+  , ValueType(..)
+  )
 import MLogo.Interpretation.Command.Input as Input
 import MLogo.Interpretation.Interpret (Interpret)
 import MLogo.Interpretation.State
@@ -40,6 +44,7 @@ import MLogo.Interpretation.State
   , Value(..)
   )
 import MLogo.Interpretation.State as State
+import MLogo.Parsing (ParsingContext)
 import Type.Proxy (Proxy)
 
 newtype Command = Command
@@ -323,9 +328,13 @@ interpretTurnRight angle = do
           { angle = state.pointer.angle + Angle angle }
       }
   pure Nothing
+
 interpretSinus ∷ ∀ m. Interpret m Number
 interpretSinus =
   pure <<< Just <<< FloatValue <<< Number.sin <<< degreesToRadians
+
+degreesToRadians ∷ Number → Number
+degreesToRadians x = x * Number.pi / 180.0
 
 interpretTurnLeft ∷ ∀ m. Interpret m Number
 interpretTurnLeft angle = interpretTurnRight (-angle)
@@ -385,6 +394,14 @@ instance
   foldingWithIndex ToMap prop acc val =
     Map.insert (reflectSymbol prop) val acc
 
+parsingContext ∷ ParsingContext
+parsingContext = commandsByAlias
+  <#> \(Command { parameters }) → case parameters of
+    FixedParameters ps →
+      Just $ Array.length ps
+    VariableParameters _ →
+      Nothing
+
 commandsByAlias ∷ Map String Command
 commandsByAlias = Heterogeneous.hfoldlWithIndex
   ToMap
@@ -407,6 +424,7 @@ commandsByAlias = Heterogeneous.hfoldlWithIndex
   , pu: penUp
   , right: turnRight
   , rt: turnRight
+  , sin: sinus
   , sum
   }
 
