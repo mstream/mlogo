@@ -62,7 +62,7 @@ sum =
       { description: "Sums up given numbers."
       , interpret: Command.parseAndInterpretInput
           (Types.runVariableInputParser inputParser)
-          interpretSum
+          (pure <<< Just <<< FloatValue <<< foldl (+) zero)
       , name: "sum"
       , outputValueType: Just NumberType
       , parameters: Types.parametersFromVariableInputParser inputParser
@@ -85,9 +85,6 @@ isEqual =
       , outputValueType: Just BooleanType
       , parameters: Types.parametersFromVariableInputParser inputParser
       }
-
-interpretSum ∷ ∀ m. Interpret m (List Number)
-interpretSum = pure <<< Just <<< FloatValue <<< foldl (+) zero
 
 interpretIsEqual ∷ ∀ m. Interpret m (List Value)
 interpretIsEqual = pure <<< Just <<< BooleanValue <<< go true Nothing

@@ -18,8 +18,7 @@ import Data.List (List(..), (:))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (over)
-import Data.Newtype as Newtype
+import Data.Newtype (over, unwrap)
 import Data.Number as Number
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
@@ -65,7 +64,7 @@ moveBackward =
           "Move the cursor backward by the given amount of steps."
       , interpret: Command.parseAndInterpretInput
           (Types.runFixedInputParser inputParser)
-          interpretMoveBackward
+          (\steps → interpretMoveForward (-steps))
       , name: "back"
       , outputValueType: Nothing
       , parameters: Types.parametersFromFixedInputParser inputParser
@@ -163,14 +162,6 @@ penUp =
       , parameters: Types.parametersFromFixedInputParser inputParser
       }
 
-interpretSetPenState ∷ ∀ m. Boolean → Interpret m Unit
-interpretSetPenState isDown _ = do
-  modify_ $ over
-    ExecutionState
-    (\st → st { pointer = st.pointer { isDown = isDown } })
-
-  pure Nothing
-
 turnLeft ∷ Command
 turnLeft =
   let
@@ -181,7 +172,7 @@ turnLeft =
           "Rotate the cursor by the given angle counterclockwise."
       , interpret: Command.parseAndInterpretInput
           (Types.runFixedInputParser inputParser)
-          interpretTurnLeft
+          (\angle → interpretTurnRight (-angle))
       , name: "left"
       , outputValueType: Nothing
       , parameters: Types.parametersFromFixedInputParser inputParser
@@ -202,58 +193,59 @@ turnRight =
       , parameters: Types.parametersFromFixedInputParser inputParser
       }
 
+interpretSetPenState ∷ ∀ m. Boolean → Interpret m Unit
+interpretSetPenState isDown _ = pure Nothing <* do
+  modify_ $ over ExecutionState
+    (\st → st { pointer = st.pointer { isDown = isDown } })
+
 interpretMoveForward ∷ ∀ m. Interpret m Number
 interpretMoveForward steps = do
-  (ExecutionState state) ← get
+  state ← unwrap <$> get
 
   let
-    rads = State.toRadians state.pointer.angle
+    radians = State.toRadians state.pointer.angle
     target = state.pointer.position + Position
-      { x: steps * Number.sin rads, y: steps * Number.cos rads }
+      { x: steps * Number.sin radians, y: steps * Number.cos radians }
 
-  moveTo target
-
-interpretMoveBackward ∷ ∀ m. Interpret m Number
-interpretMoveBackward steps = interpretMoveForward (-steps)
+  interpretMoveTo target
 
 interpretTurnRight ∷ ∀ m. Interpret m Number
-interpretTurnRight angle = do
-  modify_ \(ExecutionState state) →
-    ExecutionState $ state
-      { pointer = state.pointer
-          { angle = state.pointer.angle + Angle angle }
-      }
-  pure Nothing
-
-interpretTurnLeft ∷ ∀ m. Interpret m Number
-interpretTurnLeft angle = interpretTurnRight (-angle)
+interpretTurnRight angle = pure Nothing <* do
+  modify_ $ over ExecutionState
+    ( \st → st
+        { pointer = st.pointer
+            { angle = st.pointer.angle + Angle angle }
+        }
+    )
 
 interpretGoHome ∷ ∀ m. Interpret m Unit
-interpretGoHome _ = do
-  modify_ \(ExecutionState state) → ExecutionState $ state
-    { pointer = state.pointer { position = (zero ∷ Position) } }
-  pure Nothing
+interpretGoHome _ = pure Nothing <* do
+  modify_ $ over ExecutionState
+    ( \st → st
+        { pointer = st.pointer { position = (zero ∷ Position) }
+        }
+    )
 
 interpretClean ∷ ∀ m. Interpret m Unit
-interpretClean _ = do
-  modify_ $ Newtype.over ExecutionState _ { screen = Nil }
-  pure Nothing
+interpretClean _ = pure Nothing <* do
+  modify_ $ over ExecutionState _ { screen = Nil }
 
 interpretClearScreen ∷ ∀ m. Interpret m Unit
 interpretClearScreen _ = do
   void $ interpretGoHome unit
   interpretClean unit
 
-moveTo ∷ ∀ m. Interpret m Position
-moveTo target = do
-  modify_ \(ExecutionState state) → ExecutionState state
-    { pointer = state.pointer { position = target }
-    , screen =
-        if state.pointer.isDown then
-          { p1: state.pointer.position
-          , p2: target
-          } : state.screen
-        else state.screen
-    }
-  pure Nothing
+interpretMoveTo ∷ ∀ m. Interpret m Position
+interpretMoveTo target = pure Nothing <* do
+  modify_ $ over ExecutionState
+    ( \st → st
+        { pointer = st.pointer { position = target }
+        , screen =
+            if st.pointer.isDown then
+              { p1: st.pointer.position
+              , p2: target
+              } : st.screen
+            else st.screen
+        }
+    )
 

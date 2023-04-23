@@ -10,10 +10,10 @@ import Control.Monad.State (get, modify_)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Newtype (over, unwrap)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
-import MLogo.Interpretation.Interpret (Interpret)
 import MLogo.Interpretation.State (ExecutionState(..), Value(..))
 import MLogo.Interpretation.Types (ValueType(..))
 import MLogo.Interpretation.Types as Types
@@ -38,7 +38,16 @@ variableAssignment =
       { description: "Set a global variable value."
       , interpret: Command.parseAndInterpretInput
           (Types.runFixedInputParser inputParser)
-          interpretVariableAssignment
+          ( \{ name, value } → pure Nothing <* do
+              modify_ $ over ExecutionState
+                ( \st → st
+                    { globalVariables = Map.insert
+                        name
+                        value
+                        st.globalVariables
+                    }
+                )
+          )
       , name: "make"
       , outputValueType: Nothing
       , parameters: Types.parametersFromFixedInputParser inputParser
@@ -54,22 +63,12 @@ repCount =
           "outputs the repetition count of the innermost current REPEAT or FOREVER, starting from 1"
       , interpret: Command.parseAndInterpretInput
           (Types.runFixedInputParser inputParser)
-          interpretRepCount
+          ( const $ (Just <<< IntegerValue <<< _.repCount)
+              <$> unwrap
+              <$> get
+          )
       , name: "repcount"
       , outputValueType: Just IntegerType
       , parameters: Types.parametersFromFixedInputParser inputParser
       }
-
-interpretVariableAssignment
-  ∷ ∀ m. Interpret m { name ∷ String, value ∷ Value }
-interpretVariableAssignment { name, value } = do
-  modify_ \(ExecutionState state) →
-    ExecutionState $ state
-      { globalVariables = Map.insert name value state.globalVariables }
-  pure Nothing
-
-interpretRepCount ∷ ∀ m. Interpret m Unit
-interpretRepCount _ = do
-  (ExecutionState state) ← get
-  pure $ Just $ IntegerValue state.repCount
 
