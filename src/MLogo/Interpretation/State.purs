@@ -29,7 +29,7 @@ import Data.List (List(..))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, over)
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import MLogo.Parsing (Expression, Parameter)
@@ -44,7 +44,7 @@ data Value
   = BooleanValue Boolean
   | FloatValue Number
   | IntegerValue Int
-  {- FIXME  | ListValue (List Value) -}
+  {- TODO: implement  | ListValue (List Value) -}
   | WordValue String
 
 derive instance Generic Value _
