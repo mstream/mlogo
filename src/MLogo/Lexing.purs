@@ -1,5 +1,6 @@
 module MLogo.Lexing
   ( asteriskSymbol
+  , caretSymbol
   , endKeyword
   , equalSymbol
   , falseKeyword
@@ -11,6 +12,7 @@ module MLogo.Lexing
   , plusSymbol
   , repeatKeyword
   , reservedNames
+  , slashSymbol
   , toKeyword
   , trueKeyword
   ) where
@@ -29,7 +31,7 @@ languageDef = LanguageDef (PT.unGenLanguageDef PL.emptyDef)
   { identLetter = PSB.alphaNum
   , identStart = PSB.letter
   , reservedNames = reservedNames
-  , reservedOpNames = [ asteriskSymbol, equalSymbol, plusSymbol ]
+  , reservedOpNames = reservedOpNames
   }
 
 reservedNames ∷ Array String
@@ -46,8 +48,15 @@ reservedNames =
   , trueKeyword
   ]
 
+reservedOpNames ∷ Array String
+reservedOpNames =
+  [ asteriskSymbol, caretSymbol, equalSymbol, plusSymbol, slashSymbol ]
+
 asteriskSymbol ∷ String
 asteriskSymbol = "*"
+
+caretSymbol ∷ String
+caretSymbol = "^"
 
 endKeyword ∷ String
 endKeyword = "end"
@@ -75,6 +84,9 @@ plusSymbol = "+"
 
 repeatKeyword ∷ String
 repeatKeyword = "repeat"
+
+slashSymbol ∷ String
+slashSymbol = "/"
 
 toKeyword ∷ String
 toKeyword = "to"

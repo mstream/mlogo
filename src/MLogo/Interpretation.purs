@@ -59,8 +59,12 @@ interpretExpression = case _ of
     interpretAddition { leftOperand, rightOperand }
   BooleanLiteral b →
     pure $ Just $ BooleanValue b
+  Division leftOperand rightOperand →
+    interpretDivision { leftOperand, rightOperand }
   Equation leftOperand rightOperand →
     interpretEquation { leftOperand, rightOperand }
+  Exponentiation leftOperand rightOperand →
+    interpretExponentiation { leftOperand, rightOperand }
   FloatLiteral x →
     pure $ Just $ FloatValue x
   ForBlock spec body →
@@ -111,6 +115,18 @@ interpretEquation { leftOperand, rightOperand } =
     , name: "equalp"
     }
 
+interpretDivision
+  ∷ ∀ m
+  . Interpret m
+      { leftOperand ∷ Expression
+      , rightOperand ∷ Expression
+      }
+interpretDivision { leftOperand, rightOperand } =
+  interpretProcedureCall
+    { arguments: List.fromFoldable [ leftOperand, rightOperand ]
+    , name: "quotient"
+    }
+
 interpretMultiplication
   ∷ ∀ m
   . Interpret m
@@ -121,6 +137,18 @@ interpretMultiplication { leftOperand, rightOperand } =
   interpretProcedureCall
     { arguments: List.fromFoldable [ leftOperand, rightOperand ]
     , name: "product"
+    }
+
+interpretExponentiation
+  ∷ ∀ m
+  . Interpret m
+      { leftOperand ∷ Expression
+      , rightOperand ∷ Expression
+      }
+interpretExponentiation { leftOperand, rightOperand } =
+  interpretProcedureCall
+    { arguments: List.fromFoldable [ leftOperand, rightOperand ]
+    , name: "power"
     }
 
 interpretForBlock

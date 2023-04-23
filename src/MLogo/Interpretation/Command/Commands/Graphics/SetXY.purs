@@ -6,8 +6,7 @@ module MLogo.Interpretation.Command.Commands.Graphics.SetXY
 
 import Prelude
 
-import Control.Monad.RWS (gets)
-import Control.Monad.State (get, modify_)
+import Control.Monad.State (get, gets, modify_)
 import Data.List (List(..), (:))
 import Data.Map (Map)
 import Data.Map as Map

@@ -41,7 +41,9 @@ import Test.QuickCheck.Arbitrary (genericArbitrary)
 data Expression
   = Addition Expression Expression
   | BooleanLiteral Boolean
+  | Division Expression Expression
   | Equation Expression Expression
+  | Exponentiation Expression Expression
   | IfBlock Expression (List Expression)
   | IfElseBlock Expression (List Expression) (List Expression)
   | IntegerLiteral Int
@@ -262,15 +264,25 @@ derive instance Newtype Parameter _
 operatorTable ∷ Array (Array (Operator Identity String Expression))
 operatorTable =
   [ arithmeticalBinaryOperator
-      Lexing.plusSymbol
-      Addition
-      AssocRight
-  , arithmeticalBinaryOperator
       Lexing.equalSymbol
       Equation
       AssocNone
   , arithmeticalBinaryOperator
-      Lexing.asteriskSymbol
-      Multiplication
+      Lexing.caretSymbol
+      Exponentiation
       AssocRight
+  , ( arithmeticalBinaryOperator
+        Lexing.slashSymbol
+        Division
+        AssocLeft
+    ) <>
+      ( arithmeticalBinaryOperator
+          Lexing.asteriskSymbol
+          Multiplication
+          AssocLeft
+      )
+  , arithmeticalBinaryOperator
+      Lexing.plusSymbol
+      Addition
+      AssocLeft
   ]
