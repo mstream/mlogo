@@ -2,18 +2,14 @@ module Test.Spec.MLogo.Interpretation.Command.Commands.Graphics (spec) where
 
 import Prelude
 
-import Control.Monad.Except (class MonadError)
-import Control.Monad.State (class MonadState)
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.List (List(..))
 import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (over, wrap)
-import Data.Tuple.Nested (type (/\), (/\))
-import MLogo.Interpretation.Command (Command(..))
+import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics as Graphics
-import MLogo.Interpretation.Interpret (Interpret)
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State
   ( ExecutionState(..)
@@ -24,7 +20,6 @@ import MLogo.Interpretation.State
 import MLogo.Interpretation.State as State
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.MLogo.Interpretation.Command
   ( commandTestCase
   , interpretCommand

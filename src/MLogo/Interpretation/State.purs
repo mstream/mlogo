@@ -65,6 +65,8 @@ derive newtype instance Ring Angle
 derive newtype instance EncodeJson Angle
 derive newtype instance Arbitrary Angle
 
+derive instance Newtype Angle _
+
 extractBoolean ∷ Value → String \/ Boolean
 extractBoolean = case _ of
   BooleanValue b →

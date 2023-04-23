@@ -9,10 +9,12 @@ module MLogo.Interpretation.Command.Commands.Graphics
   , penUp
   , turnLeft
   , turnRight
+  , setHeading
   ) where
 
 import Prelude
 
+import Control.Monad.RWS (gets)
 import Control.Monad.State (get, modify_)
 import Data.List (List(..), (:))
 import Data.Map (Map)
@@ -52,6 +54,8 @@ commandsByAlias = Heterogeneous.hfoldlWithIndex
   , pu: penUp
   , right: turnRight
   , rt: turnRight
+  , seth: setHeading
+  , setheading: setHeading
   }
 
 moveBackward ∷ Command
@@ -193,6 +197,21 @@ turnRight =
       , parameters: Types.parametersFromFixedInputParser inputParser
       }
 
+setHeading ∷ Command
+setHeading =
+  let
+    inputParser = Types.fixedNumberInputParser "angle"
+  in
+    Command
+      { description: "Rotate the cursor to the specified heading"
+      , interpret: Command.parseAndInterpretInput
+          (Types.runFixedInputParser inputParser)
+          interpretTurnRight
+      , name: "right"
+      , outputValueType: Nothing
+      , parameters: Types.parametersFromFixedInputParser inputParser
+      }
+
 interpretSetPenState ∷ ∀ m. Boolean → Interpret m Unit
 interpretSetPenState isDown _ = pure Nothing <* do
   modify_ $ over ExecutionState
@@ -210,11 +229,16 @@ interpretMoveForward steps = do
   interpretMoveTo target
 
 interpretTurnRight ∷ ∀ m. Interpret m Number
-interpretTurnRight angle = pure Nothing <* do
+interpretTurnRight angle =
+  gets (unwrap <<< _.pointer.angle <<< unwrap)
+    >>= (interpretSetHeading <<< add angle)
+
+interpretSetHeading ∷ ∀ m. Interpret m Number
+interpretSetHeading angle = pure Nothing <* do
   modify_ $ over ExecutionState
     ( \st → st
         { pointer = st.pointer
-            { angle = st.pointer.angle + Angle angle }
+            { angle = Angle angle }
         }
     )
 

@@ -719,6 +719,34 @@ spec = describe "Parsing" do
           )
       ]
 
+    expressionsTestCase
+      "Layers, by Alessio Plebe, Italy (15 words)"
+      "for [i 0 420] [seth :i repeat :i [fd 2 rt 1] pu home pd]"
+      [ ForBlock
+          { binder: "i", initialValue: 0, step: 1, terminalValue: 420 }
+          ( List.fromFoldable
+              [ ProcedureCall "seth"
+                  (List.fromFoldable [ ValueReference "i" ])
+              , RepeatBlock
+                  (ValueReference "i")
+                  ( List.fromFoldable
+                      [ ProcedureCall
+                          "fd"
+                          (List.fromFoldable [ IntegerLiteral 2 ])
+                      , ProcedureCall
+                          "rt"
+                          ( List.fromFoldable
+                              [ IntegerLiteral 1 ]
+                          )
+                      ]
+                  )
+              , ProcedureCall "pu" Nil
+              , ProcedureCall "home" Nil
+              , ProcedureCall "pd" Nil
+              ]
+          )
+      ]
+
   describe "procedureSignature" do
     procedureSignatureTestCase
       "no parameters"
