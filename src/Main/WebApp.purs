@@ -14,7 +14,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Hooks as Hooks
 import Halogen.VDom.Driver (runUI)
-import MLogo.Interpretation.Command as Command
+import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
 import MLogo.WebApp.AceComponent as AceComponent
@@ -62,7 +62,7 @@ rootComp = Hooks.component \_ _ → Hooks.do
               _legend
               unit
               LegendComponent.component
-              Command.commandsByAlias
+              Commands.commandsByAlias
           ]
       , case Program.run source of
           Left errorMessage →

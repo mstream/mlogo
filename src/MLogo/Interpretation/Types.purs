@@ -1,4 +1,4 @@
-module MLogo.Interpretation.Command.Input
+module MLogo.Interpretation.Types
   ( FixedInputParser
   , Parameter
   , Parameters(..)

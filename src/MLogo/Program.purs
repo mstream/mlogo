@@ -10,7 +10,7 @@ import Data.Map as Map
 import Data.Newtype (unwrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation as Interpretation
-import MLogo.Interpretation.Command as Command
+import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (VisibleState)
 import MLogo.Interpretation.State as State
@@ -52,7 +52,7 @@ parseExpressions source = do
     parsingContext ∷ ParsingContext
     parsingContext = Map.union
       (Parsing.procedureSignaturesToParsingContext procedureSignatures)
-      Command.parsingContext
+      Commands.parsingContext
 
   P.runParser source (Parsing.expressions parsingContext)
 

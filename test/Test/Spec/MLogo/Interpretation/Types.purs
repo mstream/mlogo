@@ -1,19 +1,19 @@
-module Test.Spec.MLogo.Interpretation.Command.Input (spec) where
+module Test.Spec.MLogo.Interpretation.Types (spec) where
 
 import Prelude
 
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.List as List
-import MLogo.Interpretation.Command.Input
+import MLogo.Interpretation.State (Value(..))
+import MLogo.Interpretation.Types
   ( FixedInputParser
   , Parameter
   , Parameters(..)
   , ValueType(..)
   , VariableInputParser
   )
-import MLogo.Interpretation.Command.Input as Input
-import MLogo.Interpretation.State (Value(..))
+import MLogo.Interpretation.Types as Types
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 
@@ -24,13 +24,13 @@ spec = describe "Input" do
 
     parametersFromFixedInputParserTestCase
       "no arguments"
-      (Input.fixedNoInputParser)
+      (Types.fixedNoInputParser)
       []
 
     parametersFromFixedInputParserTestCase
       "single number argument"
       ( ado
-          number ← Input.fixedNumberInputParser "number"
+          number ← Types.fixedNumberInputParser "number"
           in { number }
       )
       [ { name: "number", valueType: NumberType } ]
@@ -38,7 +38,7 @@ spec = describe "Input" do
     parametersFromFixedInputParserTestCase
       "single word argument"
       ( ado
-          word ← Input.fixedWordInputParser "word"
+          word ← Types.fixedWordInputParser "word"
           in { word }
       )
       [ { name: "word", valueType: WordType } ]
@@ -46,8 +46,8 @@ spec = describe "Input" do
     parametersFromFixedInputParserTestCase
       "two number arguments"
       ( ado
-          number1 ← Input.fixedNumberInputParser "number1"
-          number2 ← Input.fixedNumberInputParser "number2"
+          number1 ← Types.fixedNumberInputParser "number1"
+          number2 ← Types.fixedNumberInputParser "number2"
           in { number1, number2 }
       )
       [ { name: "number1", valueType: NumberType }
@@ -58,17 +58,17 @@ spec = describe "Input" do
 
     parametersFromVariableInputParserTestCase
       "any value"
-      (Input.variableAnyInputParser "value")
+      (Types.variableAnyInputParser "value")
       { name: "value", valueType: AnyType }
 
     parametersFromVariableInputParserTestCase
       "number value"
-      (Input.variableNumberInputParser "number")
+      (Types.variableNumberInputParser "number")
       { name: "number", valueType: NumberType }
 
     parametersFromVariableInputParserTestCase
       "word value"
-      (Input.variableWordInputParser "word")
+      (Types.variableWordInputParser "word")
       { name: "word", valueType: WordType }
 
   describe "runFixedInputParser" do
@@ -82,7 +82,7 @@ spec = describe "Input" do
     runFixedInputParserTestCase
       "single number argument"
       ( ado
-          number ← Input.fixedNumberInputParser "number"
+          number ← Types.fixedNumberInputParser "number"
           in { number }
       )
       [ FloatValue 10.0 ]
@@ -91,8 +91,8 @@ spec = describe "Input" do
     runFixedInputParserTestCase
       "two number arguments"
       ( ado
-          number1 ← Input.fixedNumberInputParser "number1"
-          number2 ← Input.fixedNumberInputParser "number2"
+          number1 ← Types.fixedNumberInputParser "number1"
+          number2 ← Types.fixedNumberInputParser "number2"
           in { number1, number2 }
       )
       [ FloatValue 10.0, FloatValue 20.0 ]
@@ -101,7 +101,7 @@ spec = describe "Input" do
     runFixedInputParserTestCase
       "single word argument"
       ( ado
-          word ← Input.fixedWordInputParser "word"
+          word ← Types.fixedWordInputParser "word"
           in { word }
       )
       [ WordValue "aaa" ]
@@ -110,8 +110,8 @@ spec = describe "Input" do
     runFixedInputParserTestCase
       "two word arguments"
       ( ado
-          word1 ← Input.fixedWordInputParser "word1"
-          word2 ← Input.fixedWordInputParser "word2"
+          word1 ← Types.fixedWordInputParser "word1"
+          word2 ← Types.fixedWordInputParser "word2"
           in { word1, word2 }
       )
       [ WordValue "aaa", WordValue "bbb" ]
@@ -120,8 +120,8 @@ spec = describe "Input" do
     runFixedInputParserTestCase
       "a number argument followed by a word argument"
       ( ado
-          number ← Input.fixedNumberInputParser "number"
-          word ← Input.fixedWordInputParser "word"
+          number ← Types.fixedNumberInputParser "number"
+          word ← Types.fixedWordInputParser "word"
           in { number, word }
       )
       [ FloatValue 10.0, WordValue "aaa" ]
@@ -131,37 +131,37 @@ spec = describe "Input" do
 
     runVariableInputParserTestCase
       "no arguments"
-      (Input.variableAnyInputParser "value")
+      (Types.variableAnyInputParser "value")
       []
       (Right [])
 
     runVariableInputParserTestCase
       "single number argument"
-      (Input.variableNumberInputParser "number")
+      (Types.variableNumberInputParser "number")
       [ FloatValue 10.0 ]
       (Right [ 10.0 ])
 
     runVariableInputParserTestCase
       "two number arguments"
-      (Input.variableNumberInputParser "number")
+      (Types.variableNumberInputParser "number")
       [ FloatValue 10.0, FloatValue 20.0 ]
       (Right [ 10.0, 20.0 ])
 
     runVariableInputParserTestCase
       "single word argument"
-      (Input.variableWordInputParser "word")
+      (Types.variableWordInputParser "word")
       [ WordValue "aaa" ]
       (Right [ "aaa" ])
 
     runVariableInputParserTestCase
       "two words argument"
-      (Input.variableWordInputParser "word")
+      (Types.variableWordInputParser "word")
       [ WordValue "aaa", WordValue "bbb" ]
       (Right [ "aaa", "bbb" ])
 
     runVariableInputParserTestCase
       "a number follow by a word"
-      (Input.variableAnyInputParser "value")
+      (Types.variableAnyInputParser "value")
       [ FloatValue 10.0, WordValue "aaa" ]
       (Right [ FloatValue 10.0, WordValue "aaa" ])
 
@@ -173,7 +173,7 @@ parametersFromFixedInputParserTestCase
   → Spec Unit
 parametersFromFixedInputParserTestCase title parser expected = it
   ("extracts parameters from a fixed input parser \"" <> title <> "\"")
-  ( (Input.parametersFromFixedInputParser parser)
+  ( (Types.parametersFromFixedInputParser parser)
       `shouldEqual`
         (FixedParameters expected)
   )
@@ -188,7 +188,7 @@ parametersFromVariableInputParserTestCase title parser expected = it
   ( "extracts parameters from a variable input parser \"" <> title <>
       "\""
   )
-  ( (Input.parametersFromVariableInputParser parser)
+  ( (Types.parametersFromVariableInputParser parser)
       `shouldEqual`
         (VariableParameters expected)
   )
@@ -204,7 +204,7 @@ runFixedInputParserTestCase
   → Spec Unit
 runFixedInputParserTestCase title parser arguments expected = it
   ("parses fixed input \"" <> title <> "\"")
-  ( (Input.runFixedInputParser parser $ List.fromFoldable arguments)
+  ( (Types.runFixedInputParser parser $ List.fromFoldable arguments)
       `shouldEqual`
         expected
   )
@@ -220,7 +220,7 @@ runVariableInputParserTestCase
   → Spec Unit
 runVariableInputParserTestCase title parser arguments expected = it
   ("parses variable input \"" <> title <> "\"")
-  ( ( Input.runVariableInputParser parser $ List.fromFoldable
+  ( ( Types.runVariableInputParser parser $ List.fromFoldable
         arguments
     )
       `shouldEqual`

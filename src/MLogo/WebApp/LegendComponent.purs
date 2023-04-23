@@ -17,13 +17,13 @@ import Halogen.HTML (ClassName(..), HTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import MLogo.Interpretation.Command (Command(..))
-import MLogo.Interpretation.Command.Input
+import MLogo.Interpretation.State (Value(..))
+import MLogo.Interpretation.Types
   ( Parameter
   , Parameters(..)
   , ValueType
   )
-import MLogo.Interpretation.Command.Input as Input
-import MLogo.Interpretation.State (Value(..))
+import MLogo.Interpretation.Types as Types
 import Test.QuickCheck.Gen as Gen
 
 data Action = Initialize | Receive Input
@@ -136,7 +136,7 @@ handleAction = case _ of
       f (Command { description, outputValueType, parameters }) = do
         exampleArgs ← liftEffect
           $ Gen.randomSampleOne
-          $ Input.generateValuesFromParameters parameters
+          $ Types.generateValuesFromParameters parameters
         pure { description, exampleArgs, outputValueType, parameters }
 
     state ← get

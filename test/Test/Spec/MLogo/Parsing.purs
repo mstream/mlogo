@@ -23,6 +23,7 @@ import Data.Traversable (class Traversable, sequence)
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import MLogo.Interpretation.Command as Command
+import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Lexing as Lexing
 import MLogo.Parsing
   ( Expression(..)
@@ -956,7 +957,7 @@ expressionsTestCase title source expected = it title do
   let
     actual =
       case
-        P.runParser source (Parsing.expressions Command.parsingContext)
+        P.runParser source (Parsing.expressions Commands.parsingContext)
         of
         Left parseError →
           Left $ show parseError

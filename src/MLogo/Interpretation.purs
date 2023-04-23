@@ -23,7 +23,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (over, unwrap, wrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command (Command(..))
-import MLogo.Interpretation.Command as Command
+import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Interpretation.Interpret (Interpret)
 import MLogo.Interpretation.State
   ( ExecutionState(..)
@@ -191,7 +191,7 @@ interpretProcedureCall { arguments, name } = do
       throwError errorMessage
     Right (evaluatedArguments /\ newState) → do
       put newState
-      case Map.lookup name Command.commandsByAlias of
+      case Map.lookup name Commands.commandsByAlias of
         Just (Command command) →
           command.interpret evaluatedArguments
         Nothing → do
