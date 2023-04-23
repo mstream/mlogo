@@ -51,19 +51,16 @@ rootComp = Hooks.component \_ _ → Hooks.do
   Hooks.pure do
     HH.div
       [ HP.id "container" ]
-      [ HH.div
-          [ HP.classes [ ClassName "left-panel" ] ]
-          [ HH.slot _ace
-              unit
-              AceComponent.component
-              unit
-              handleAceOutput
-          , HH.slot_
-              _legend
-              unit
-              LegendComponent.component
-              Commands.commandsByAlias
-          ]
+      [ HH.slot _ace
+          unit
+          AceComponent.component
+          unit
+          handleAceOutput
+      , HH.slot_
+          _legend
+          unit
+          LegendComponent.component
+          Commands.commandsByAliasByCategory
       , case Program.run source of
           Left errorMessage →
             HH.div

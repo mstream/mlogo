@@ -9,6 +9,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Data.Tuple.Nested (type (/\), (/\))
+import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (liftEffect)
 import Halogen (Component, ComponentHTML, HalogenM)
@@ -18,21 +19,17 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.State (Value(..))
-import MLogo.Interpretation.Types
-  ( Parameter
-  , Parameters(..)
-  , ValueType
-  )
+import MLogo.Interpretation.Types (Parameter, Parameters(..), ValueType)
 import MLogo.Interpretation.Types as Types
 import Test.QuickCheck.Gen as Gen
 
 data Action = Initialize | Receive Input
 
-type Input = Map String Command
+type Input = Map String (Map String Command)
 
 type State =
-  { commandsByAlias ∷ Map String Command
-  , entries ∷ Map String Entry
+  { commandsByAliasByCategory ∷ Map String (Map String Command)
+  , entriesByCategory ∷ Map String (Map String Entry)
   }
 
 type Entry =
@@ -55,20 +52,29 @@ component =
     }
 
 initialState ∷ Input → State
-initialState commandsByAlias = { commandsByAlias, entries: Map.empty }
+initialState commandsByAliasByCategory =
+  { commandsByAliasByCategory, entriesByCategory: Map.empty }
 
 render ∷ ∀ m. State → ComponentHTML Action () m
 render state =
   HH.div
     [ HP.classes [ ClassName "legend" ] ]
-    (renderEntry <$> Map.toUnfoldable state.entries)
+    (renderCategory <$> Map.toUnfoldable state.entriesByCategory)
+
+renderCategory ∷ ∀ i w. String /\ (Map String Entry) → HTML w i
+renderCategory (name /\ entries) =
+  HH.div
+    [ HP.classes [ ClassName "legend-category" ] ]
+    [ HH.h3_ [ HH.text name ]
+    , HH.div_ (renderEntry <$> Map.toUnfoldable entries)
+    ]
 
 renderEntry ∷ ∀ i w. String /\ Entry → HTML w i
 renderEntry
   (name /\ { description, exampleArgs, outputValueType, parameters }) =
   HH.div
     [ HP.classes [ ClassName "legend-entry" ] ]
-    [ HH.div
+    [ HH.code
         [ HP.classes [ ClassName "command-header" ] ]
         ( [ HH.text name
           , HH.text " "
@@ -78,7 +84,7 @@ renderEntry
     , HH.div_
         [ HH.hr_
         , HH.header_ [ HH.text "Examples" ]
-        , HH.p_ $ [ HH.text name, HH.text " " ] <> renderExampleArgs
+        , HH.code_ $ [ HH.text name, HH.text " " ] <> renderExampleArgs
         , HH.hr_
         ]
     ]
@@ -133,16 +139,25 @@ handleAction
 handleAction = case _ of
   Initialize → do
     let
-      f (Command { description, outputValueType, parameters }) = do
-        exampleArgs ← liftEffect
-          $ Gen.randomSampleOne
+      commandToEntry ∷ Command → Effect Entry
+      commandToEntry
+        (Command { description, outputValueType, parameters }) = do
+        exampleArgs ← Gen.randomSampleOne
           $ Types.generateValuesFromParameters parameters
         pure { description, exampleArgs, outputValueType, parameters }
 
-    state ← get
-    entries ← traverse f state.commandsByAlias
-    modify_ _ { entries = entries }
+      categoriesToEntries
+        ∷ Map String Command → Effect (Map String Entry)
+      categoriesToEntries categories = do
+        traverse commandToEntry categories
 
-  Receive commandsByAlias → do
-    modify_ _ { commandsByAlias = commandsByAlias }
+    state ← get
+
+    entriesByCategory ← liftEffect
+      $ traverse categoriesToEntries state.commandsByAliasByCategory
+
+    modify_ _ { entriesByCategory = entriesByCategory }
+
+  Receive commandsByAliasByCategory → do
+    modify_ _ { commandsByAliasByCategory = commandsByAliasByCategory }
     handleAction Initialize

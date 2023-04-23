@@ -22,7 +22,6 @@ import Data.String.Regex.Flags as RegexFlags
 import Data.Traversable (class Traversable, sequence)
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
-import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Lexing as Lexing
 import MLogo.Parsing
