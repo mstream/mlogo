@@ -1,5 +1,12 @@
 
 
+## [0.17.0](https://github.com/mstream/mlogo/compare/0.16.1...0.17.0) (2023-04-23)
+
+
+### Features
+
+* implement quotient and power ([4e5f1c0](https://github.com/mstream/mlogo/commit/4e5f1c0f4c53df200937e21f2beeb4f25ceb835a))
+
 ### [0.16.1](https://github.com/mstream/mlogo/compare/0.16.0...0.16.1) (2023-04-23)
 
 ## [0.16.0](https://github.com/mstream/mlogo/compare/0.15.0...0.16.0) (2023-04-23)
