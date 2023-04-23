@@ -1,5 +1,12 @@
 
 
+## [0.15.0](https://github.com/mstream/mlogo/compare/0.14.1...0.15.0) (2023-04-23)
+
+
+### Features
+
+* divide commands into categories ([3c26fd2](https://github.com/mstream/mlogo/commit/3c26fd2dc54be6d75e80fd3ebf45f46d39e8dfed))
+
 ### [0.14.1](https://github.com/mstream/mlogo/compare/0.14.0...0.14.1) (2023-04-23)
 
 ## [0.14.0](https://github.com/mstream/mlogo/compare/0.13.0...0.14.0) (2023-04-22)
