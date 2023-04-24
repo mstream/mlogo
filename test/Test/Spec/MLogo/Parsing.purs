@@ -9,6 +9,7 @@ import Data.Either (Either(..))
 import Data.Either as Either
 import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
+import Data.FoldableWithIndex (traverseWithIndex_)
 import Data.Int as Int
 import Data.List (List(..))
 import Data.List as List
@@ -22,6 +23,8 @@ import Data.String.Regex.Flags as RegexFlags
 import Data.Traversable (class Traversable, sequence)
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
+import Examples (Example(..))
+import Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Lexing as Lexing
 import MLogo.Parsing
@@ -646,256 +649,11 @@ spec = describe "Parsing" do
     )
 
   describe "expressions" do
-    expressionsTestCase
-      "Dahlia, by David Eisenstat, U.S. (14 words)"
-      "repeat 8 [rt 45 repeat 6 [repeat 90 [fd 2 rt 2] rt 90]]"
-      [ RepeatBlock
-          (IntegerLiteral 8)
-          ( List.fromFoldable
-              [ ProcedureCall
-                  "rt"
-                  (List.fromFoldable [ IntegerLiteral 45 ])
-              , RepeatBlock
-                  (IntegerLiteral 6)
-                  ( List.fromFoldable
-                      [ RepeatBlock
-                          (IntegerLiteral 90)
-                          ( List.fromFoldable
-                              [ ProcedureCall
-                                  "fd"
-                                  ( List.fromFoldable
-                                      [ IntegerLiteral 2 ]
-                                  )
-                              , ProcedureCall
-                                  "rt"
-                                  ( List.fromFoldable
-                                      [ IntegerLiteral 2 ]
-                                  )
-                              ]
-                          )
-                      , ProcedureCall
-                          "rt"
-                          (List.fromFoldable [ IntegerLiteral 90 ])
-                      ]
-                  )
-              ]
-          )
-      ]
-
-    expressionsTestCase
-      "Hairy Star"
-      "for [i 0 4700] [fd 10 rt (180 * sin (:i * :i))]"
-      [ ForBlock
-          { binder: "i", initialValue: 0, step: 1, terminalValue: 4700 }
-          ( List.fromFoldable
-              [ ProcedureCall
-                  "fd"
-                  (List.fromFoldable [ IntegerLiteral 10 ])
-              , ProcedureCall
-                  "rt"
-                  ( List.fromFoldable
-                      [ Multiplication
-                          (IntegerLiteral 180)
-                          ( ProcedureCall
-                              "sin"
-                              ( List.fromFoldable
-                                  [ Multiplication
-                                      (ValueReference "i")
-                                      (ValueReference "i")
-                                  ]
-                              )
-                          )
-                      ]
-                  )
-              ]
-          )
-      ]
-
-    expressionsTestCase
-      "Jaggy Star"
-      "for [i 0 2200] [fd (25 * sin :i) rt (:i * :i)]"
-      [ ForBlock
-          { binder: "i", initialValue: 0, step: 1, terminalValue: 2200 }
-          ( List.fromFoldable
-              [ ProcedureCall
-                  "fd"
-                  ( List.fromFoldable
-                      [ Multiplication
-                          (IntegerLiteral 25)
-                          ( ProcedureCall "sin"
-                              (List.fromFoldable [ ValueReference "i" ])
-                          )
-                      ]
-                  )
-              , ProcedureCall
-                  "rt"
-                  ( List.fromFoldable
-                      [ Multiplication
-                          (ValueReference "i")
-                          (ValueReference "i")
-                      ]
-                  )
-              ]
-          )
-      ]
-
-    expressionsTestCase
-      "Octa-star Spiral, by M.H. Elhefni, Egypt"
-      "for [l 0 120 4] [repeat 8 [fd :l rt 135] fd :l rt 30]"
-      [ ForBlock
-          { binder: "l", initialValue: 0, step: 4, terminalValue: 120 }
-          ( List.fromFoldable
-              [ RepeatBlock
-                  (IntegerLiteral 8)
-                  ( List.fromFoldable
-                      [ ProcedureCall
-                          "fd"
-                          (List.fromFoldable [ ValueReference "l" ])
-                      , ProcedureCall
-                          "rt"
-                          (List.fromFoldable [ IntegerLiteral 135 ])
-                      ]
-                  )
-              , ProcedureCall
-                  "fd"
-                  (List.fromFoldable [ ValueReference "l" ])
-              , ProcedureCall
-                  "rt"
-                  (List.fromFoldable [ IntegerLiteral 30 ])
-              ]
-          )
-      ]
-
-    expressionsTestCase
-      "Growing Scrolls variation 4, by M.H. Elhefni, Egypt (13 words)"
-      "for [i 1 18 2] [repeat 720 [fd :i rt repcount] lt 45]"
-      [ ForBlock
-          { binder: "i", initialValue: 1, step: 2, terminalValue: 18 }
-          ( List.fromFoldable
-              [ RepeatBlock
-                  (IntegerLiteral 720)
-                  ( List.fromFoldable
-                      [ ProcedureCall
-                          "fd"
-                          (List.fromFoldable [ ValueReference "i" ])
-                      , ProcedureCall
-                          "rt"
-                          ( List.fromFoldable
-                              [ ProcedureCall "repcount" Nil ]
-                          )
-                      ]
-                  )
-              , ProcedureCall
-                  "lt"
-                  (List.fromFoldable [ IntegerLiteral 45 ])
-              ]
-          )
-      ]
-
-    expressionsTestCase
-      "Layers, by Alessio Plebe, Italy (15 words)"
-      "for [i 0 420] [seth :i repeat :i [fd 2 rt 1] pu home pd]"
-      [ ForBlock
-          { binder: "i", initialValue: 0, step: 1, terminalValue: 420 }
-          ( List.fromFoldable
-              [ ProcedureCall "seth"
-                  (List.fromFoldable [ ValueReference "i" ])
-              , RepeatBlock
-                  (ValueReference "i")
-                  ( List.fromFoldable
-                      [ ProcedureCall
-                          "fd"
-                          (List.fromFoldable [ IntegerLiteral 2 ])
-                      , ProcedureCall
-                          "rt"
-                          ( List.fromFoldable
-                              [ IntegerLiteral 1 ]
-                          )
-                      ]
-                  )
-              , ProcedureCall "pu" Nil
-              , ProcedureCall "home" Nil
-              , ProcedureCall "pd" Nil
-              ]
-          )
-      ]
-
-    expressionsTestCase
-      "Penta-octagon, by M.H. Elhefni, Egypt (15 words)"
-      "for [l 10 80 5] [repeat 5 [repeat 8 [fd :l rt 45] rt 72]]"
-      [ ForBlock
-          { binder: "l", initialValue: 10, step: 5, terminalValue: 80 }
-          ( List.fromFoldable
-              [ RepeatBlock
-                  (IntegerLiteral 5)
-                  ( List.fromFoldable
-                      [ RepeatBlock (IntegerLiteral 8)
-                          ( List.fromFoldable
-                              [ ProcedureCall "fd"
-                                  ( List.fromFoldable
-                                      [ ValueReference "l" ]
-                                  )
-                              , ProcedureCall "rt"
-                                  ( List.fromFoldable
-                                      [ IntegerLiteral 45 ]
-                                  )
-                              ]
-                          )
-                      , ProcedureCall "rt"
-                          (List.fromFoldable [ IntegerLiteral 72 ])
-                      ]
-                  )
-              ]
-          )
-      ]
-
-    expressionsTestCase
-      "Slalom Scrolls"
-      "for [i 0 2000] [fd 5 rt (90 * sin :i)]"
-      [ ForBlock
-          { binder: "i", initialValue: 0, step: 1, terminalValue: 2000 }
-          ( List.fromFoldable
-              [ ProcedureCall "fd"
-                  (List.fromFoldable [ IntegerLiteral 5 ])
-              , ProcedureCall "rt"
-                  ( List.fromFoldable
-                      [ Multiplication
-                          (IntegerLiteral 90)
-                          ( ProcedureCall "sin"
-                              (List.fromFoldable [ ValueReference "i" ])
-                          )
-                      ]
-                  )
-              ]
-          )
-      ]
-    expressionsTestCase
-      "Bullring"
-      "for [i 0 1002] [fd 8 seth (360 * (power :i 3) / 1002)]"
-      [ ForBlock
-          { binder: "i", initialValue: 0, step: 1, terminalValue: 1002 }
-          ( List.fromFoldable
-              [ ProcedureCall "fd"
-                  (List.fromFoldable [ IntegerLiteral 8 ])
-              , ProcedureCall "seth"
-                  ( List.fromFoldable
-                      [ Division
-                          ( Multiplication
-                              (IntegerLiteral 360)
-                              ( ProcedureCall "power"
-                                  ( List.fromFoldable
-                                      [ ValueReference "i"
-                                      , IntegerLiteral 3
-                                      ]
-                                  )
-                              )
-                          )
-                          (IntegerLiteral 1002)
-                      ]
-                  )
-              ]
-          )
-      ]
+    traverseWithIndex_
+      ( \title (Example { ast, source }) →
+          expressionsTestCase title source ast
+      )
+      Examples.examplesByTitle
 
   describe "procedureSignature" do
     procedureSignatureTestCase
