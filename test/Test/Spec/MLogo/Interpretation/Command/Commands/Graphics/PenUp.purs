@@ -5,7 +5,6 @@ module Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.PenUp
 import Prelude
 
 import Data.Either (Either(..))
-import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))

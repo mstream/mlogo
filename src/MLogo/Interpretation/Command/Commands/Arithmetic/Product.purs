@@ -1,4 +1,4 @@
-module MLogo.Interpretation.Command.Commands.Arithmetic.Quotient
+module MLogo.Interpretation.Command.Commands.Arithmetic.Product
   ( command
   , commandsByAlias
   , interpret
@@ -6,7 +6,8 @@ module MLogo.Interpretation.Command.Commands.Arithmetic.Quotient
 
 import Prelude
 
-import Control.Monad.Error.Class (throwError)
+import Data.Foldable (foldl)
+import Data.List (List)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -22,29 +23,22 @@ commandsByAlias ∷ Map String Command
 commandsByAlias = Heterogeneous.hfoldlWithIndex
   ToMap
   (Map.empty ∷ Map String Command)
-  { quotient: command }
+  { product: command }
 
 command ∷ Command
 command =
   let
-    inputParser = ado
-      dividend ← Types.fixedNumberInputParser "dividend"
-      divisor ← Types.fixedNumberInputParser "divisor"
-      in { dividend, divisor }
+    inputParser = Types.variableNumberInputParser "factor"
   in
     Command
-      { description: "Divides dividend by divisor."
+      { description: "Multiplies given numbers."
       , interpret: Command.parseAndInterpretInput
-          (Types.runFixedInputParser inputParser)
+          (Types.runVariableInputParser inputParser)
           interpret
-      , name: "quotient"
+      , name: "product"
       , outputValueType: Just NumberType
-      , parameters: Types.parametersFromFixedInputParser inputParser
+      , parameters: Types.parametersFromVariableInputParser inputParser
       }
 
-interpret ∷ ∀ m. Interpret m { dividend ∷ Number, divisor ∷ Number }
-interpret { dividend, divisor } = case divisor of
-  0.0 →
-    throwError "division by zero"
-  x →
-    pure $ Just $ FloatValue $ dividend / x
+interpret ∷ ∀ m. Interpret m (List Number)
+interpret = pure <<< Just <<< FloatValue <<< foldl (*) one
