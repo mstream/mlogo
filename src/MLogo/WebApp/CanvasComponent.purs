@@ -114,7 +114,7 @@ handleAction = case _ of
     put visibleState
 
 canvasSize ∷ Number
-canvasSize = 100.0
+canvasSize = 400.0
 
 transforms ∷ Array Transform
 transforms =
