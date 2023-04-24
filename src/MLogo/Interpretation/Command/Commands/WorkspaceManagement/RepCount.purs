@@ -11,14 +11,11 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
-import Data.Number as Number
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
-import MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (Position(..), Value(..))
-import MLogo.Interpretation.State as State
+import MLogo.Interpretation.State (Value(..))
 import MLogo.Interpretation.Types (ValueType(..))
 import MLogo.Interpretation.Types as Types
 

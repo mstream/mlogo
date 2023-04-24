@@ -1,4 +1,4 @@
-module MLogo.WebApp.AceComponent where
+module MLogo.WebApp.AceComponent (Output(..), Query(..), component) where
 
 import Prelude
 
@@ -10,7 +10,6 @@ import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
-import Halogen.HTML (ClassName(..))
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
@@ -46,8 +45,7 @@ initialState _ = { editor: Nothing }
 
 render ∷ ∀ m. State → H.ComponentHTML Action () m
 render = const $ HH.div
-  [ HP.classes
-      [ ClassName "editor" ]
+  [ HP.id "editor"
   , HP.ref (H.RefLabel "ace")
   ]
   []

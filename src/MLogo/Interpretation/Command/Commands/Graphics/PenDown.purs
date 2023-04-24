@@ -6,19 +6,16 @@ module MLogo.Interpretation.Command.Commands.Graphics.PenDown
 
 import Prelude
 
-import Control.Monad.State (get, modify_)
+import Control.Monad.State (modify_)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (over, unwrap)
-import Data.Number as Number
+import Data.Newtype (over)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
-import MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (ExecutionState(..), Position(..))
-import MLogo.Interpretation.State as State
+import MLogo.Interpretation.State (ExecutionState(..))
 import MLogo.Interpretation.Types as Types
 
 commandsByAlias ∷ Map String Command

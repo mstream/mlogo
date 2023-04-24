@@ -10,7 +10,7 @@ import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen (Component, ComponentHTML, HalogenM)
 import Halogen as H
-import Halogen.HTML (ClassName(..), HTML)
+import Halogen.HTML (HTML)
 import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
 import Halogen.Svg.Elements as SE
@@ -45,7 +45,7 @@ initialState = identity
 render ∷ ∀ m. State → ComponentHTML Action () m
 render state =
   SE.svg
-    [ SA.classes [ ClassName "canvas" ]
+    [ SA.id "canvas"
     , SA.viewBox 0.0 0.0 canvasSize canvasSize
     ]
     (Array.fromFoldable $ renderVisibleState state)

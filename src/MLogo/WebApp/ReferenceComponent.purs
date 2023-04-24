@@ -1,4 +1,4 @@
-module MLogo.WebApp.LegendComponent where
+module MLogo.WebApp.ReferenceComponent (component) where
 
 import Prelude
 
@@ -57,14 +57,12 @@ initialState commandsByAliasByCategory =
 
 render ∷ ∀ m. State → ComponentHTML Action () m
 render state =
-  HH.div
-    [ HP.classes [ ClassName "legend" ] ]
-    (renderCategory <$> Map.toUnfoldable state.entriesByCategory)
+  HH.div_ (renderCategory <$> Map.toUnfoldable state.entriesByCategory)
 
 renderCategory ∷ ∀ i w. String /\ (Map String Entry) → HTML w i
 renderCategory (name /\ entries) =
   HH.div
-    [ HP.classes [ ClassName "legend-category" ] ]
+    [ HP.classes [ ClassName "reference-category" ] ]
     [ HH.h3_ [ HH.text name ]
     , HH.div_ (renderEntry <$> Map.toUnfoldable entries)
     ]
@@ -73,7 +71,7 @@ renderEntry ∷ ∀ i w. String /\ Entry → HTML w i
 renderEntry
   (name /\ { description, exampleArgs, outputValueType, parameters }) =
   HH.div
-    [ HP.classes [ ClassName "legend-entry" ] ]
+    [ HP.classes [ ClassName "reference-entry" ] ]
     [ HH.code
         [ HP.classes [ ClassName "command-header" ] ]
         ( [ HH.text name

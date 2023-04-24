@@ -8,32 +8,19 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Aff.Class (class MonadAff)
-import Halogen (ClassName(..), Component, Slot)
+import Halogen (ClassName(..), Component)
 import Halogen.Aff (selectElement)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Hooks as Hooks
 import Halogen.VDom.Driver (runUI)
-import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Program as Program
 import MLogo.WebApp.AceComponent (Output(..))
 import MLogo.WebApp.AceComponent as AceComponent
 import MLogo.WebApp.CanvasComponent as CanvasComponent
-import MLogo.WebApp.LegendComponent as LegendComponent
+import MLogo.WebApp.SideBarComponent as SideBarComponent
 import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
-
-type State = { text ∷ String }
-
-type ChildSlots =
-  ( ace ∷ AceComponent.Slot Unit
-  , canvas ∷ ∀ q slot. Slot q Void slot
-  , legend ∷ ∀ q slot. Slot q Void slot
-  )
-
-_ace = Proxy ∷ Proxy "ace"
-_canvas = Proxy ∷ Proxy "canvas"
-_legend = Proxy ∷ Proxy "legend"
 
 main ∷ Effect Unit
 main = launchAff_ do
@@ -51,16 +38,17 @@ rootComp = Hooks.component \_ _ → Hooks.do
   Hooks.pure do
     HH.div
       [ HP.id "container" ]
-      [ HH.slot _ace
+      [ HH.slot
+          (Proxy ∷ Proxy "ace")
           unit
           AceComponent.component
           unit
           handleAceOutput
       , HH.slot_
-          _legend
+          (Proxy ∷ Proxy "sideBar")
           unit
-          LegendComponent.component
-          Commands.commandsByAliasByCategory
+          SideBarComponent.component
+          unit
       , case Program.run source of
           Left errorMessage →
             HH.div
@@ -68,7 +56,7 @@ rootComp = Hooks.component \_ _ → Hooks.do
               [ HH.text errorMessage ]
           Right visibleState →
             HH.slot_
-              _canvas
+              (Proxy ∷ Proxy "canvas")
               unit
               CanvasComponent.component
               visibleState

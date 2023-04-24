@@ -10,14 +10,14 @@
   grid-template-rows: 1fr;
   grid-template-areas:
     "editor canvas"
-    "legend canvas";
+    "side-bar canvas";
   grid-column-gap: 0.25rem;
   grid-row-gap: 0.25rem;
   height: 100vh;
   padding: 0.25em;
 }
 
-.canvas {
+#canvas {
   aspect-ratio: 1;
   border: 0.1rem dashed blue;
   grid-area: canvas;
@@ -25,27 +25,58 @@
   padding: 0.5rem;
 }
 
-.editor {
+#editor {
   border: 0.1rem dashed orange;
   grid-area: editor;
+  padding: 0.5rem;
+}
+
+#side-bar {
+  border: 0.1rem dashed green;
+  display: flex;
+  flex-direction: column;
+  grid-area: side-bar;
   height: 50vh;
   padding: 0.5rem;
 }
 
-.legend {
-  border: 0.1rem dashed green;
-  grid-area: legend;
-  padding: 0.5rem;
-  overflow: scroll;
+#side-bar .content {
+  overflow-y: scroll;
 }
 
-.legend-category {
+#side-bar .tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.tab {
+  border: 1px solid black;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+}
+
+.tab.selected {
+  border-bottom: 0px solid black;
+}
+
+.tab:hover {
+  text-decoration: underline;
+}
+
+.example-entry {
+  border: 1px solid black;
+  margin: 1em 0.5em;
+}
+
+.reference-category {
   display: flex;
   flex-direction: column;
   margin-bottom: 2em;
 }
 
-.legend-entry {
+.reference-entry {
   border: 1px solid black;
   display: flex;
   flex-direction: column;
