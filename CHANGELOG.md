@@ -1,5 +1,12 @@
 
 
+## [0.18.0](https://github.com/mstream/mlogo/compare/0.17.0...0.18.0) (2023-04-24)
+
+
+### Features
+
+* implement printing code from its AST ([f088622](https://github.com/mstream/mlogo/commit/f088622b77727f1d103ca91b1f76ed21a57a1363))
+
 ## [0.17.0](https://github.com/mstream/mlogo/compare/0.16.1...0.17.0) (2023-04-23)
 
 
