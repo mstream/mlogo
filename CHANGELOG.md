@@ -1,5 +1,14 @@
 
 
+## [0.19.0](https://github.com/mstream/mlogo/compare/0.18.0...0.19.0) (2023-04-24)
+
+
+### Features
+
+* add source code examples to the web app ([e08e4fe](https://github.com/mstream/mlogo/commit/e08e4fec3ea7743d8b94f18687a9e240a181736b))
+* implement "product" command ([bb5f5cb](https://github.com/mstream/mlogo/commit/bb5f5cb724d7b6090104183741891f079dfacd92))
+* make canvas 4 times larger ([2e8d6f0](https://github.com/mstream/mlogo/commit/2e8d6f0fd7415d96a233c1438579994aa0380684))
+
 ## [0.18.0](https://github.com/mstream/mlogo/compare/0.17.0...0.18.0) (2023-04-24)
 
 
