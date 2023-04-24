@@ -54,6 +54,7 @@ data Expression
   | ProcedureDefinition ProcedureSignature (List Expression)
   | RepeatBlock Expression (List Expression)
   | StringLiteral String
+  | SubExpression Expression
   | ValueReference String
   | VariableAssignment String Expression
 
@@ -102,7 +103,7 @@ expression context = Lexing.lexer.whiteSpace *>
   PE.buildExprParser operatorTable term
   where
   term = Lazy.defer \_ → PC.choice
-    [ Lexing.lexer.parens $ expression context
+    [ subExpression context
     , forBlock context
     , ifBlock context
     , ifElseBlock context
@@ -220,6 +221,11 @@ repeatBlock context = Lazy.defer \_ → do
   Lexing.lexer.whiteSpace
   body ← Lexing.lexer.brackets $ expressions context
   pure $ RepeatBlock times body
+
+subExpression ∷ ParsingContext → Parser String Expression
+subExpression context = do
+  expr ← Lexing.lexer.parens $ expression context
+  pure $ SubExpression expr
 
 valueReference ∷ Parser String Expression
 valueReference = do

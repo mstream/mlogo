@@ -111,6 +111,16 @@ spec = describe "Parsing" do
       )
 
     expressionTestCase
+      "a boolean literal in parentheses"
+      [ pure "(", genBoolean, pure ")" ]
+      ( \parts → ado
+          boolean ← parseBackBoolean parts "boolean" 1
+          in
+            { context: Map.empty
+            , expected: SubExpression $ BooleanLiteral boolean
+            }
+      )
+    expressionTestCase
       "a value reference"
       [ genParameter ]
       ( \parts → ado
@@ -210,7 +220,8 @@ spec = describe "Parsing" do
             , expected: ProcedureCall
                 procedureName
                 ( List.fromFoldable
-                    [ Addition (FloatLiteral firstOperationArgument)
+                    [ SubExpression $ Addition
+                        (FloatLiteral firstOperationArgument)
                         (FloatLiteral secondOperationArgument)
                     ]
                 )
@@ -247,7 +258,7 @@ spec = describe "Parsing" do
             , expected: ProcedureCall
                 procedureName
                 ( List.fromFoldable
-                    [ Addition
+                    [ SubExpression $ Addition
                         (ValueReference firstOperationArgument)
                         (ValueReference secondOperationArgument)
                     ]
@@ -311,7 +322,8 @@ spec = describe "Parsing" do
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ FloatLiteral procedureArgument ]
+                        [ SubExpression $ FloatLiteral procedureArgument
+                        ]
                     )
                 )
             }
@@ -350,7 +362,7 @@ spec = describe "Parsing" do
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ Addition
+                        [ SubExpression $ Addition
                             (FloatLiteral firstProcedureArgument)
                             (FloatLiteral secondProcedureArgument)
                         ]
@@ -392,7 +404,7 @@ spec = describe "Parsing" do
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ Addition
+                        [ SubExpression $ Addition
                             (ValueReference firstProcedureArgument)
                             (ValueReference secondProcedureArgument)
                         ]
@@ -507,7 +519,7 @@ spec = describe "Parsing" do
                 Map.fromFoldable
                   [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
             , expected: IfBlock
-                ( Equation
+                ( SubExpression $ Equation
                     (IntegerLiteral firstInteger)
                     (IntegerLiteral secondInteger)
                 )
@@ -813,9 +825,7 @@ expressionTestCase
 expressionTestCase title partGenerators makeExpected = it title do
   liftEffect $ quickCheckGen do
     parts ← sequence partGenerators
-
-    source ← Utils.addRedundantParentheses
-      =<< Utils.addRedundantSpaces parts
+    source ← Utils.addRedundantSpaces parts
 
     case makeExpected $ Array.fromFoldable parts of
       Left errorMessage →
@@ -890,14 +900,15 @@ expressionsTestCase
   → Spec Unit
 expressionsTestCase title source expected = it title do
   let
-    actual =
-      case
-        P.runParser source (Parsing.expressions Commands.parsingContext)
-        of
-        Left parseError →
-          Left $ show parseError
-        Right expressions →
-          Right expressions
+    parsingResult = P.runParser
+      source
+      (Parsing.expressions Commands.parsingContext)
+
+    actual = case parsingResult of
+      Left parseError →
+        Left $ show parseError
+      Right expressions →
+        Right expressions
 
   if actual == (Right $ List.fromFoldable expected) then pure unit
   else

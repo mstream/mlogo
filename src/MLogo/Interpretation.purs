@@ -86,6 +86,8 @@ interpretExpression = case _ of
     interpretRepeatBlock { body, times }
   StringLiteral s →
     pure $ Just $ WordValue s
+  SubExpression expression →
+    interpretExpression expression
   ValueReference name →
     interpretValueReference name
   VariableAssignment name value →
