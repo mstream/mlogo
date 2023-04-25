@@ -203,6 +203,8 @@ derive newtype instance Show Position
 derive newtype instance EncodeJson Position
 derive newtype instance Arbitrary Position
 
+derive instance Newtype Position _
+
 instance Semiring Position where
   add (Position p1) (Position p2) = Position
     { x: p1.x + p2.x, y: p1.y + p2.y }

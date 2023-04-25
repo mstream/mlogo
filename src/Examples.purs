@@ -282,6 +282,38 @@ examplesByTitle =
         , source:
             "for [l 10 80 5] [repeat 5 [repeat 8 [fd :l rt 45] rt 72]]"
         }
+    , "Sine Wave, by Shachar Katz, Israel (15 words)": Example
+        { ast:
+            [ ProcedureCall "sety"
+                (List.fromFoldable [ IntegerLiteral 1000 ])
+            , ProcedureCall "home" Nil
+            , ProcedureCall "setx"
+                (List.fromFoldable [ IntegerLiteral 1000 ])
+            , ForBlock
+                { binder: "x"
+                , initialValue: -180
+                , step: 1
+                , terminalValue: 180
+                }
+                ( List.fromFoldable
+                    [ ProcedureCall "setxy"
+                        ( List.fromFoldable
+                            [ ValueReference "x"
+                            , Multiplication
+                                (IntegerLiteral 70)
+                                ( ProcedureCall "sin"
+                                    ( List.fromFoldable
+                                        [ ValueReference "x" ]
+                                    )
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ]
+        , source:
+            "sety 1000 home setx 1000 for [x -180 180] [setxy :x 70 * sin :x]"
+        }
     , "Slalom Scrolls": Example
         { ast:
             [ ForBlock
