@@ -65,6 +65,10 @@ spec = describe "Parsing" do
       "*"
       Multiplication
 
+    arithmeticalBinaryOperatorTestCase
+      "-"
+      Subtraction
+
     expressionTestCase
       "multiplication and addition precedence"
       [ genFloat, pure "+", genFloat, pure "*", genFloat ]

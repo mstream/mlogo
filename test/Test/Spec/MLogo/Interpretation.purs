@@ -27,7 +27,43 @@ spec = describe "Interpretation" do
       State.initialExecutionState
       (Addition (FloatLiteral 1.0) (FloatLiteral 2.0))
       ( Right
-          $ (Just $ FloatValue $ 1.0 + 2.0) /\
+          $ (Just $ FloatValue 3.0) /\
+              State.initialExecutionState
+      )
+
+    expressionTestCase
+      "subtraction of two numeric literals"
+      State.initialExecutionState
+      (Subtraction (FloatLiteral 3.0) (FloatLiteral 2.0))
+      ( Right
+          $ (Just $ FloatValue 1.0) /\
+              State.initialExecutionState
+      )
+
+    expressionTestCase
+      "multiplication of two numeric literals"
+      State.initialExecutionState
+      (Multiplication (FloatLiteral 3.0) (FloatLiteral 2.0))
+      ( Right
+          $ (Just $ FloatValue 6.0) /\
+              State.initialExecutionState
+      )
+
+    expressionTestCase
+      "division of two numeric literals"
+      State.initialExecutionState
+      (Division (FloatLiteral 6.0) (FloatLiteral 3.0))
+      ( Right
+          $ (Just $ FloatValue 2.0) /\
+              State.initialExecutionState
+      )
+
+    expressionTestCase
+      "exponentiation of two numeric literals"
+      State.initialExecutionState
+      (Exponentiation (FloatLiteral 2.0) (FloatLiteral 3.0))
+      ( Right
+          $ (Just $ FloatValue 8.0) /\
               State.initialExecutionState
       )
 

@@ -55,6 +55,7 @@ data Expression
   | RepeatBlock Expression (List Expression)
   | StringLiteral String
   | SubExpression Expression
+  | Subtraction Expression Expression
   | ValueReference String
   | VariableAssignment String Expression
 
@@ -287,8 +288,14 @@ operatorTable =
           Multiplication
           AssocLeft
       )
-  , arithmeticalBinaryOperator
-      Lexing.plusSymbol
-      Addition
-      AssocLeft
+  , ( arithmeticalBinaryOperator
+        Lexing.minusSymbol
+        Subtraction
+        AssocLeft
+    ) <>
+      ( arithmeticalBinaryOperator
+          Lexing.plusSymbol
+          Addition
+          AssocLeft
+      )
   ]

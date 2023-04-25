@@ -89,6 +89,8 @@ interpretExpression = case _ of
     pure $ Just $ WordValue s
   SubExpression expression →
     interpretExpression expression
+  Subtraction leftOperand rightOperand →
+    interpretSubtraction { leftOperand, rightOperand }
   ValueReference name →
     interpretValueReference name
   VariableAssignment name value →
@@ -140,6 +142,18 @@ interpretMultiplication { leftOperand, rightOperand } =
   interpretProcedureCall
     { arguments: List.fromFoldable [ leftOperand, rightOperand ]
     , name: "product"
+    }
+
+interpretSubtraction
+  ∷ ∀ m
+  . Interpret m
+      { leftOperand ∷ Expression
+      , rightOperand ∷ Expression
+      }
+interpretSubtraction { leftOperand, rightOperand } =
+  interpretProcedureCall
+    { arguments: List.fromFoldable [ leftOperand, rightOperand ]
+    , name: "difference"
     }
 
 interpretExponentiation

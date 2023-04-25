@@ -57,6 +57,8 @@ printExpression = case _ of
     "\"" <> s
   SubExpression expression →
     String.joinWith " " [ "(", printExpression expression, ")" ]
+  Subtraction leftOperand rightOperand →
+    printSubtraction { leftOperand, rightOperand }
   ValueReference name →
     printValueReference name
   VariableAssignment name value →
@@ -86,6 +88,11 @@ printMultiplication
   ∷ { leftOperand ∷ Expression, rightOperand ∷ Expression } → String
 printMultiplication = Lazy.defer \_ →
   printBinaryOperation Lexing.asteriskSymbol
+
+printSubtraction
+  ∷ { leftOperand ∷ Expression, rightOperand ∷ Expression } → String
+printSubtraction = Lazy.defer \_ →
+  printBinaryOperation Lexing.minusSymbol
 
 printBinaryOperation
   ∷ String

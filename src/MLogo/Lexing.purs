@@ -9,6 +9,7 @@ module MLogo.Lexing
   , ifKeyword
   , lexer
   , makeKeyword
+  , minusSymbol
   , plusSymbol
   , repeatKeyword
   , reservedNames
@@ -50,7 +51,13 @@ reservedNames =
 
 reservedOpNames ∷ Array String
 reservedOpNames =
-  [ asteriskSymbol, caretSymbol, equalSymbol, plusSymbol, slashSymbol ]
+  [ asteriskSymbol
+  , caretSymbol
+  , equalSymbol
+  , minusSymbol
+  , plusSymbol
+  , slashSymbol
+  ]
 
 asteriskSymbol ∷ String
 asteriskSymbol = "*"
@@ -78,6 +85,9 @@ ifKeyword = "if"
 
 makeKeyword ∷ String
 makeKeyword = "make"
+
+minusSymbol ∷ String
+minusSymbol = "-"
 
 plusSymbol ∷ String
 plusSymbol = "+"
