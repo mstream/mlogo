@@ -1,5 +1,12 @@
 
 
+## [0.22.0](https://github.com/mstream/mlogo/compare/0.21.0...0.22.0) (2023-04-25)
+
+
+### Features
+
+* allow for example source codes to be tried in the editor ([fd455a7](https://github.com/mstream/mlogo/commit/fd455a76d40fced1b8703199144d49c62b4401b0))
+
 ## [0.21.0](https://github.com/mstream/mlogo/compare/0.20.0...0.21.0) (2023-04-25)
 
 
