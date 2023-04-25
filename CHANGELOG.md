@@ -1,5 +1,13 @@
 
 
+## [0.21.0](https://github.com/mstream/mlogo/compare/0.20.0...0.21.0) (2023-04-25)
+
+
+### Features
+
+* implement "difference" command ([3543888](https://github.com/mstream/mlogo/commit/3543888951bc64504356e9d369e0ad79fd9548f4))
+* implement "setx" and "sety" commands ([1d97691](https://github.com/mstream/mlogo/commit/1d976919f980545e05c20512e2517911cd79e198))
+
 ## [0.20.0](https://github.com/mstream/mlogo/compare/0.19.0...0.20.0) (2023-04-25)
 
 
