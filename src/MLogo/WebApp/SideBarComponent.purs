@@ -5,8 +5,7 @@ import Prelude
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Examples as Examples
-import Halogen (ClassName(..))
-import Halogen as H
+import Halogen (ClassName(..), Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
@@ -20,22 +19,23 @@ data Tab = ExamplesTab | ReferenceTab
 
 derive instance Eq Tab
 
-data Action = HandleTabSelection Tab
-
-component ∷ ∀ i m o q. MonadAff m ⇒ H.Component q i o m
-component = Hooks.component \_ _ → Hooks.do
+component
+  ∷ ∀ i m q. MonadAff m ⇒ Component q i ExamplesComponent.Output m
+component = Hooks.component \{ outputToken } _ → Hooks.do
   currentTab /\ currentTabId ← Hooks.useState ReferenceTab
 
   let
+    handleExamplesOutput = Hooks.raise outputToken
     handleTabClick tab = Hooks.modify_ currentTabId (const tab)
 
     currentComponent = case currentTab of
       ExamplesTab →
-        HH.slot_
+        HH.slot
           (Proxy ∷ Proxy "examples")
           unit
           ExamplesComponent.component
           Examples.examplesByTitle
+          handleExamplesOutput
       ReferenceTab →
         HH.slot_
           (Proxy ∷ Proxy "reference")

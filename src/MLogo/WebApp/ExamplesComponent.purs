@@ -1,60 +1,52 @@
-module MLogo.WebApp.ExamplesComponent (component) where
+module MLogo.WebApp.ExamplesComponent (Output(..), component) where
 
 import Prelude
 
-import Control.Monad.State (modify_)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..))
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Examples (Example(..))
-import Halogen (Component, ComponentHTML, HalogenM)
-import Halogen as H
-import Halogen.HTML (ClassName(..), HTML)
+import Halogen (Component)
+import Halogen.HTML (ClassName(..))
 import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import MLogo.Parsing (Expression)
+import Halogen.Hooks as Hooks
 import MLogo.Printing as Printing
 
 data Action = Receive Input
 
 type Input = Map String Example
+data Output = SourceTryRequested String
 
-type State = { examplesByTitle ∷ Map String Example }
+component ∷ ∀ m q. MonadAff m ⇒ Component q Input Output m
+component = Hooks.component \{ outputToken } examplesByTitle →
+  Hooks.do
+    let
+      handleTryButtonClick = Hooks.raise outputToken
+        <<< SourceTryRequested
 
-component ∷ ∀ m o q. MonadAff m ⇒ Component q Input o m
-component =
-  H.mkComponent
-    { initialState
-    , render
-    , eval: H.mkEval $ H.defaultEval
-        { handleAction = handleAction
-        , receive = Just <<< Receive
-        }
-    }
+      renderExample (title /\ Example { ast }) =
+        let
+          source = Printing.printExpressions ast
+        in
+          HH.div
+            [ HP.classes [ ClassName "example-entry" ] ]
+            [ HH.div
+                [ HP.classes [ ClassName "example-header" ] ]
+                [ HH.button
+                    [ HE.onClick \_ → handleTryButtonClick source ]
+                    [ HH.text "try" ]
+                , HH.h3_
+                    [ HH.text title ]
+                ]
+            , HH.div_
+                [ HH.code_
+                    [ HH.text source ]
+                ]
+            ]
 
-initialState ∷ Input → State
-initialState examplesByTitle = { examplesByTitle }
+    Hooks.pure do
+      HH.div_ (renderExample <$> Map.toUnfoldable examplesByTitle)
 
-render ∷ ∀ m. State → ComponentHTML Action () m
-render state =
-  HH.div_
-    (renderExample <$> Map.toUnfoldable state.examplesByTitle)
-
-renderExample ∷ ∀ i w. String /\ Example → HTML w i
-renderExample (title /\ Example { ast }) =
-  HH.div
-    [ HP.classes [ ClassName "example-entry" ] ]
-    [ HH.h3_ [ HH.text title ]
-    , HH.div_ [ renderCode ast ]
-    ]
-
-renderCode ∷ ∀ i w. Array Expression → HTML w i
-renderCode ast = HH.code_ [ HH.text $ Printing.printExpressions ast ]
-
-handleAction
-  ∷ ∀ m o. MonadAff m ⇒ Action → HalogenM State Action () o m Unit
-handleAction = case _ of
-  Receive examplesByTitle →
-    modify_ _ { examplesByTitle = examplesByTitle }
