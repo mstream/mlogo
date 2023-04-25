@@ -1,5 +1,12 @@
 
 
+## [0.20.0](https://github.com/mstream/mlogo/compare/0.19.0...0.20.0) (2023-04-25)
+
+
+### Features
+
+* make "for" and "repeat" loops stack safe ([8f3235c](https://github.com/mstream/mlogo/commit/8f3235cf9ecdd79b3369a320ff03c48a40dd666d))
+
 ## [0.19.0](https://github.com/mstream/mlogo/compare/0.18.0...0.19.0) (2023-04-24)
 
 
