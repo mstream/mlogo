@@ -33,6 +33,7 @@
   , "spec"
   , "spec-quickcheck"
   , "strings"
+  , "tailrec"
   , "transformers"
   , "tuples"
   , "unfoldable"

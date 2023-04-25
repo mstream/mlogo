@@ -210,39 +210,6 @@ examplesByTitle =
             ]
         , source: "for [i 0 2200] [fd (25 * sin :i) rt (:i * :i)]"
         }
-    , "Layers, by Alessio Plebe, Italy (15 words)": Example
-        { ast:
-            [ ForBlock
-                { binder: "i"
-                , initialValue: 0
-                , step: 1
-                , terminalValue: 420
-                }
-                ( List.fromFoldable
-                    [ ProcedureCall "seth"
-                        (List.fromFoldable [ ValueReference "i" ])
-                    , RepeatBlock
-                        (ValueReference "i")
-                        ( List.fromFoldable
-                            [ ProcedureCall
-                                "fd"
-                                (List.fromFoldable [ IntegerLiteral 2 ])
-                            , ProcedureCall
-                                "rt"
-                                ( List.fromFoldable
-                                    [ IntegerLiteral 1 ]
-                                )
-                            ]
-                        )
-                    , ProcedureCall "pu" Nil
-                    , ProcedureCall "home" Nil
-                    , ProcedureCall "pd" Nil
-                    ]
-                )
-            ]
-        , source:
-            "for [i 0 420] [seth :i repeat :i [fd 2 rt 1] pu home pd]"
-        }
     , "Octa-star Spiral, by M.H. Elhefni, Egypt": Example
         { ast:
             [ ForBlock

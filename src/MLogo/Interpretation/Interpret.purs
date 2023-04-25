@@ -2,6 +2,7 @@ module MLogo.Interpretation.Interpret (Interpret, runInterpret) where
 
 import Control.Monad.Error.Class (class MonadError)
 import Control.Monad.Except (Except, runExcept)
+import Control.Monad.Rec.Class (class MonadRec)
 import Control.Monad.State (StateT, runStateT)
 import Control.Monad.State.Class (class MonadState)
 import Data.Either.Nested (type (\/))
@@ -11,6 +12,7 @@ import MLogo.Interpretation.State (ExecutionState, Value)
 
 type Interpret m i =
   MonadError String m
+  ⇒ MonadRec m
   ⇒ MonadState ExecutionState m
   ⇒ i
   → m (Maybe Value)

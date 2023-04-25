@@ -7,6 +7,7 @@ import Prelude
 
 import Control.Monad.Error.Class (liftEither, throwError)
 import Control.Monad.Except (class MonadError, runExcept)
+import Control.Monad.Rec.Class (class MonadRec, Step(..), tailRecM)
 import Control.Monad.State
   ( class MonadState
   , get
@@ -160,9 +161,9 @@ interpretForBlock
       , spec ∷ ForBlockSpec
       }
 interpretForBlock { body, spec } =
-  go spec.initialValue
+  tailRecM go spec.initialValue
   where
-  go ∷ Interpret m Int
+  go ∷ Int → m (Step Int (Maybe Value))
   go n = do
     if n <= spec.terminalValue then do
       let
@@ -190,8 +191,8 @@ interpretForBlock { body, spec } =
         , outputtedValue = Nothing
         }
 
-      go $ n + spec.step
-    else pure Nothing
+      pure $ Loop $ n + spec.step
+    else pure $ Done Nothing
 
 interpretIfElseBlock
   ∷ ∀ m
@@ -243,6 +244,7 @@ interpretRepeatBlock { body, times } = do
       repCountMax ← liftEither $ State.extractInt timesValue
       (ExecutionState state) ← get
       let
+        go ∷ Int → m (Step Int (Maybe Value))
         go repCount =
           if repCount <= repCountMax then do
             modify_ $ over
@@ -250,14 +252,14 @@ interpretRepeatBlock { body, times } = do
               (\st → st { repCount = repCount })
 
             void $ interpretExpressions body
-            go $ repCount + 1
+            pure $ Loop $ repCount + 1
           else do
             modify_ $ over
               ExecutionState
               (\st → st { repCount = state.repCount })
 
-            pure Nothing
-      go 1
+            pure $ Done Nothing
+      tailRecM go 1
     Nothing →
       throwError
         "repeat counter expression does not evaluate to a value"
@@ -307,6 +309,7 @@ interpetUserDefinedProcedureCall
 evaluateArguments
   ∷ ∀ m
   . MonadError String m
+  ⇒ MonadRec m
   ⇒ MonadState ExecutionState m
   ⇒ List Expression
   → m (List Value)
