@@ -1,5 +1,12 @@
 
 
+## [0.24.0](https://github.com/mstream/mlogo/compare/0.23.1...0.24.0) (2023-04-26)
+
+
+### Features
+
+* implement "cos", "xcor" and "ycor" commands ([6db013a](https://github.com/mstream/mlogo/commit/6db013a7c668582736a1eb9f1ddf3e116c81aa48))
+
 ### [0.23.1](https://github.com/mstream/mlogo/compare/0.23.0...0.23.1) (2023-04-26)
 
 ## [0.23.0](https://github.com/mstream/mlogo/compare/0.22.0...0.23.0) (2023-04-26)
