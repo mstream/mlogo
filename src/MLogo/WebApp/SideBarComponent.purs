@@ -26,7 +26,7 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
 
   let
     handleExamplesOutput = Hooks.raise outputToken
-    handleTabClick tab = Hooks.modify_ currentTabId (const tab)
+    handleTabClick tab = Hooks.put currentTabId tab
 
     currentComponent = case currentTab of
       ExamplesTab →

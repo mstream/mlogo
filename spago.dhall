@@ -9,6 +9,7 @@
   , "control"
   , "effect"
   , "either"
+  , "exceptions"
   , "exists"
   , "foldable-traversable"
   , "halogen"

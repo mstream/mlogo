@@ -15,9 +15,9 @@ import Halogen.HTML.Properties as HP
 import Halogen.Hooks as Hooks
 import Halogen.VDom.Driver (runUI)
 import MLogo.Program as Program
-import MLogo.WebApp.AceComponent (Output(..), Query(..))
-import MLogo.WebApp.AceComponent as AceComponent
 import MLogo.WebApp.CanvasComponent as CanvasComponent
+import MLogo.WebApp.EditorComponent (Output(..), Query(..))
+import MLogo.WebApp.EditorComponent as EditorComponent
 import MLogo.WebApp.ExamplesComponent (Output(..))
 import MLogo.WebApp.SideBarComponent as SideBarComponent
 import Type.Proxy (Proxy(..))
@@ -33,12 +33,12 @@ rootComp ∷ ∀ i m o q. MonadAff m ⇒ Component q i o m
 rootComp = Hooks.component \{ slotToken } _ → Hooks.do
   source /\ sourceId ← Hooks.useState ""
   let
-    handleAceOutput (TextChanged s) = Hooks.put sourceId s
+    handleEditorOutput (TextChanged s) = Hooks.put sourceId s
     handleSideBarOutput (SourceTryRequested s) = do
       Hooks.put sourceId s
       Hooks.tell
         slotToken
-        (Proxy ∷ Proxy "ace")
+        (Proxy ∷ Proxy "editor")
         unit
         (ChangeText s)
 
@@ -46,11 +46,11 @@ rootComp = Hooks.component \{ slotToken } _ → Hooks.do
     HH.div
       [ HP.id "container" ]
       [ HH.slot
-          (Proxy ∷ Proxy "ace")
+          (Proxy ∷ Proxy "editor")
           unit
-          AceComponent.component
+          EditorComponent.component
           unit
-          handleAceOutput
+          handleEditorOutput
       , HH.slot
           (Proxy ∷ Proxy "sideBar")
           unit
