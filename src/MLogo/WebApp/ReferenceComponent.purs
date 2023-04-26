@@ -2,35 +2,27 @@ module MLogo.WebApp.ReferenceComponent (component) where
 
 import Prelude
 
-import Control.Monad.State (get, modify_)
 import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (liftEffect)
-import Halogen (Component, ComponentHTML, HalogenM)
-import Halogen as H
-import Halogen.HTML (ClassName(..), HTML)
+import Halogen (Component)
+import Halogen.HTML (ClassName(..))
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Halogen.Hooks as Hooks
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.State (Value(..))
-import MLogo.Interpretation.Types (Parameter, Parameters(..), ValueType)
+import MLogo.Interpretation.Types (Parameters(..), ValueType)
 import MLogo.Interpretation.Types as Types
 import Test.QuickCheck.Gen as Gen
 
-data Action = Initialize | Receive Input
-
 type Input = Map String (Map String Command)
-
-type State =
-  { commandsByAliasByCategory ∷ Map String (Map String Command)
-  , entriesByCategory ∷ Map String (Map String Entry)
-  }
 
 type Entry =
   { description ∷ String
@@ -40,122 +32,103 @@ type Entry =
   }
 
 component ∷ ∀ m o q. MonadAff m ⇒ Component q Input o m
-component =
-  H.mkComponent
-    { initialState
-    , render
-    , eval: H.mkEval $ H.defaultEval
-        { handleAction = handleAction
-        , initialize = Just Initialize
-        , receive = Just <<< Receive
-        }
-    }
+component = Hooks.component \_ commandsByAliasByCategory → Hooks.do
+  entriesByAliasByCategory /\ entriesByAliasByCategoryId ←
+    Hooks.useState Map.empty
 
-initialState ∷ Input → State
-initialState commandsByAliasByCategory =
-  { commandsByAliasByCategory, entriesByCategory: Map.empty }
+  Hooks.useLifecycleEffect do
+    entries ← liftEffect $ generateEntries commandsByAliasByCategory
+    Hooks.put entriesByAliasByCategoryId entries
+    pure Nothing
 
-render ∷ ∀ m. State → ComponentHTML Action () m
-render state =
-  HH.div_ (renderCategory <$> Map.toUnfoldable state.entriesByCategory)
-
-renderCategory ∷ ∀ i w. String /\ (Map String Entry) → HTML w i
-renderCategory (name /\ entries) =
-  HH.div
-    [ HP.classes [ ClassName "reference-category" ] ]
-    [ HH.h3_ [ HH.text name ]
-    , HH.div_ (renderEntry <$> Map.toUnfoldable entries)
-    ]
-
-renderEntry ∷ ∀ i w. String /\ Entry → HTML w i
-renderEntry
-  (name /\ { description, exampleArgs, outputValueType, parameters }) =
-  HH.div
-    [ HP.classes [ ClassName "reference-entry" ] ]
-    [ HH.code
-        [ HP.classes [ ClassName "command-header" ] ]
-        ( [ HH.text name
-          , HH.text " "
-          ] <> renderParameters <> renderOutputType
-        )
-    , HH.div_ [ HH.text description ]
-    , HH.div_
-        [ HH.hr_
-        , HH.header_ [ HH.text "Examples" ]
-        , HH.code_ $ [ HH.text name, HH.text " " ] <> renderExampleArgs
-        , HH.hr_
+  let
+    renderCategory (name /\ entries) =
+      HH.div
+        [ HP.classes [ ClassName "reference-category" ] ]
+        [ HH.h3_ [ HH.text name ]
+        , HH.div_ (renderEntry <$> Map.toUnfoldable entries)
         ]
-    ]
-  where
-  renderOutputType = case outputValueType of
-    Just ovt →
-      [ HH.span_ [ HH.text " -> " ], renderValueType ovt ]
-    Nothing →
-      []
 
-  renderParameters = case parameters of
-    FixedParameters ps →
-      Array.intersperse
+    renderEntry
+      ( name /\
+          { description, exampleArgs, outputValueType, parameters }
+      ) =
+      HH.div
+        [ HP.classes [ ClassName "reference-entry" ] ]
+        [ HH.code
+            [ HP.classes [ ClassName "command-header" ] ]
+            ( [ HH.text name
+              , HH.text " "
+              ] <> renderParameters <> renderOutputType
+            )
+        , HH.div_ [ HH.text description ]
+        , HH.div_
+            [ HH.hr_
+            , HH.header_ [ HH.text "Examples" ]
+            , HH.code_ $ [ HH.text name, HH.text " " ] <>
+                renderExampleArgs
+            , HH.hr_
+            ]
+        ]
+      where
+      renderOutputType = case outputValueType of
+        Just ovt →
+          [ HH.span_ [ HH.text " -> " ], renderValueType ovt ]
+        Nothing →
+          []
+
+      renderParameters = case parameters of
+        FixedParameters ps →
+          Array.intersperse
+            (HH.span_ [ HH.text " " ])
+            (renderParameter <$> ps)
+        VariableParameters p →
+          [ renderParameter p, HH.text "..." ]
+
+      renderExampleArgs = Array.intersperse
         (HH.span_ [ HH.text " " ])
-        (renderParameter <$> ps)
-    VariableParameters p →
-      [ renderParameter p, HH.text "..." ]
+        (renderValue <$> exampleArgs)
 
-  renderExampleArgs = Array.intersperse
-    (HH.span_ [ HH.text " " ])
-    (renderValue <$> exampleArgs)
+    renderParameter { name, valueType } =
+      HH.span_
+        [ HH.text ":"
+        , HH.span
+            [ HP.classes [ ClassName "command-header" ] ]
+            [ HH.text name ]
+        , renderValueType valueType
+        ]
 
-renderParameter ∷ ∀ i w. Parameter → HTML w i
-renderParameter { name, valueType } =
-  HH.span_
-    [ HH.text ":"
-    , HH.span
-        [ HP.classes [ ClassName "command-header" ] ]
-        [ HH.text name ]
-    , renderValueType valueType
-    ]
+    renderValueType valueType = HH.span
+      [ HP.classes [ ClassName "parameter-value-type" ] ]
+      [ HH.text $ "(" <> show valueType <> ")"
+      ]
 
-renderValueType ∷ ∀ i w. ValueType → HTML w i
-renderValueType valueType = HH.span
-  [ HP.classes [ ClassName "parameter-value-type" ] ]
-  [ HH.text $ "(" <> show valueType <> ")"
-  ]
+    renderValue = HH.text <<< case _ of
+      BooleanValue b →
+        show b
+      FloatValue x →
+        show x
+      IntegerValue n →
+        show n
+      WordValue s →
+        "\"" <> s
 
-renderValue ∷ ∀ i w. Value → HTML w i
-renderValue = HH.text <<< case _ of
-  BooleanValue b →
-    show b
-  FloatValue x →
-    show x
-  IntegerValue n →
-    show n
-  WordValue s →
-    "\"" <> s
+  Hooks.pure do
+    HH.div_
+      (renderCategory <$> Map.toUnfoldable entriesByAliasByCategory)
 
-handleAction
-  ∷ ∀ m o. MonadAff m ⇒ Action → HalogenM State Action () o m Unit
-handleAction = case _ of
-  Initialize → do
-    let
-      commandToEntry ∷ Command → Effect Entry
-      commandToEntry
-        (Command { description, outputValueType, parameters }) = do
-        exampleArgs ← Gen.randomSampleOne
-          $ Types.generateValuesFromParameters parameters
-        pure { description, exampleArgs, outputValueType, parameters }
+generateEntries
+  ∷ Map String (Map String Command)
+  → Effect (Map String (Map String Entry))
+generateEntries = traverse categoriesToEntries
+  where
+  categoriesToEntries ∷ Map String Command → Effect (Map String Entry)
+  categoriesToEntries = traverse commandToEntry
 
-      categoriesToEntries
-        ∷ Map String Command → Effect (Map String Entry)
-      categoriesToEntries categories = do
-        traverse commandToEntry categories
+  commandToEntry ∷ Command → Effect Entry
+  commandToEntry (Command { description, outputValueType, parameters }) =
+    do
+      exampleArgs ← liftEffect $ Gen.randomSampleOne $
+        Types.generateValuesFromParameters parameters
+      pure { description, exampleArgs, outputValueType, parameters }
 
-    state ← get
-
-    entriesByCategory ← liftEffect
-      $ traverse categoriesToEntries state.commandsByAliasByCategory
-
-    modify_ _ { entriesByCategory = entriesByCategory }
-
-  Receive commandsByAliasByCategory → do
-    modify_ _ { commandsByAliasByCategory = commandsByAliasByCategory }
-    handleAction Initialize
