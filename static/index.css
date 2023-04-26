@@ -23,6 +23,11 @@
   grid-area: canvas;
   margin: auto 0;
   padding: 0.5rem;
+  position: relative;
+}
+
+#canvas svg {
+  position: absolute;
 }
 
 #editor {
@@ -48,6 +53,19 @@
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+}
+
+#zoom-panel {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  position: absolute;
+}
+
+#zoom-panel button {
+  aspect-ratio: 1;
+  text-align: center;
+  width: 1rem;
 }
 
 .tab {
