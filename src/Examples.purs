@@ -36,7 +36,46 @@ examplesByTitle =
   Heterogeneous.hfoldlWithIndex
     ToMap
     (Map.empty ∷ Map String Example)
-    { "Bullring": Example
+    { "Bird's Wings, by Olga Tuzova, Russia (15 words)": Example
+        { ast:
+            [ RepeatBlock
+                (IntegerLiteral 360)
+                ( List.fromFoldable
+                    [ ProcedureCall "setx"
+                        ( List.fromFoldable
+                            [ Multiplication
+                                (IntegerLiteral 200)
+                                ( SubExpression $ ProcedureCall "sin"
+                                    ( List.fromFoldable
+                                        [ ProcedureCall "repcount" Nil ]
+                                    )
+                                )
+                            ]
+                        )
+                    , ProcedureCall "sety"
+                        ( List.fromFoldable
+                            [ Multiplication
+                                (ProcedureCall "xcor" Nil)
+                                ( SubExpression $ ProcedureCall "cos"
+                                    ( List.fromFoldable
+                                        [ Multiplication
+                                            (IntegerLiteral 2)
+                                            ( ProcedureCall "repcount"
+                                                Nil
+                                            )
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    , ProcedureCall "home" Nil
+                    ]
+                )
+            ]
+        , source:
+            "repeat 360 [setx 200 * (sin repcount) sety xcor * (cos 2 * repcount) home]"
+        }
+    , "Bullring": Example
         { ast:
             [ ForBlock
                 { binder: "i"
@@ -69,6 +108,45 @@ examplesByTitle =
             ]
         , source:
             "for [i 0 1002] [fd 8 seth (360 * (power :i 3) / 1002)]"
+        }
+    , "Butterfly, by Olga Tuzova, Russia (15 words)": Example
+        { ast:
+            [ RepeatBlock
+                (IntegerLiteral 360)
+                ( List.fromFoldable
+                    [ ProcedureCall "setx"
+                        ( List.fromFoldable
+                            [ Multiplication
+                                (IntegerLiteral 200)
+                                ( SubExpression $ ProcedureCall "sin"
+                                    ( List.fromFoldable
+                                        [ Multiplication
+                                            (IntegerLiteral 2)
+                                            ( ProcedureCall "repcount"
+                                                Nil
+                                            )
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    , ProcedureCall "sety"
+                        ( List.fromFoldable
+                            [ Multiplication
+                                (ProcedureCall "xcor" Nil)
+                                ( SubExpression $ ProcedureCall "cos"
+                                    ( List.fromFoldable
+                                        [ ProcedureCall "repcount" Nil ]
+                                    )
+                                )
+                            ]
+                        )
+                    , ProcedureCall "home" Nil
+                    ]
+                )
+            ]
+        , source:
+            "repeat 360 [setx 200 * (sin 2 * repcount) sety xcor * (cos repcount) home]"
         }
     , "Dahlia, by David Eisenstat, U.S. (14 words)": Example
         { ast:
@@ -353,24 +431,65 @@ examplesByTitle =
         , source:
             "sety 1000 home setx 1000 for [x -180 180] [setxy :x 70 * sin :x]"
         }
-    , "Slalom Scrolls": Example
+    , "Slalom Scrolls":
+        Example
+          { ast:
+              [ ForBlock
+                  { binder: "i"
+                  , initialValue: 0
+                  , step: 1
+                  , terminalValue: 2000
+                  }
+                  ( List.fromFoldable
+                      [ ProcedureCall "fd"
+                          (List.fromFoldable [ IntegerLiteral 5 ])
+                      , ProcedureCall "rt"
+                          ( List.fromFoldable
+                              [ SubExpression $ Multiplication
+                                  (IntegerLiteral 90)
+                                  ( ProcedureCall "sin"
+                                      ( List.fromFoldable
+                                          [ ValueReference "i" ]
+                                      )
+                                  )
+                              ]
+                          )
+                      ]
+                  )
+              ]
+          , source: "for [i 0 2000] [fd 5 rt (90 * sin :i)]"
+          }
+    , "Smiling Fish, by Yehuda Katz, Israel (15 words)": Example
         { ast:
-            [ ForBlock
-                { binder: "i"
-                , initialValue: 0
+            [ ProcedureCall "pu" Nil
+            , ProcedureCall "setx"
+                (List.fromFoldable [ IntegerLiteral (-157) ])
+            , ProcedureCall "pd" Nil
+            , ForBlock
+                { binder: "t"
+                , initialValue: -315
                 , step: 1
-                , terminalValue: 2000
+                , terminalValue: 315
                 }
                 ( List.fromFoldable
-                    [ ProcedureCall "fd"
-                        (List.fromFoldable [ IntegerLiteral 5 ])
-                    , ProcedureCall "rt"
+                    [ ProcedureCall "setxy"
                         ( List.fromFoldable
-                            [ SubExpression $ Multiplication
-                                (IntegerLiteral 90)
-                                ( ProcedureCall "sin"
+                            [ Multiplication
+                                (ValueReference "t")
+                                ( ProcedureCall
+                                    "sin"
                                     ( List.fromFoldable
-                                        [ ValueReference "i" ]
+                                        [ ValueReference "t" ]
+                                    )
+                                )
+                            , Multiplication
+                                (ValueReference "t")
+                                ( ProcedureCall "cos"
+                                    ( List.fromFoldable
+                                        [ Multiplication
+                                            (IntegerLiteral 2)
+                                            (ValueReference "t")
+                                        ]
                                     )
                                 )
                             ]
@@ -378,7 +497,8 @@ examplesByTitle =
                     ]
                 )
             ]
-        , source: "for [i 0 2000] [fd 5 rt (90 * sin :i)]"
+        , source:
+            "pu setx -157 pd for [t -315 315] [setxy :t * sin :t :t * cos 2 * :t]"
         }
     }
 
