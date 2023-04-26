@@ -6,6 +6,7 @@ import Data.Foldable (foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import MLogo.Interpretation.Command (Command)
+import MLogo.Interpretation.Command.Commands.Arithmetic.Cos as Cos
 import MLogo.Interpretation.Command.Commands.Arithmetic.Difference as Difference
 import MLogo.Interpretation.Command.Commands.Arithmetic.EqualP as EqualP
 import MLogo.Interpretation.Command.Commands.Arithmetic.Power as Power
@@ -18,7 +19,8 @@ commandsByAlias ∷ Map String Command
 commandsByAlias = foldl
   Map.union
   Map.empty
-  [ Difference.commandsByAlias
+  [ Cos.commandsByAlias
+  , Difference.commandsByAlias
   , EqualP.commandsByAlias
   , Power.commandsByAlias
   , Product.commandsByAlias

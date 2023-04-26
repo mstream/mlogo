@@ -1,4 +1,4 @@
-module MLogo.Interpretation.Command.Commands.Arithmetic.Sum
+module MLogo.Interpretation.Command.Commands.Arithmetic.Cos
   ( command
   , commandsByAlias
   , interpret
@@ -6,11 +6,10 @@ module MLogo.Interpretation.Command.Commands.Arithmetic.Sum
 
 import Prelude
 
-import Data.Foldable (foldl)
-import Data.List (List)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Number as Number
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
@@ -23,23 +22,30 @@ commandsByAlias ∷ Map String Command
 commandsByAlias = Heterogeneous.hfoldlWithIndex
   ToMap
   (Map.empty ∷ Map String Command)
-  { sum: command }
+  { cos: command }
 
 command ∷ Command
 command =
   let
-    inputParser = Types.variableNumberInputParser "addend"
+    inputParser = Types.fixedNumberInputParser "angle"
   in
     Command
-      { description: "Sums up given numbers."
+      { description:
+          "Calculates cosine of a given angle."
       , interpret: Command.parseAndInterpretInput
-          (Types.runVariableInputParser inputParser)
+          (Types.runFixedInputParser inputParser)
           interpret
-      , name: "sum"
+      , name: "cos"
       , outputValueType: Just NumberType
-      , parameters: Types.parametersFromVariableInputParser inputParser
+      , parameters: Types.parametersFromFixedInputParser inputParser
       }
 
-interpret ∷ ∀ m. Interpret m (List Number)
-interpret = pure <<< Just <<< FloatValue <<< foldl (+) zero
+interpret ∷ ∀ m. Interpret m Number
+interpret = pure
+  <<< Just
+  <<< FloatValue
+  <<< Number.cos
+  <<< degreesToRadians
 
+degreesToRadians ∷ Number → Number
+degreesToRadians x = x * Number.pi / 180.0

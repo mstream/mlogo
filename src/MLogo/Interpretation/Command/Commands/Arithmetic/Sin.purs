@@ -31,7 +31,7 @@ command =
   in
     Command
       { description:
-          "Calculates sinus of a given angle."
+          "Calculates sine of a given angle."
       , interpret: Command.parseAndInterpretInput
           (Types.runFixedInputParser inputParser)
           interpret

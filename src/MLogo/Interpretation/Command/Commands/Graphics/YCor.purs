@@ -1,4 +1,4 @@
-module MLogo.Interpretation.Command.Commands.Arithmetic.Sum
+module MLogo.Interpretation.Command.Commands.Graphics.YCor
   ( command
   , commandsByAlias
   , interpret
@@ -6,16 +6,21 @@ module MLogo.Interpretation.Command.Commands.Arithmetic.Sum
 
 import Prelude
 
-import Data.Foldable (foldl)
-import Data.List (List)
+import Control.Monad.State (gets, modify_)
+import Data.List ((:))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Newtype (modify, over, unwrap)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (Value(..))
+import MLogo.Interpretation.State
+  ( ExecutionState(..)
+  , Position(..)
+  , Value(..)
+  )
 import MLogo.Interpretation.Types (ValueType(..))
 import MLogo.Interpretation.Types as Types
 
@@ -23,23 +28,24 @@ commandsByAlias ∷ Map String Command
 commandsByAlias = Heterogeneous.hfoldlWithIndex
   ToMap
   (Map.empty ∷ Map String Command)
-  { sum: command }
+  { ycor: command }
 
 command ∷ Command
 command =
   let
-    inputParser = Types.variableNumberInputParser "addend"
+    inputParser = Types.fixedNoInputParser
   in
     Command
-      { description: "Sums up given numbers."
+      { description: "Outputs cursor's y coordinate."
       , interpret: Command.parseAndInterpretInput
-          (Types.runVariableInputParser inputParser)
+          (Types.runFixedInputParser inputParser)
           interpret
-      , name: "sum"
+      , name: "ycor"
       , outputValueType: Just NumberType
-      , parameters: Types.parametersFromVariableInputParser inputParser
+      , parameters: Types.parametersFromFixedInputParser inputParser
       }
 
-interpret ∷ ∀ m. Interpret m (List Number)
-interpret = pure <<< Just <<< FloatValue <<< foldl (+) zero
-
+interpret ∷ ∀ m. Interpret m Unit
+interpret _ = do
+  (Position { y }) ← gets (_.pointer.position <<< unwrap)
+  pure $ Just $ FloatValue y

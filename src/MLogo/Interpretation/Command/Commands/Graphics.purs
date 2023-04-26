@@ -19,6 +19,8 @@ import MLogo.Interpretation.Command.Commands.Graphics.SetHeading as SetHeading
 import MLogo.Interpretation.Command.Commands.Graphics.SetX as SetX
 import MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
+import MLogo.Interpretation.Command.Commands.Graphics.XCor as XCor
+import MLogo.Interpretation.Command.Commands.Graphics.YCor as YCor
 
 commandsByAlias ∷ Map String Command
 commandsByAlias = foldl
@@ -37,5 +39,7 @@ commandsByAlias = foldl
   , SetX.commandsByAlias
   , SetXY.commandsByAlias
   , SetY.commandsByAlias
+  , XCor.commandsByAlias
+  , YCor.commandsByAlias
   ]
 

@@ -109,6 +109,45 @@ examplesByTitle =
         , source:
             "repeat 8 [rt 45 repeat 6 [repeat 90 [fd 2 rt 2] rt 90]]"
         }
+    , "Fish, by Olga Tuzova, Russia (15 words)": Example
+        { ast:
+            [ RepeatBlock
+                (IntegerLiteral 360)
+                ( List.fromFoldable
+                    [ ProcedureCall "setx"
+                        ( List.fromFoldable
+                            [ Multiplication
+                                (IntegerLiteral 200)
+                                ( SubExpression $ ProcedureCall "cos"
+                                    ( List.fromFoldable
+                                        [ Multiplication
+                                            (IntegerLiteral 2)
+                                            ( ProcedureCall "repcount"
+                                                Nil
+                                            )
+                                        ]
+                                    )
+                                )
+                            ]
+                        )
+                    , ProcedureCall "sety"
+                        ( List.fromFoldable
+                            [ Multiplication
+                                (ProcedureCall "xcor" Nil)
+                                ( SubExpression $ ProcedureCall "cos"
+                                    ( List.fromFoldable
+                                        [ ProcedureCall "repcount" Nil ]
+                                    )
+                                )
+                            ]
+                        )
+                    , ProcedureCall "home" Nil
+                    ]
+                )
+            ]
+        , source:
+            "repeat 360 [setx 200 * (cos 2 * repcount) sety xcor * (cos repcount) home]"
+        }
     , "Growing Scrolls variation 4, by M.H. Elhefni, Egypt (13 words)":
         Example
           { ast:

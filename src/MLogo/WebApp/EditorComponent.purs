@@ -9,7 +9,6 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (liftEffect)
-import Effect.Class.Console (info)
 import Effect.Exception (throw)
 import Halogen (RefLabel(..), SubscriptionId)
 import Halogen as H
