@@ -1,5 +1,12 @@
 
 
+## [0.25.0](https://github.com/mstream/mlogo/compare/0.24.0...0.25.0) (2023-04-26)
+
+
+### Features
+
+* add more code examples to the web app ([6950abd](https://github.com/mstream/mlogo/commit/6950abdced80717ff119cfcadc772a446099bdfd))
+
 ## [0.24.0](https://github.com/mstream/mlogo/compare/0.23.1...0.24.0) (2023-04-26)
 
 
