@@ -1,5 +1,12 @@
 
 
+## [0.23.0](https://github.com/mstream/mlogo/compare/0.22.0...0.23.0) (2023-04-26)
+
+
+### Features
+
+* add ability to zoom in and zoom out the canvas ([3b8102b](https://github.com/mstream/mlogo/commit/3b8102bbcbe183677569e714a2ec14f7d2896388))
+
 ## [0.22.0](https://github.com/mstream/mlogo/compare/0.21.0...0.22.0) (2023-04-25)
 
 
