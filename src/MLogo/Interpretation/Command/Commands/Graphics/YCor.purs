@@ -6,21 +6,16 @@ module MLogo.Interpretation.Command.Commands.Graphics.YCor
 
 import Prelude
 
-import Control.Monad.State (gets, modify_)
-import Data.List ((:))
+import Control.Monad.State (gets)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (modify, over, unwrap)
+import Data.Newtype (unwrap)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State
-  ( ExecutionState(..)
-  , Position(..)
-  , Value(..)
-  )
+import MLogo.Interpretation.State (Position(..), Value(..))
 import MLogo.Interpretation.Types (ValueType(..))
 import MLogo.Interpretation.Types as Types
 
@@ -49,3 +44,4 @@ interpret ∷ ∀ m. Interpret m Unit
 interpret _ = do
   (Position { y }) ← gets (_.pointer.position <<< unwrap)
   pure $ Just $ FloatValue y
+

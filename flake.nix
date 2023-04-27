@@ -10,7 +10,7 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, easy-purescript-nix, flake-utils, nixpkgs, ... }@inputs:
+  outputs = { self, easy-purescript-nix, flake-utils, nixpkgs, ... }:
     let
       name = "mlogo";
 
@@ -24,8 +24,23 @@
       let
         pkgs = import nixpkgs { inherit system; };
         easy-ps = import easy-purescript-nix { inherit pkgs; };
+        format-check = pkgs.stdenvNoCC.mkDerivation {
+          checkPhase = ''
+            echo 'checking'
+            purs-tidy check {src,test}
+          '';
+          doCheck = true;
+          dontBuild = true;
+          installPhase = ''
+            mkdir "$out"
+          '';
+          name = "format-check";
+          nativeBuildInputs = with easy-ps; [ purs-tidy ];
+          src = ./.;
+        };
       in
       {
+        checks = { inherit format-check; };
         devShell = pkgs.mkShell {
           inherit name;
           buildInputs = with pkgs; [ git nodejs ]

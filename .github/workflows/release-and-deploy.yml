@@ -17,6 +17,8 @@ jobs:
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: "Run checks"
+        run: "nix flake check"
       - name: "Set up git user email"
         run: "nix develop -c git config --global user.email 'maciej.laciak@gmail.com'"
       - name: "Set up git user name" 
