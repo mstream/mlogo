@@ -5,8 +5,9 @@ module Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.XCor
 import Prelude
 
 import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
-import Data.Newtype (wrap)
+import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.XCor as XCor
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State

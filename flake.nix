@@ -26,7 +26,6 @@
         easy-ps = import easy-purescript-nix { inherit pkgs; };
         format-check = pkgs.stdenvNoCC.mkDerivation {
           checkPhase = ''
-            echo 'checking'
             purs-tidy check {src,test}
           '';
           doCheck = true;
@@ -44,7 +43,7 @@
         devShell = pkgs.mkShell {
           inherit name;
           buildInputs = with pkgs; [ git nodejs ]
-            ++ (with easy-ps; [ purs purs-tidy spago ]);
+            ++ (with easy-ps; [ psa purs purs-tidy spago ]);
 
           shellHook = ''
             PS1="\[\e[33m\][\[\e[m\]\[\e[34;40m\]${name}:\[\e[m\]\[\e[36m\]\w\[\e[m\]\[\e[33m\]]\[\e[m\]\[\e[32m\]\\$\[\e[m\] "

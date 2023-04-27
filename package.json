@@ -11,6 +11,8 @@
     "bundle": "npm run bundle:cli && npm run bundle:webapp",
     "bundle:cli": "npm run build:production && purs-backend-es bundle-app -m Main.CLI --minify --no-build -p node -t dist/cli.js",
     "bundle:webapp": "npm run build:production && purs-backend-es bundle-app -m Main.WebApp --minify --no-build -p browser -t dist/webapp.js && cp dist/webapp.js static/",
+    "clean": "rm -rf output* .spago",
+    "lint": "npm run clean && spago build --purs-args '--censor-lib --strict'",
     "release": "release-it",
     "test": "spago test"
   },
