@@ -27,13 +27,14 @@ import Examples (Example(..))
 import Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Lexing as Lexing
-import MLogo.Parsing
+import MLogo.Parsing (ParsingContext)
+import MLogo.Parsing as Parsing
+import MLogo.Parsing.Expression
   ( Expression(..)
-  , Parameter(..)
-  , ParsingContext
+  , ParameterName(..)
   , ProcedureSignature
   )
-import MLogo.Parsing as Parsing
+import MLogo.Parsing.Expression.Gen as ExpressionGen
 import Parsing as P
 import Test.QuickCheck (Result(..), quickCheckGen)
 import Test.QuickCheck.Gen (Gen)
@@ -65,9 +66,49 @@ spec = describe "Parsing" do
       "*"
       Multiplication
 
-    arithmeticalBinaryOperatorTestCase
-      "-"
-      Subtraction
+    expressionTestCase
+      ("\"-\" symbol")
+      [ genFloat, pure "-", pure " ", genFloat ]
+      ( \parts → ado
+          leftOperand ← Either.note
+            "can't parse the left operand back"
+            (Number.fromString =<< parts !! 0)
+          rightOperand ← Either.note
+            "can't parse the right operand back"
+            (Number.fromString =<< parts !! 3)
+          in
+            { context: Map.empty
+            , expected: Subtraction
+                (FloatLiteral leftOperand)
+                (FloatLiteral rightOperand)
+            }
+      )
+
+    expressionTestCase
+      "adding a negative integer to an integer"
+      [ genInteger, pure "+ -1" ]
+      ( \parts → ado
+          firstInteger ← parseBackInteger parts "first integer" 0
+          in
+            { context: Map.empty
+            , expected: Addition
+                (IntegerLiteral firstInteger)
+                (IntegerLiteral (-1))
+            }
+      )
+
+    expressionTestCase
+      "non-whitespace separated negative integer on the right side of an equation"
+      [ genInteger, pure "=-1" ]
+      ( \parts → ado
+          firstInteger ← parseBackInteger parts "first integer" 0
+          in
+            { context: Map.empty
+            , expected: Equation
+                (IntegerLiteral firstInteger)
+                (IntegerLiteral (-1))
+            }
+      )
 
     expressionTestCase
       "multiplication and addition precedence"
@@ -124,6 +165,46 @@ spec = describe "Parsing" do
             , expected: SubExpression $ BooleanLiteral boolean
             }
       )
+
+    expressionTestCase
+      "an integer literal"
+      [ genInteger ]
+      ( \parts → ado
+          integer ← parseBackInteger parts "integer" 0
+          in { context: Map.empty, expected: IntegerLiteral integer }
+      )
+
+    expressionTestCase
+      "a float literal"
+      [ genFloat ]
+      ( \parts → ado
+          float ← parseBackFloat parts "float" 0
+          in { context: Map.empty, expected: FloatLiteral float }
+      )
+
+    expressionTestCase
+      "a float literal in parentheses"
+      [ pure "(", genFloat, pure ")" ]
+      ( \parts → ado
+          float ← parseBackFloat parts "float" 1
+          in
+            { context: Map.empty
+            , expected: SubExpression $ FloatLiteral float
+            }
+      )
+
+    expressionTestCase
+      "a string literal"
+      [ ado
+          quote ← pure "\""
+          word ← genIdentifier
+          in quote <> word
+      ]
+      ( \parts → ado
+          string ← parseBackPrefixedIdentifier parts "string" 0
+          in { context: Map.empty, expected: StringLiteral string }
+      )
+
     expressionTestCase
       "a value reference"
       [ genParameter ]
@@ -440,8 +521,8 @@ spec = describe "Parsing" do
           name ← parseBackIdentifier parts "procedure name" 2
           whitespacesRegex ← Regex.regex "\\s+" RegexFlags.global
 
-          parameters ← List.fromFoldable
-            <$> map (Parameter <<< String.drop 1)
+          parameterNames ← List.fromFoldable
+            <$> map (ParameterName <<< String.drop 1)
             <$> Array.filter (_ /= "")
             <$> Regex.split whitespacesRegex
             <$> String.trim
@@ -451,7 +532,7 @@ spec = describe "Parsing" do
             { context: Map.fromFoldable
                 [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
             , expected: ProcedureDefinition
-                { name, parameters }
+                { name, parameterNames }
                 ( List.fromFoldable
                     [ ProcedureCall "proc1"
                         (List.fromFoldable [ IntegerLiteral 1 ])
@@ -671,25 +752,59 @@ spec = describe "Parsing" do
       )
       Examples.examplesByTitle
 
+    expressionsTestCase
+      "string literals are terminated by a space"
+      "\"string 1"
+      [ StringLiteral "string", IntegerLiteral 1 ]
+
+    expressionsTestCase
+      "two positive integer literals"
+      "1 2"
+      [ IntegerLiteral 1, IntegerLiteral 2 ]
+
+    expressionsTestCase
+      "a negative and a positive integer literals"
+      "-1 2"
+      [ IntegerLiteral (-1), IntegerLiteral 2 ]
+
+    expressionsTestCase
+      "a positive and a negative integer literals"
+      "1 -2"
+      [ IntegerLiteral 1, IntegerLiteral (-2) ]
+
+    expressionsTestCase
+      "two negative integer literals"
+      "-1 -2"
+      [ IntegerLiteral (-1), IntegerLiteral (-2) ]
+
+    expressionsTestCase
+      "subtraction"
+      "1 - 2"
+      [ Subtraction (IntegerLiteral 1) (IntegerLiteral 2) ]
+
   describe "procedureSignature" do
     procedureSignatureTestCase
       "no parameters"
       [ pure "to", pure " ", genProcedureName ]
       ( \parts → do
           name ← parseBackIdentifier parts "procedure name" 2
-          pure { name, parameters: Nil }
+          pure { name, parameterNames: Nil }
       )
     procedureSignatureTestCase
       "one parameters"
       [ pure "to", pure " ", genProcedureName, genParameter ]
       ( \parts → do
           name ← parseBackIdentifier parts "procedure name" 2
-          firstParameter ← Parameter <$> parseBackPrefixedIdentifier
+
+          firstParameter ← ParameterName <$> parseBackPrefixedIdentifier
             parts
             "first parameter"
             3
+
           pure
-            { name, parameters: List.fromFoldable [ firstParameter ] }
+            { name
+            , parameterNames: List.fromFoldable [ firstParameter ]
+            }
       )
 
     procedureSignatureTestCase
@@ -702,17 +817,21 @@ spec = describe "Parsing" do
       ]
       ( \parts → do
           name ← parseBackIdentifier parts "procedure name" 2
-          firstParameter ← Parameter <$> parseBackPrefixedIdentifier
+
+          firstParameter ← ParameterName <$> parseBackPrefixedIdentifier
             parts
             "first parameter"
             3
-          secondParameter ← Parameter <$> parseBackPrefixedIdentifier
-            parts
-            "second parameter"
-            4
+
+          secondParameter ← ParameterName
+            <$> parseBackPrefixedIdentifier
+              parts
+              "second parameter"
+              4
+
           pure
             { name
-            , parameters: List.fromFoldable
+            , parameterNames: List.fromFoldable
                 [ firstParameter, secondParameter ]
             }
       )
@@ -742,14 +861,14 @@ spec = describe "Parsing" do
       , "forward 7"
       ]
       [ { name: "proc0"
-        , parameters: Nil
+        , parameterNames: Nil
         }
       , { name: "proc1"
-        , parameters: List.fromFoldable [ Parameter "param1" ]
+        , parameterNames: List.fromFoldable [ ParameterName "param1" ]
         }
       , { name: "proc2"
-        , parameters: List.fromFoldable
-            [ Parameter "param1", Parameter "param2" ]
+        , parameterNames: List.fromFoldable
+            [ ParameterName "param1", ParameterName "param2" ]
         }
       ]
 
@@ -763,10 +882,10 @@ arithmeticalBinaryOperatorTestCase symbol expected =
     [ genFloat, pure symbol, genFloat ]
     ( \parts → ado
         leftOperand ← Either.note
-          "can't parse left operand back"
+          "can't parse the left operand back"
           (Number.fromString =<< parts !! 0)
         rightOperand ← Either.note
-          "can't parse right operand back"
+          "can't parse the right operand back"
           (Number.fromString =<< parts !! 2)
         in
           { context: Map.empty
@@ -777,23 +896,18 @@ arithmeticalBinaryOperatorTestCase symbol expected =
     )
 
 genBoolean ∷ Gen String
-genBoolean = do
-  n ← Gen.chooseInt 0 1
-  pure $ if n == 0 then "false" else "true"
+genBoolean = show <$> ExpressionGen.genBoolean
 
 genInteger ∷ Gen String
-genInteger = show <$> Gen.chooseInt 0 9
+genInteger = show <$> ExpressionGen.genInteger
 
 genFloat ∷ Gen String
-genFloat = do
-  n1 ← Gen.chooseInt 0 9
-  n2 ← Gen.chooseInt 0 9
-  pure $ show n1 <> "." <> show n2
+genFloat = show <$> ExpressionGen.genFloat
 
 genString ∷ Gen String
 genString = do
-  identifier ← genIdentifier
-  pure $ "\"" <> identifier
+  s ← ExpressionGen.genString
+  pure $ "\"" <> s
 
 genValueReference ∷ Gen String
 genValueReference = genParameter

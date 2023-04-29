@@ -9,7 +9,7 @@ import Data.Map as Map
 import Data.Symbol (class IsSymbol, reflectSymbol)
 import Heterogeneous.Folding (class FoldingWithIndex)
 import Heterogeneous.Folding as Heterogeneous
-import MLogo.Parsing (Expression(..))
+import MLogo.Parsing.Expression (Expression(..))
 import Type.Proxy (Proxy)
 
 newtype Example = Example

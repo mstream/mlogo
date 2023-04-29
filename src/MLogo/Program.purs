@@ -14,8 +14,9 @@ import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (VisibleState)
 import MLogo.Interpretation.State as State
-import MLogo.Parsing (Expression, ParsingContext)
+import MLogo.Parsing (ParsingContext)
 import MLogo.Parsing as Parsing
+import MLogo.Parsing.Expression (Expression)
 import Parsing (ParseError)
 import Parsing as P
 

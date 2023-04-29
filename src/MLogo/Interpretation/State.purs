@@ -5,6 +5,7 @@ module MLogo.Interpretation.State
   , Line
   , PointerState
   , Position(..)
+  , Procedure
   , ScreenState
   , Value(..)
   , Variables
@@ -26,13 +27,15 @@ import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Int as Int
 import Data.List (List(..))
+import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
-import MLogo.Parsing (Expression, Parameter)
+import MLogo.Parsing.Expression (Expression, ParameterName)
+import MLogo.Parsing.Expression.Gen as ExpressionGen
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
 import Test.QuickCheck.Gen (Gen)
@@ -128,11 +131,7 @@ newtype ExecutionState = ExecutionState
   , globalVariables ∷ Variables
   , outputtedValue ∷ Maybe Value
   , pointer ∷ PointerState
-  , procedures ∷
-      Map String
-        { body ∷ List Expression
-        , parameters ∷ List Parameter
-        }
+  , procedures ∷ Map String Procedure
   , repCount ∷ Int
   , screen ∷ ScreenState
   }
@@ -144,11 +143,13 @@ derive instance Newtype ExecutionState _
 
 instance Arbitrary ExecutionState where
   arbitrary = do
-    callStack ← pure Nil {- FIXME List.fromFoldable <$> Gen.arrayOf genCallStackElement-}
+    callStack ← List.fromFoldable
+      <$> Gen.arrayOf genCallStackElement
+
     globalVariables ← genMap arbitrary arbitrary
     outputtedValue ← arbitrary
     pointer ← arbitrary
-    procedures ← pure Map.empty {- FIXME genMap arbitrary arbitrary-}
+    procedures ← genMap arbitrary genProcedure
     repCount ← arbitrary
     screen ← arbitrary
     pure $ ExecutionState
@@ -172,6 +173,15 @@ instance Arbitrary ExecutionState where
       localVariables ← genMap arbitrary arbitrary
       name ← arbitrary
       pure { localVariables, name }
+
+type Procedure =
+  { body ∷ List Expression, parameterNames ∷ List ParameterName }
+
+genProcedure ∷ Gen Procedure
+genProcedure = do
+  body ← List.fromFoldable <$> Gen.arrayOf ExpressionGen.genExpression
+  parameterNames ← arbitrary
+  pure { body, parameterNames }
 
 type CallStackElement =
   { name ∷ String

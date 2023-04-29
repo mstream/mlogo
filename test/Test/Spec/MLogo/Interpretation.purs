@@ -15,7 +15,7 @@ import MLogo.Interpretation as Interpretation
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState, Value(..))
 import MLogo.Interpretation.State as State
-import MLogo.Parsing (Expression(..))
+import MLogo.Parsing.Expression (Expression(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail)
 

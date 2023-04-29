@@ -8,12 +8,13 @@ import Data.Foldable (class Foldable, foldl)
 import Data.List (List)
 import Data.Newtype (unwrap)
 import Data.Number.Format as NumberFormat
+import Data.String (Pattern(..))
 import Data.String as String
 import MLogo.Lexing as Lexing
-import MLogo.Parsing
+import MLogo.Parsing.Expression
   ( Expression(..)
   , ForBlockSpec
-  , Parameter
+  , ParameterName
   , ProcedureSignature
   )
 
@@ -49,12 +50,12 @@ printExpression = case _ of
     printMultiplication { leftOperand, rightOperand }
   ProcedureCall name arguments →
     printProcedureCall { arguments, name }
-  ProcedureDefinition { name, parameters } body →
-    printProcedureDefinition { body, name, parameters }
+  ProcedureDefinition { name, parameterNames } body →
+    printProcedureDefinition { body, name, parameterNames }
   RepeatBlock times body →
     printRepeatBlock { body, times }
   StringLiteral s →
-    "\"" <> s
+    printStringLiteral s
   SubExpression expression →
     String.joinWith " " [ "(", printExpression expression, ")" ]
   Subtraction leftOperand rightOperand →
@@ -67,7 +68,7 @@ printExpression = case _ of
 printAddition
   ∷ { leftOperand ∷ Expression, rightOperand ∷ Expression } → String
 printAddition = Lazy.defer \_ →
-  printBinaryOperation Lexing.asteriskSymbol
+  printBinaryOperation Lexing.plusSymbol
 
 printDivision
   ∷ { leftOperand ∷ Expression, rightOperand ∷ Expression } → String
@@ -134,9 +135,7 @@ printIfBlock
 printIfBlock { condition, positiveBranch } =
   String.joinWith " "
     [ Lexing.ifKeyword
-    , "["
     , printExpression condition
-    , "]"
     , "["
     , printExpressions positiveBranch
     , "]"
@@ -175,23 +174,25 @@ printProcedureCall { arguments, name } =
 printProcedureDefinition
   ∷ { body ∷ List Expression
     , name ∷ String
-    , parameters ∷ List Parameter
+    , parameterNames ∷ List ParameterName
     }
   → String
-printProcedureDefinition { body, name, parameters } =
+printProcedureDefinition { body, name, parameterNames } =
   String.joinWith "\n"
-    [ printProcedureSignature { name, parameters }
+    [ printProcedureSignature { name, parameterNames }
     , printExpressions body
     , Lexing.endKeyword
     ]
 
 printProcedureSignature ∷ ProcedureSignature → String
-printProcedureSignature { name, parameters } =
+printProcedureSignature { name, parameterNames } =
   String.joinWith " "
     [ Lexing.toKeyword
     , name
     , String.joinWith " "
-        (Array.fromFoldable $ ((":" <> _) <<< unwrap) <$> parameters)
+        ( Array.fromFoldable
+            $ ((":" <> _) <<< unwrap) <$> parameterNames
+        )
     ]
 
 printRepeatBlock
@@ -207,6 +208,10 @@ printRepeatBlock { body, times } =
     , printExpressions body
     , "]"
     ]
+
+printStringLiteral ∷ String → String
+printStringLiteral s =
+  if String.contains (Pattern " ") s then "[" <> s <> "]" else "\"" <> s
 
 printValueReference ∷ String → String
 printValueReference name = ":" <> name

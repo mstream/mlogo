@@ -32,7 +32,11 @@ import MLogo.Interpretation.State
   , Variables
   )
 import MLogo.Interpretation.State as State
-import MLogo.Parsing (Expression(..), ForBlockSpec, Parameter)
+import MLogo.Parsing.Expression
+  ( Expression(..)
+  , ForBlockSpec
+  , ParameterName
+  )
 
 interpretExpressions
   ∷ ∀ f m
@@ -81,8 +85,8 @@ interpretExpression = case _ of
     interpretMultiplication { leftOperand, rightOperand }
   ProcedureCall name arguments →
     interpretProcedureCall { arguments, name }
-  ProcedureDefinition { name, parameters } body →
-    interpretProcedureDefinition { body, name, parameters }
+  ProcedureDefinition { name, parameterNames } body →
+    interpretProcedureDefinition { body, name, parameterNames }
   RepeatBlock times body →
     interpretRepeatBlock { body, times }
   StringLiteral s →
@@ -244,9 +248,9 @@ interpretProcedureCall { arguments, name } = do
           case Map.lookup name state'.procedures of
             Nothing →
               throwError $ "Unknown procedure name: " <> name
-            Just { body, parameters } →
+            Just { body, parameterNames } →
               interpetUserDefinedProcedureCall
-                { body, evaluatedArguments, name, parameters }
+                { body, evaluatedArguments, name, parameterNames }
 
 interpretRepeatBlock
   ∷ ∀ m
@@ -284,18 +288,18 @@ interpetUserDefinedProcedureCall
       { body ∷ List Expression
       , evaluatedArguments ∷ List Value
       , name ∷ String
-      , parameters ∷ List Parameter
+      , parameterNames ∷ List ParameterName
       }
 interpetUserDefinedProcedureCall
-  { body, evaluatedArguments, name, parameters } =
+  { body, evaluatedArguments, name, parameterNames } =
   let
     localVariables ∷ Variables
     localVariables = Map.fromFoldable
-      $ List.zip (unwrap <$> parameters) evaluatedArguments
+      $ List.zip (unwrap <$> parameterNames) evaluatedArguments
   in
-    if Map.size localVariables /= List.length parameters then
+    if Map.size localVariables /= List.length parameterNames then
       throwError $ "Expected "
-        <> (show $ List.length parameters)
+        <> (show $ List.length parameterNames)
         <> " arguments but got "
         <> (show $ Map.size localVariables)
     else do
@@ -347,11 +351,14 @@ interpretProcedureDefinition
   . Interpret m
       { body ∷ List Expression
       , name ∷ String
-      , parameters ∷ List Parameter
+      , parameterNames ∷ List ParameterName
       }
-interpretProcedureDefinition { body, name, parameters } = do
+interpretProcedureDefinition { body, name, parameterNames } = do
   modify_ \(ExecutionState state) → wrap $ state
-    { procedures = Map.insert name { body, parameters } state.procedures
+    { procedures = Map.insert
+        name
+        { body, parameterNames }
+        state.procedures
     }
   pure Nothing
 

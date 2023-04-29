@@ -1,10 +1,6 @@
 module MLogo.Parsing
   ( Arity
-  , Expression(..)
-  , ForBlockSpec
-  , Parameter(..)
   , ParsingContext
-  , ProcedureSignature
   , expression
   , expressions
   , procedureSignature
@@ -15,81 +11,42 @@ module MLogo.Parsing
 import Prelude
 
 import Control.Lazy as Lazy
+import Data.Array as Array
 import Data.Foldable (class Foldable, foldl)
-import Data.Generic.Rep (class Generic)
-import Data.Identity (Identity)
 import Data.List (List)
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
-import Data.Show.Generic (genericShow)
+import Data.String as String
 import Data.Tuple as Tuple
 import Data.Unfoldable (replicateA)
 import MLogo.Lexing as Lexing
+import MLogo.Parsing.Expression
+  ( Expression(..)
+  , ForBlockSpec
+  , ParameterName(..)
+  , ProcedureSignature
+  )
+import MLogo.Parsing.Operator as Operator
 import Parsing (Parser)
 import Parsing as P
 import Parsing.Combinators ((<?>))
 import Parsing.Combinators as PC
-import Parsing.Expr (Assoc(..), Operator(..))
 import Parsing.Expr as PE
 import Parsing.String as PS
 import Test.QuickCheck (class Arbitrary)
-import Test.QuickCheck.Arbitrary (genericArbitrary)
-
-data Expression
-  = Addition Expression Expression
-  | BooleanLiteral Boolean
-  | Division Expression Expression
-  | Equation Expression Expression
-  | Exponentiation Expression Expression
-  | IfBlock Expression (List Expression)
-  | IfElseBlock Expression (List Expression) (List Expression)
-  | IntegerLiteral Int
-  | FloatLiteral Number
-  | ForBlock ForBlockSpec (List Expression)
-  | Multiplication Expression Expression
-  | ProcedureCall String (List Expression)
-  | ProcedureDefinition ProcedureSignature (List Expression)
-  | RepeatBlock Expression (List Expression)
-  | StringLiteral String
-  | SubExpression Expression
-  | Subtraction Expression Expression
-  | ValueReference String
-  | VariableAssignment String Expression
-
-type ProcedureSignature =
-  { name ∷ String
-  , parameters ∷ List Parameter
-  }
 
 procedureSignaturesToParsingContext
   ∷ ∀ f. Foldable f ⇒ f ProcedureSignature → ParsingContext
 procedureSignaturesToParsingContext = foldl f Map.empty
   where
   f ∷ ParsingContext → ProcedureSignature → ParsingContext
-  f acc { name, parameters } = Map.insert
+  f acc { name, parameterNames } = Map.insert
     name
-    (Just $ List.length parameters)
+    (Just $ List.length parameterNames)
     acc
-
-type ForBlockSpec =
-  { binder ∷ String
-  , initialValue ∷ Int
-  , step ∷ Int
-  , terminalValue ∷ Int
-  }
-
-derive instance Generic Expression _
-
-derive instance Eq Expression
-
-instance Show Expression where
-  show s = genericShow s
-
-instance Arbitrary Expression where
-  arbitrary = Lazy.defer \_ → genericArbitrary
 
 type ParsingContext = Map String Arity
 
@@ -101,9 +58,9 @@ expressions context = Lazy.defer \_ →
 
 expression ∷ ParsingContext → Parser String Expression
 expression context = Lexing.lexer.whiteSpace *>
-  PE.buildExprParser operatorTable term
+  PE.buildExprParser Operator.operatorTable term
   where
-  term = Lazy.defer \_ → PC.choice
+  term = Lazy.defer \_ → Lexing.lexer.lexeme $ PC.choice
     [ subExpression context
     , forBlock context
     , ifBlock context
@@ -164,9 +121,27 @@ literal = PC.choice
   , IntegerLiteral <$> Lexing.lexer.integer
   , BooleanLiteral true <$ Lexing.lexer.reserved Lexing.trueKeyword
   , BooleanLiteral false <$ Lexing.lexer.reserved Lexing.falseKeyword
-  , StringLiteral <$> (PS.string "\"" *> Lexing.lexer.identifier)
+  , stringLiteral
   , P.fail "could not recognize a literal"
   ]
+
+stringLiteral ∷ Parser String Expression
+stringLiteral = StringLiteral <$> PC.choice
+  [ quotePrefixed
+  , bracketed
+  , P.fail "could not recognize a string literal"
+  ]
+  where
+  quotePrefixed ∷ Parser String String
+  quotePrefixed = PS.string "\"" *> Lexing.lexer.identifier
+
+  bracketed ∷ Parser String String
+  bracketed = Lexing.lexer.brackets
+    $
+      ( String.fromCodePointArray
+          <<< map String.codePointFromChar
+          <<< Array.fromFoldable
+      ) <$> (PC.many $ PS.satisfy (_ /= ' '))
 
 procedureCall ∷ ParsingContext → Parser String Expression
 procedureCall context = Lazy.defer \_ → do
@@ -204,15 +179,15 @@ procedureSignature = Lexing.lexer.whiteSpace *> do
     <?> "procedure signature should start with \"to\" keyword"
   name ← Lexing.lexer.identifier
   Lexing.lexer.whiteSpace
-  parameters ← PC.many $ Lexing.lexer.lexeme parameter
-  pure { name, parameters }
+  parameterNames ← PC.many $ Lexing.lexer.lexeme parameterName
+  pure { name, parameterNames }
 
-parameter ∷ Parser String Parameter
-parameter = do
+parameterName ∷ Parser String ParameterName
+parameterName = do
   void $ PS.string ":"
-    <?> "a colon prefixing the parameter"
+    <?> "a colon prefixing the parameter name"
   name ← Lexing.lexer.identifier
-  pure $ Parameter name
+  pure $ ParameterName name
 
 repeatBlock ∷ ParsingContext → Parser String Expression
 repeatBlock context = Lazy.defer \_ → do
@@ -244,21 +219,6 @@ variableAssignment context = do
   value ← expression context
   pure $ VariableAssignment name value
 
-arithmeticalBinaryOperator
-  ∷ String
-  → (Expression → Expression → Expression)
-  → Assoc
-  → Array (Operator Identity String Expression)
-arithmeticalBinaryOperator symbol constructor assoc =
-  [ Infix
-      ( constructor <$ PC.between
-          (PC.optional Lexing.lexer.whiteSpace)
-          (PC.optional Lexing.lexer.whiteSpace)
-          (PS.string symbol)
-      )
-      assoc
-  ]
-
 newtype Parameter = Parameter String
 
 derive newtype instance Eq Parameter
@@ -268,34 +228,3 @@ derive newtype instance Arbitrary Parameter
 
 derive instance Newtype Parameter _
 
-operatorTable ∷ Array (Array (Operator Identity String Expression))
-operatorTable =
-  [ arithmeticalBinaryOperator
-      Lexing.equalSymbol
-      Equation
-      AssocNone
-  , arithmeticalBinaryOperator
-      Lexing.caretSymbol
-      Exponentiation
-      AssocRight
-  , ( arithmeticalBinaryOperator
-        Lexing.slashSymbol
-        Division
-        AssocLeft
-    ) <>
-      ( arithmeticalBinaryOperator
-          Lexing.asteriskSymbol
-          Multiplication
-          AssocLeft
-      )
-  , ( arithmeticalBinaryOperator
-        Lexing.minusSymbol
-        Subtraction
-        AssocLeft
-    ) <>
-      ( arithmeticalBinaryOperator
-          Lexing.plusSymbol
-          Addition
-          AssocLeft
-      )
-  ]

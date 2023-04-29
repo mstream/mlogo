@@ -12,6 +12,7 @@
   , "exceptions"
   , "exists"
   , "foldable-traversable"
+  , "gen"
   , "halogen"
   , "halogen-hooks"
   , "halogen-subscriptions"
@@ -38,6 +39,7 @@
   , "transformers"
   , "tuples"
   , "unfoldable"
+  , "unicode"
   , "web-dom"
   ]
 , packages = ./packages.dhall
