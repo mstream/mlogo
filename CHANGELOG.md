@@ -1,5 +1,12 @@
 
 
+### [0.25.2](https://github.com/mstream/mlogo/compare/0.25.1...0.25.2) (2023-04-29)
+
+
+### Bug Fixes
+
+* make printing preserve order of binary operations ([fee5bf4](https://github.com/mstream/mlogo/commit/fee5bf47d82b831b9e78ed1a38482f296e22f111))
+
 ### [0.25.1](https://github.com/mstream/mlogo/compare/0.25.0...0.25.1) (2023-04-29)
 
 
