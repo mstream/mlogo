@@ -29,7 +29,6 @@ data Expression
   | ProcedureDefinition ProcedureSignature (List Expression)
   | RepeatBlock Expression (List Expression)
   | StringLiteral String
-  | SubExpression Expression
   | Subtraction Expression Expression
   | ValueReference String
   | VariableAssignment String Expression

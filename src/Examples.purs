@@ -45,7 +45,7 @@ examplesByTitle =
                         ( List.fromFoldable
                             [ Multiplication
                                 (IntegerLiteral 200)
-                                ( SubExpression $ ProcedureCall "sin"
+                                ( ProcedureCall "sin"
                                     ( List.fromFoldable
                                         [ ProcedureCall "repcount" Nil ]
                                     )
@@ -56,7 +56,7 @@ examplesByTitle =
                         ( List.fromFoldable
                             [ Multiplication
                                 (ProcedureCall "xcor" Nil)
-                                ( SubExpression $ ProcedureCall "cos"
+                                ( ProcedureCall "cos"
                                     ( List.fromFoldable
                                         [ Multiplication
                                             (IntegerLiteral 2)
@@ -88,10 +88,10 @@ examplesByTitle =
                         (List.fromFoldable [ IntegerLiteral 8 ])
                     , ProcedureCall "seth"
                         ( List.fromFoldable
-                            [ SubExpression $ Division
+                            [ Division
                                 ( Multiplication
                                     (IntegerLiteral 360)
-                                    ( SubExpression $ ProcedureCall
+                                    ( ProcedureCall
                                         "power"
                                         ( List.fromFoldable
                                             [ ValueReference "i"
@@ -118,7 +118,7 @@ examplesByTitle =
                         ( List.fromFoldable
                             [ Multiplication
                                 (IntegerLiteral 200)
-                                ( SubExpression $ ProcedureCall "sin"
+                                ( ProcedureCall "sin"
                                     ( List.fromFoldable
                                         [ Multiplication
                                             (IntegerLiteral 2)
@@ -134,7 +134,7 @@ examplesByTitle =
                         ( List.fromFoldable
                             [ Multiplication
                                 (ProcedureCall "xcor" Nil)
-                                ( SubExpression $ ProcedureCall "cos"
+                                ( ProcedureCall "cos"
                                     ( List.fromFoldable
                                         [ ProcedureCall "repcount" Nil ]
                                     )
@@ -196,7 +196,7 @@ examplesByTitle =
                         ( List.fromFoldable
                             [ Multiplication
                                 (IntegerLiteral 200)
-                                ( SubExpression $ ProcedureCall "cos"
+                                ( ProcedureCall "cos"
                                     ( List.fromFoldable
                                         [ Multiplication
                                             (IntegerLiteral 2)
@@ -212,7 +212,7 @@ examplesByTitle =
                         ( List.fromFoldable
                             [ Multiplication
                                 (ProcedureCall "xcor" Nil)
-                                ( SubExpression $ ProcedureCall "cos"
+                                ( ProcedureCall "cos"
                                     ( List.fromFoldable
                                         [ ProcedureCall "repcount" Nil ]
                                     )
@@ -275,12 +275,12 @@ examplesByTitle =
                     , ProcedureCall
                         "rt"
                         ( List.fromFoldable
-                            [ SubExpression $ Multiplication
+                            [ Multiplication
                                 (IntegerLiteral 180)
                                 ( ProcedureCall
                                     "sin"
                                     ( List.fromFoldable
-                                        [ SubExpression $ Multiplication
+                                        [ Multiplication
                                             (ValueReference "i")
                                             (ValueReference "i")
                                         ]
@@ -305,7 +305,7 @@ examplesByTitle =
                     [ ProcedureCall
                         "fd"
                         ( List.fromFoldable
-                            [ SubExpression $ Multiplication
+                            [ Multiplication
                                 (IntegerLiteral 25)
                                 ( ProcedureCall "sin"
                                     ( List.fromFoldable
@@ -317,7 +317,7 @@ examplesByTitle =
                     , ProcedureCall
                         "rt"
                         ( List.fromFoldable
-                            [ SubExpression $ Multiplication
+                            [ Multiplication
                                 (ValueReference "i")
                                 (ValueReference "i")
                             ]
@@ -445,7 +445,7 @@ examplesByTitle =
                           (List.fromFoldable [ IntegerLiteral 5 ])
                       , ProcedureCall "rt"
                           ( List.fromFoldable
-                              [ SubExpression $ Multiplication
+                              [ Multiplication
                                   (IntegerLiteral 90)
                                   ( ProcedureCall "sin"
                                       ( List.fromFoldable

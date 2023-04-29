@@ -91,8 +91,6 @@ interpretExpression = case _ of
     interpretRepeatBlock { body, times }
   StringLiteral s →
     pure $ Just $ WordValue s
-  SubExpression expression →
-    interpretExpression expression
   Subtraction leftOperand rightOperand →
     interpretSubtraction { leftOperand, rightOperand }
   ValueReference name →

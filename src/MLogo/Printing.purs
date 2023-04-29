@@ -56,8 +56,10 @@ printExpression = case _ of
     printRepeatBlock { body, times }
   StringLiteral s →
     printStringLiteral s
+  {-
   SubExpression expression →
     String.joinWith " " [ "(", printExpression expression, ")" ]
+-}
   Subtraction leftOperand rightOperand →
     printSubtraction { leftOperand, rightOperand }
   ValueReference name →
@@ -100,7 +102,11 @@ printBinaryOperation
   → { leftOperand ∷ Expression, rightOperand ∷ Expression }
   → String
 printBinaryOperation operator { leftOperand, rightOperand } =
-  String.joinWith " "
+  {- TODO: print parentheses only when necessary -}
+  "(" <> s <> ")"
+  where
+  s ∷ String
+  s = String.joinWith " "
     [ printExpression leftOperand
     , operator
     , printExpression rightOperand

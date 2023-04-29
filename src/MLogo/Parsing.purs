@@ -199,9 +199,7 @@ repeatBlock context = Lazy.defer \_ → do
   pure $ RepeatBlock times body
 
 subExpression ∷ ParsingContext → Parser String Expression
-subExpression context = do
-  expr ← Lexing.lexer.parens $ expression context
-  pure $ SubExpression expr
+subExpression context = Lexing.lexer.parens $ expression context
 
 valueReference ∷ Parser String Expression
 valueReference = do

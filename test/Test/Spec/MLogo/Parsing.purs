@@ -162,7 +162,7 @@ spec = describe "Parsing" do
           boolean ← parseBackBoolean parts "boolean" 1
           in
             { context: Map.empty
-            , expected: SubExpression $ BooleanLiteral boolean
+            , expected: BooleanLiteral boolean
             }
       )
 
@@ -189,7 +189,7 @@ spec = describe "Parsing" do
           float ← parseBackFloat parts "float" 1
           in
             { context: Map.empty
-            , expected: SubExpression $ FloatLiteral float
+            , expected: FloatLiteral float
             }
       )
 
@@ -305,7 +305,7 @@ spec = describe "Parsing" do
             , expected: ProcedureCall
                 procedureName
                 ( List.fromFoldable
-                    [ SubExpression $ Addition
+                    [ Addition
                         (FloatLiteral firstOperationArgument)
                         (FloatLiteral secondOperationArgument)
                     ]
@@ -343,7 +343,7 @@ spec = describe "Parsing" do
             , expected: ProcedureCall
                 procedureName
                 ( List.fromFoldable
-                    [ SubExpression $ Addition
+                    [ Addition
                         (ValueReference firstOperationArgument)
                         (ValueReference secondOperationArgument)
                     ]
@@ -407,7 +407,7 @@ spec = describe "Parsing" do
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ SubExpression $ FloatLiteral procedureArgument
+                        [ FloatLiteral procedureArgument
                         ]
                     )
                 )
@@ -447,7 +447,7 @@ spec = describe "Parsing" do
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ SubExpression $ Addition
+                        [ Addition
                             (FloatLiteral firstProcedureArgument)
                             (FloatLiteral secondProcedureArgument)
                         ]
@@ -489,7 +489,7 @@ spec = describe "Parsing" do
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ SubExpression $ Addition
+                        [ Addition
                             (ValueReference firstProcedureArgument)
                             (ValueReference secondProcedureArgument)
                         ]
@@ -604,7 +604,7 @@ spec = describe "Parsing" do
                 Map.fromFoldable
                   [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
             , expected: IfBlock
-                ( SubExpression $ Equation
+                ( Equation
                     (IntegerLiteral firstInteger)
                     (IntegerLiteral secondInteger)
                 )
