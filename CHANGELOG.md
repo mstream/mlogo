@@ -1,5 +1,12 @@
 
 
+### [0.25.1](https://github.com/mstream/mlogo/compare/0.25.0...0.25.1) (2023-04-29)
+
+
+### Bug Fixes
+
+* use custom handling for lexing floats ([4459dfd](https://github.com/mstream/mlogo/commit/4459dfd08e8834937070f14c6d262e90470bb778))
+
 ## [0.25.0](https://github.com/mstream/mlogo/compare/0.24.0...0.25.0) (2023-04-26)
 
 
