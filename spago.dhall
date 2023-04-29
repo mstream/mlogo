@@ -4,6 +4,7 @@
   , "aff"
   , "argonaut-codecs"
   , "argonaut-core"
+  , "argonaut-generic"
   , "arrays"
   , "console"
   , "control"

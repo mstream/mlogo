@@ -7,6 +7,10 @@ module MLogo.Parsing.Expression
 
 import Prelude
 
+import Data.Argonaut.Core as A
+import Data.Argonaut.Encode (class EncodeJson)
+import Data.Argonaut.Encode as AE
+import Data.Argonaut.Encode.Generic as AEG
 import Data.Generic.Rep (class Generic)
 import Data.List (List)
 import Data.Newtype (class Newtype)
@@ -50,13 +54,17 @@ derive instance Generic Expression _
 derive instance Eq Expression
 
 instance Show Expression where
-  show s = genericShow s
+  show expr = genericShow expr
 
 newtype ParameterName = ParameterName String
 
+derive newtype instance Arbitrary ParameterName
+derive newtype instance EncodeJson ParameterName
 derive newtype instance Eq ParameterName
 derive newtype instance Ord ParameterName
 derive newtype instance Show ParameterName
-derive newtype instance Arbitrary ParameterName
 
 derive instance Newtype ParameterName _
+
+instance EncodeJson Expression where
+  encodeJson expr = AEG.genericEncodeJson expr

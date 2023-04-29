@@ -2,6 +2,8 @@ module Test.Spec.MLogo.Printing (spec) where
 
 import Prelude
 
+import Data.Argonaut.Core as A
+import Data.Argonaut.Encode as AE
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
@@ -20,7 +22,7 @@ import Parsing (ParseError)
 import Parsing as P
 import Test.QuickCheck (Result(..), quickCheckGen)
 import Test.QuickCheck.Gen as Gen
-import Test.Spec (Spec, describe, it, pending')
+import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail)
 import Test.Utils as Utils
 
@@ -29,6 +31,10 @@ spec = describe "Printing" do
   printTestCase
     "integer literal"
     [ IntegerLiteral 1 ]
+
+  printTestCase
+    "float literal"
+    [ FloatLiteral 1.0 ]
 
   printTestCase
     "operations out of priority order"
@@ -44,7 +50,7 @@ spec = describe "Printing" do
       )
       Examples.examplesByTitle
 
-    pending' "parses back a printed source of a random AST" do
+    it "parses back a printed source of a random AST" do
       liftEffect $ quickCheckGen do
         ast ← Gen.arrayOf $ ExpressionGen.genExpression
 
@@ -58,27 +64,30 @@ spec = describe "Printing" do
             printedSource
             (Parsing.expressions Commands.parsingContext)
 
-          actual ∷ String \/ List Expression
-          actual = case parsingResult of
-            Left parseError →
-              Left $ show parseError
-            Right expressions →
-              Right expressions
-
-          expected ∷ String \/ List Expression
-          expected = Right $ List.fromFoldable ast
-
-        pure $
-          if actual == expected then Success
-          else
+        pure case parsingResult of
+          Left parseError →
             Failed $ "--- error >>> ---\n"
-              <> show actual
-              <> "\nis not equal to\n"
-              <> show expected
+              <> show parseError
               <> "\n--- printed source >>> ---\n"
               <> Utils.emphasizeWhitespaces printedSource
               <> "\n--- <<< printed source ---"
               <> "\n--- <<< error ---"
+          Right actual →
+            let
+              expected ∷ List Expression
+              expected = List.fromFoldable ast
+
+            in
+              if actual == expected then Success
+              else
+                Failed $ "--- error >>> ---\n"
+                  <> (A.stringify $ AE.encodeJson actual)
+                  <> "\nis not equal to\n"
+                  <> (A.stringify $ AE.encodeJson expected)
+                  <> "\n--- printed source >>> ---\n"
+                  <> Utils.emphasizeWhitespaces printedSource
+                  <> "\n--- <<< printed source ---"
+                  <> "\n--- <<< error ---"
 
 sourceBasedPrintTestCase
   ∷ ∀ f

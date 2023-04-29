@@ -7,6 +7,7 @@ import Data.Array as Array
 import Data.Foldable (class Foldable, foldl)
 import Data.List (List)
 import Data.Newtype (unwrap)
+import Data.Number as Number
 import Data.Number.Format as NumberFormat
 import Data.String (Pattern(..))
 import Data.String as String
@@ -38,6 +39,7 @@ printExpression = case _ of
     printExponentiation { leftOperand, rightOperand }
   FloatLiteral x →
     NumberFormat.toString x
+      <> if Number.trunc x == x then ".0" else ""
   ForBlock spec body →
     printForBlock { body, spec }
   IfBlock condition positiveBranch →
@@ -56,10 +58,6 @@ printExpression = case _ of
     printRepeatBlock { body, times }
   StringLiteral s →
     printStringLiteral s
-  {-
-  SubExpression expression →
-    String.joinWith " " [ "(", printExpression expression, ")" ]
--}
   Subtraction leftOperand rightOperand →
     printSubtraction { leftOperand, rightOperand }
   ValueReference name →
