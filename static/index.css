@@ -1,123 +1,59 @@
-* {
-  margin: 0;
-  padding: 0;
-}
+@import "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css";
 
 #container {
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); 
-  grid-template-rows: 1fr;
-  grid-template-areas:
-    "editor canvas"
-    "side-bar canvas";
-  grid-column-gap: 0.25rem;
-  grid-row-gap: 0.25rem;
   height: 100vh;
-  padding: 0.25em;
 }
 
 #canvas {
-  aspect-ratio: 1;
-  border: 0.1rem dashed blue;
-  grid-area: canvas;
-  margin: auto 0;
-  padding: 0.5rem;
-  position: relative;
+  height: 100vh;
 }
 
-#canvas svg {
-  position: absolute;
-}
-
-#editor {
-  border: 0.1rem dashed orange;
-  grid-area: editor;
-  padding: 0.5rem;
-}
-
-#side-bar {
-  border: 0.1rem dashed green;
-  display: flex;
-  flex-direction: column;
-  grid-area: side-bar;
-  height: 50vh;
-  padding: 0.5rem;
-}
-
-#side-bar .content {
-  overflow-y: scroll;
-}
-
-#side-bar .tabs {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-}
-
-#zoom-panel {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  position: absolute;
-}
-
-#zoom-panel button {
-  aspect-ratio: 1;
-  text-align: center;
-  width: 1rem;
-}
-
-.tab {
-  border: 1px solid black;
-  cursor: pointer;
-  text-align: center;
+#canvas .wrapper {
   width: 100%;
 }
 
-.tab.selected {
-  border-bottom: 0px solid black;
+#canvas svg {
+  aspect-ratio: 1;
+  height: 100%;
+  width: 100%;
 }
 
-.tab:hover {
-  text-decoration: underline;
+#editor {
+  box-sizing: border-box;
+  height: 50vh;
 }
 
-.example-entry {
-  border: 1px solid black;
-  margin: 1em 0.5em;
+#side-bar {
+  box-sizing: border-box;
+  height: 50vh;
 }
 
-.example-header {
-  display: flex;
-  flex-direction: row;
+#side-bar .navigation {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
-.reference-category {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 2em;
+#side-bar .body {
+  overflow-y: scroll;
 }
 
-.reference-entry {
-  border: 1px solid black;
-  display: flex;
-  flex-direction: column;
-  margin: 1em 0.5em;
+#zoom-panel {
+  position: absolute;
+  top: 1rem;
+}
+
+.body {
+  height: 100%;
+  width: 100%;
 }
 
 .error {
   border: 0.1em dashed red;
-  padding: 0.5em;
 }
 
-.command-header {
-  font-weight: bolder;
+.square {
+  aspect-ratio: 1;
 }
 
-.parameter-value-type {
-  color: dimgray;
-  font-size: smaller;
-  font-style: italic;
-  font-weight: lighter;
-}

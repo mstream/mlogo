@@ -44,8 +44,15 @@ component = Hooks.component \_ commandsByAliasByCategory → Hooks.do
   let
     renderCategory (name /\ entries) =
       HH.div
-        [ HP.classes [ ClassName "reference-category" ] ]
-        [ HH.h3_ [ HH.text name ]
+        [ HP.classes
+            [ ClassName "is-flex"
+            , ClassName "is-flex-direction-column"
+            , ClassName "mb-6"
+            ]
+        ]
+        [ HH.h3
+            [ HP.classes [ ClassName "is-3", ClassName "title" ] ]
+            [ HH.text name ]
         , HH.div_ (renderEntry <$> Map.toUnfoldable entries)
         ]
 
@@ -54,17 +61,33 @@ component = Hooks.component \_ commandsByAliasByCategory → Hooks.do
           { description, exampleArgs, outputValueType, parameters }
       ) =
       HH.div
-        [ HP.classes [ ClassName "reference-entry" ] ]
-        [ HH.code
-            [ HP.classes [ ClassName "command-header" ] ]
-            ( [ HH.text name
-              , HH.text " "
+        [ HP.classes
+            [ ClassName "block"
+            , ClassName "is-flex"
+            , ClassName "is-flex-direction-column"
+            ]
+        ]
+        [ HH.hr_
+        , HH.code
+            [ HP.classes
+                [ ClassName "is-family-code"
+                , ClassName "is-flex"
+                , ClassName "is-flex-direction-row"
+                , ClassName "is-flex-wrap-wrap"
+                , ClassName "is-size-5"
+                ]
+            ]
+            ( [ HH.span
+                  [ HP.classes [ ClassName "has-text-weight-bold" ] ]
+                  [ HH.text name ]
               ] <> renderParameters <> renderOutputType
             )
         , HH.div_ [ HH.text description ]
         , HH.div_
             [ HH.hr_
-            , HH.header_ [ HH.text "Examples" ]
+            , HH.h4
+                [ HP.classes [ ClassName "is-4", ClassName "title" ] ]
+                [ HH.text "Examples" ]
             , HH.code_ $ [ HH.text name, HH.text " " ] <>
                 renderExampleArgs
             , HH.hr_
@@ -73,15 +96,21 @@ component = Hooks.component \_ commandsByAliasByCategory → Hooks.do
       where
       renderOutputType = case outputValueType of
         Just ovt →
-          [ HH.span_ [ HH.text " -> " ], renderValueType ovt ]
+          [ HH.span
+              [ HP.classes
+                  [ ClassName "has-text-weight-semibold"
+                  , ClassName "mx-4"
+                  ]
+              ]
+              [ HH.text "→" ]
+          , renderValueType ovt
+          ]
         Nothing →
           []
 
       renderParameters = case parameters of
         FixedParameters ps →
-          Array.intersperse
-            (HH.span_ [ HH.text " " ])
-            (renderParameter <$> ps)
+          renderParameter <$> ps
         VariableParameters p →
           [ renderParameter p, HH.text "..." ]
 
@@ -91,15 +120,24 @@ component = Hooks.component \_ commandsByAliasByCategory → Hooks.do
 
     renderParameter { name, valueType } =
       HH.span_
-        [ HH.text ":"
-        , HH.span
-            [ HP.classes [ ClassName "command-header" ] ]
-            [ HH.text name ]
+        [ HH.span
+            [ HP.classes
+                [ ClassName "has-text-weight-semibold"
+                , ClassName "ml-4"
+                ]
+            ]
+            [ HH.text $ ":" <> name ]
         , renderValueType valueType
         ]
 
     renderValueType valueType = HH.span
-      [ HP.classes [ ClassName "parameter-value-type" ] ]
+      [ HP.classes
+          [ ClassName "has-text-grey"
+          , ClassName "has-text-weight-light"
+          , ClassName "is-italic"
+          , ClassName "is-size-7"
+          ]
+      ]
       [ HH.text $ "(" <> show valueType <> ")"
       ]
 
@@ -114,7 +152,8 @@ component = Hooks.component \_ commandsByAliasByCategory → Hooks.do
         "\"" <> s
 
   Hooks.pure do
-    HH.div_
+    HH.div
+      [ HP.classes [ ClassName "body" ] ]
       (renderCategory <$> Map.toUnfoldable entriesByAliasByCategory)
 
 generateEntries

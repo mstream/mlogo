@@ -43,31 +43,65 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
           ReferenceComponent.component
           Commands.commandsByAliasByCategory
 
-    renderTab tab = HH.div
-      [ HE.onClick \_ → handleTabClick tab
-      , HP.classes
-          ( [ ClassName "tab" ]
-              <>
-                if currentTab == tab then
-                  [ ClassName "selected" ]
-                else []
-          )
-      ]
-      [ HH.text case tab of
+    renderTab tab =
+      let
+        iconName = case tab of
+          ExamplesTab →
+            "mdi-book-play"
+          ReferenceTab →
+            "mdi-book-alphabet"
+
+        isActive = currentTab == tab
+
+        label = case tab of
           ExamplesTab →
             "Examples"
           ReferenceTab →
             "Reference"
-      ]
+      in
+        HH.li
+          [ HE.onClick \_ → handleTabClick tab
+          , HP.classes
+              if isActive then [ ClassName "is-active" ] else []
+          ]
+          [ HH.a_
+              [ HH.span
+                  [ HP.classes
+                      [ ClassName "icon", ClassName "is-small" ]
+                  ]
+                  [ HH.i
+                      [ HP.classes
+                          [ ClassName "aria-hidden"
+                          , ClassName "mdi"
+                          , ClassName iconName
+                          ]
+                      ]
+                      []
+                  ]
+              , HH.text label
+              ]
+          ]
 
   Hooks.pure do
     HH.div
-      [ HP.id "side-bar" ]
-      [ HH.div
-          [ HP.classes [ ClassName "tabs" ] ]
-          [ renderTab ReferenceTab, renderTab ExamplesTab ]
+      [ HP.classes
+          [ ClassName "body"
+          ]
+      ]
+      [ HH.nav
+          [ HP.classes
+              [ ClassName "is-boxed"
+              , ClassName "is-centered"
+              , ClassName "has-background-white-bis"
+              , ClassName "navigation"
+              , ClassName "tabs"
+              ]
+          ]
+          [ HH.ul_ [ renderTab ReferenceTab, renderTab ExamplesTab ] ]
       , HH.div
-          [ HP.classes [ ClassName "content" ] ]
+          [ HP.classes
+              [ ClassName "has-background-white-bis", ClassName "p-1" ]
+          ]
           [ currentComponent ]
       ]
 

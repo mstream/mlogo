@@ -10,7 +10,7 @@ import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (liftEffect)
 import Effect.Exception (throw)
-import Halogen (RefLabel(..), SubscriptionId)
+import Halogen (ClassName(..), RefLabel(..), SubscriptionId)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -77,7 +77,7 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ HP.id "editor"
+      [ HP.classes [ ClassName "body" ]
       , HP.ref aceRefLabel
       ]
       []

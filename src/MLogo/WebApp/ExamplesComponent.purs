@@ -29,13 +29,40 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
         source = Printing.printExpressions ast
       in
         HH.div
-          [ HP.classes [ ClassName "example-entry" ] ]
+          [ HP.classes
+              [ ClassName "block"
+              , ClassName "is-flex"
+              , ClassName "is-flex-direction-column"
+              ]
+          ]
           [ HH.div
-              [ HP.classes [ ClassName "example-header" ] ]
+              [ HP.classes
+                  [ ClassName "is-flex"
+                  , ClassName "is-flex-direction-row"
+                  ]
+              ]
               [ HH.button
-                  [ HE.onClick \_ → handleTryButtonClick source ]
-                  [ HH.text "try" ]
-              , HH.h3_
+                  [ HE.onClick \_ → handleTryButtonClick source
+                  , HP.classes [ ClassName "button" ]
+                  ]
+                  [ HH.span
+                      [ HP.classes
+                          [ ClassName "icon", ClassName "is-small" ]
+                      ]
+                      [ HH.i
+                          [ HP.classes
+                              [ ClassName "aria-hidden"
+                              , ClassName "mdi"
+                              , ClassName "mdi-play-circle"
+                              , ClassName "mr-1"
+                              ]
+                          ]
+                          []
+                      ]
+                  , HH.span_ [ HH.text "try" ]
+                  ]
+              , HH.h3
+                  [ HP.classes [ ClassName "is-3", ClassName "title" ] ]
                   [ HH.text title ]
               ]
           , HH.div_
@@ -45,5 +72,9 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
           ]
 
   Hooks.pure do
-    HH.div_ (renderExample <$> Map.toUnfoldable examplesByTitle)
+    HH.div
+      [ HP.classes
+          [ ClassName "is-flex", ClassName "is-flex-direction-column" ]
+      ]
+      (renderExample <$> Map.toUnfoldable examplesByTitle)
 

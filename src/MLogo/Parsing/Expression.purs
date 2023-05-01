@@ -7,9 +7,7 @@ module MLogo.Parsing.Expression
 
 import Prelude
 
-import Data.Argonaut.Core as A
 import Data.Argonaut.Encode (class EncodeJson)
-import Data.Argonaut.Encode as AE
 import Data.Argonaut.Encode.Generic as AEG
 import Data.Generic.Rep (class Generic)
 import Data.List (List)

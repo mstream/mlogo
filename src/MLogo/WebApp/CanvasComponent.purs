@@ -7,7 +7,7 @@ import Data.Int as Int
 import Data.Number as Number
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
-import Halogen (Component)
+import Halogen (ClassName(..), Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
@@ -99,22 +99,59 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
           , SA.transform transforms
           ]
 
+    renderZoomPanel = HH.div
+      [ HP.classes
+          [ ClassName "is-flex"
+          , ClassName "is-flex-direction-row"
+          , ClassName "is-justify-content-space-between"
+          ]
+      , HP.id "zoom-panel"
+      ]
+      [ renderZoomButton "mdi-minus" handleZoomOut
+      , HH.div_ [ HH.text $ renderZoomScale "" 1 ]
+      , renderZoomButton "mdi-plus" handleZoomIn
+      ]
+
+    renderZoomButton iconName clickHandler = HH.button
+      [ HE.onClick \_ → clickHandler
+      , HP.classes [ ClassName "button", ClassName "square" ]
+      ]
+      [ HH.span
+          [ HP.classes
+              [ ClassName "icon", ClassName "is-small" ]
+          ]
+          [ HH.i
+              [ HP.classes
+                  [ ClassName "mdi", ClassName iconName ]
+              ]
+              []
+          ]
+      ]
+
   Hooks.pure do
     HH.div
-      [ HP.id "canvas" ]
-      [ SE.svg
-          [ SA.viewBox zero zero canvasSize canvasSize ]
-          (renderScreen screen <> renderPointer pointer)
-      , HH.div
-          [ HP.id "zoom-panel" ]
-          [ HH.button
-              [ HE.onClick \_ → handleZoomOut ]
-              [ HH.text "-" ]
-          , HH.div_ [ HH.text $ renderZoomScale "" 1 ]
-          , HH.button
-              [ HE.onClick \_ → handleZoomIn ]
-              [ HH.text "+" ]
+      [ HP.classes
+          [ ClassName "body"
+          , ClassName "has-background-grey-lighter"
+          , ClassName "is-align-items-center"
+          , ClassName "is-justify-content-center"
+          , ClassName "is-flex"
+          , ClassName "is-relative"
+          , ClassName "square"
           ]
+      ]
+      [ HH.div
+          [ HP.classes
+              [ ClassName "has-background-white"
+              , ClassName "wrapper"
+              , ClassName "square"
+              ]
+          ]
+          [ SE.svg
+              [ SA.viewBox zero zero canvasSize canvasSize ]
+              (renderScreen screen <> renderPointer pointer)
+          ]
+      , renderZoomPanel
       ]
 
 pointerBaseSize ∷ Int

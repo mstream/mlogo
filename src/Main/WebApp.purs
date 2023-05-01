@@ -44,29 +44,58 @@ rootComp = Hooks.component \{ slotToken } _ → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ HP.id "container" ]
-      [ HH.slot
-          (Proxy ∷ Proxy "editor")
-          unit
-          EditorComponent.component
-          unit
-          handleEditorOutput
-      , HH.slot
-          (Proxy ∷ Proxy "sideBar")
-          unit
-          SideBarComponent.component
-          unit
-          handleSideBarOutput
-      , case Program.run source of
-          Left errorMessage →
-            HH.div
-              [ HP.classes [ ClassName "error" ] ]
-              [ HH.text errorMessage ]
-          Right visibleState →
-            HH.slot_
-              (Proxy ∷ Proxy "canvas")
-              unit
-              CanvasComponent.component
-              visibleState
+      [ HP.classes
+          [ ClassName "columns"
+          , ClassName "is-gapless"
+          ]
+      , HP.id "container"
+      ]
+      [ HH.div
+          [ HP.classes
+              [ ClassName "column"
+              , ClassName "is-6"
+              ]
+          ]
+          [ HH.div
+              [ HP.id "editor" ]
+              [ HH.slot
+                  (Proxy ∷ Proxy "editor")
+                  unit
+                  EditorComponent.component
+                  unit
+                  handleEditorOutput
+              ]
+          , HH.div
+              [ HP.id "side-bar"
+              ]
+              [ HH.slot
+                  (Proxy ∷ Proxy "sideBar")
+                  unit
+                  SideBarComponent.component
+                  unit
+                  handleSideBarOutput
+              ]
+          ]
+      , HH.div
+          [ HP.classes
+              [ ClassName "column"
+              , ClassName "is-6"
+              ]
+          ]
+          [ HH.div
+              [ HP.id "canvas" ]
+              [ case Program.run source of
+                  Left errorMessage →
+                    HH.div
+                      [ HP.classes [ ClassName "error" ] ]
+                      [ HH.text errorMessage ]
+                  Right visibleState →
+                    HH.slot_
+                      (Proxy ∷ Proxy "canvas")
+                      unit
+                      CanvasComponent.component
+                      visibleState
+              ]
+          ]
       ]
 
