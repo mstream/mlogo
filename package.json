@@ -19,8 +19,6 @@
   "type": "module",
   "devDependencies": {
     "@release-it/conventional-changelog": "^5",
-    "esbuild": "~0.17",
-    "purs-backend-es": "^1",
     "release-it": "^15"
   },
   "dependencies": {

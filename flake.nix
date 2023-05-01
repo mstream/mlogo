@@ -42,8 +42,8 @@
         checks = { inherit format-check; };
         devShell = pkgs.mkShell {
           inherit name;
-          buildInputs = with pkgs; [ git nodejs ]
-            ++ (with easy-ps; [ psa purs purs-tidy spago ]);
+          buildInputs = with pkgs; [ esbuild git nodejs ]
+            ++ (with easy-ps; [ psa purs purs-backend-es purs-tidy spago ]);
 
           shellHook = ''
             PS1="\[\e[33m\][\[\e[m\]\[\e[34;40m\]${name}:\[\e[m\]\[\e[36m\]\w\[\e[m\]\[\e[33m\]]\[\e[m\]\[\e[32m\]\\$\[\e[m\] "
