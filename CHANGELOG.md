@@ -1,5 +1,17 @@
 
 
+## [0.26.0](https://github.com/mstream/mlogo/compare/0.25.2...0.26.0) (2023-05-01)
+
+
+### Features
+
+* improve the UI ([f4dad93](https://github.com/mstream/mlogo/commit/f4dad93704ef69d36c4a1f6e41ff2e0a54111992))
+
+
+### Bug Fixes
+
+* make float literals be printed with a fraction at the end ([84a8582](https://github.com/mstream/mlogo/commit/84a8582f9f0dc37f3b534868c608ae00ec97501d))
+
 ### [0.25.2](https://github.com/mstream/mlogo/compare/0.25.1...0.25.2) (2023-04-29)
 
 
