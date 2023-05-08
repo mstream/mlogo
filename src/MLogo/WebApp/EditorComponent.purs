@@ -6,7 +6,6 @@ import Ace as Ace
 import Ace.EditSession as Session
 import Ace.Editor as Editor
 import Data.Either (Either(..))
-import Data.Either.Nested (type (\/))
 import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))

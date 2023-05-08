@@ -55,6 +55,30 @@ spec = describe "Program" do
       )
 
     testCase
+      "moving backward by 10 using the forward command"
+      ( String.joinWith
+          "\n"
+          [ "forward -10" ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , isDown: true
+              , position:
+                  Position
+                    { x: 0.0
+                    , y: -10.0
+                    }
+              }
+          , screen: List.fromFoldable
+              [ { p1: Position { x: 0.0, y: 0.0 }
+                , p2: Position { x: 0.0, y: -10.0 }
+                }
+              ]
+          }
+      )
+
+    testCase
       "moving forward by 10 using a custom procedure"
       ( String.joinWith
           "\n"

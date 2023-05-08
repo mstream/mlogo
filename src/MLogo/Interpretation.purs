@@ -154,7 +154,7 @@ interpretNegation ∷ ∀ m. Interpret m { operand ∷ Expression }
 interpretNegation { operand } =
   interpretProcedureCall
     { arguments: List.fromFoldable [ operand ]
-    , name: "negate"
+    , name: "minus"
     }
 
 interpretSubtraction
