@@ -416,7 +416,7 @@ printVariableAssignment { name, value } pageWidth =
     $
       List.fromFoldable
         [ CodeWord Lexing.makeKeyword
-        , CodeWord name
+        , CodeWord $ "\"" <> name
         ] <> (words $ printExpression value pageWidth)
 
 printBooleanLiteral ∷ Print Boolean

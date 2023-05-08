@@ -522,7 +522,7 @@ spec = describe "Printing" do
       "a single line variable assignment"
       [ VariableAssignment "var1" (IntegerLiteral 1) ]
       100
-      (String.joinWith "\n" [ "make var1 1" ])
+      (String.joinWith "\n" [ "make \"var1 1" ])
 
     printTestCase
       "integer literal"
