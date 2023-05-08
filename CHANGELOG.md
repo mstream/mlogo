@@ -1,5 +1,12 @@
 
 
+### [0.29.4](https://github.com/mstream/mlogo/compare/0.29.3...0.29.4) (2023-05-08)
+
+
+### Bug Fixes
+
+* correct printing of variable assignments ([b7ae757](https://github.com/mstream/mlogo/commit/b7ae7570b5cc19c8ffe71360a8623457da35dffa))
+
 ### [0.29.3](https://github.com/mstream/mlogo/compare/0.29.2...0.29.3) (2023-05-08)
 
 
