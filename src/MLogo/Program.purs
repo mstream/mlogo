@@ -21,14 +21,11 @@ import Parsing (ParseError)
 import Parsing as P
 
 run ∷ String → String \/ VisibleState
-run source = do
-  ast ← case parseExpressions source of
-    Left parseError →
-      Left $ "Syntax error:\n" <> show parseError
-    Right expressions →
-      Right expressions
-
-  interpretAst ast
+run = parseExpressions >>> case _ of
+  Left parseError →
+    Left $ "Syntax error:\n" <> show parseError
+  Right expressions →
+    interpretAst expressions
 
 parseExpressions ∷ String → ParseError \/ List Expression
 parseExpressions source = do

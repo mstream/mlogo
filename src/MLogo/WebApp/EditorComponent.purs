@@ -25,7 +25,6 @@ import Halogen.Subscription as HS
 import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
 import MLogo.Program as Program
-import Parsing (ParseError)
 import Parsing as P
 
 data Output
@@ -68,7 +67,7 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
     handleChange ∷ HookM m Unit
     handleChange = do
       source ← getSource
-      case parseSource source of
+      case Program.parseExpressions source of
         Left parseError → do
           updateSource source
           Hooks.put sourceInfoId (Unparsable source)
@@ -191,5 +190,3 @@ formatSource ∷ List Expression → String
 formatSource ast = Printing.codeToString
   $ Printing.printExpressions ast 50
 
-parseSource ∷ String → ParseError \/ List Expression
-parseSource = Program.parseExpressions

@@ -53,7 +53,7 @@ rootComp = Hooks.component \{ slotToken } _ → Hooks.do
         liftEffect $ setSourceInUrl source
         Hooks.put astResultId (Right ast)
       SyntaxErrorDetected errorMessage →
-        Hooks.put astResultId (Left errorMessage)
+        Hooks.put astResultId (Left $ "Syntax error: " <> errorMessage)
 
     handleSideBarOutput ∷ ExamplesComponent.Output → HookM m Unit
     handleSideBarOutput (SourceTryRequested exampleAst) = do
