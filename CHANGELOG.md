@@ -1,5 +1,14 @@
 
 
+## [0.27.0](https://github.com/mstream/mlogo/compare/0.26.1...0.27.0) (2023-05-08)
+
+
+### Features
+
+* add a primitive code formatting capability ([6c3e42b](https://github.com/mstream/mlogo/commit/6c3e42b18ac37e1eecc3e26fc84e74b9eaa9727f))
+* add formatting action to the web app editor ([e3f3d5c](https://github.com/mstream/mlogo/commit/e3f3d5cd5f5a92a890fc5496814a17c96634f99f))
+* make code examples appear in a formatted form ([681ce83](https://github.com/mstream/mlogo/commit/681ce8373ac1b5aa1acf2d43eb52239fda355236))
+
 ### [0.26.1](https://github.com/mstream/mlogo/compare/0.26.0...0.26.1) (2023-05-01)
 
 ## [0.26.0](https://github.com/mstream/mlogo/compare/0.25.2...0.26.0) (2023-05-01)
