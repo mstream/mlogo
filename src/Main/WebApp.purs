@@ -157,9 +157,10 @@ setSourceInUrl source = do
   historyState ← History.state history
   location ← Window.location window
   origin ← Location.origin location
+  pathname ← Location.pathname location
 
   let
-    path = printSearch
+    path = pathname <> printSearch
       { s: Utils.uriEncodedStringToString
           <$> Utils.encodeToUriComponent source
       }
@@ -177,6 +178,8 @@ parseSearch = hush <<< R.parse route
 
 printSearch ∷ Search → String
 printSearch = R.print route
+
+type Route = { s ∷ Maybe String }
 
 route ∷ RouteDuplex' { s ∷ Maybe String }
 route = R.params { s: R.optional <<< R.string }
