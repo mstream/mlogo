@@ -33,9 +33,11 @@ import MLogo.Interpretation.State
   )
 import MLogo.Interpretation.State as State
 import MLogo.Parsing.Expression
-  ( Expression(..)
+  ( BinaryOperationType(..)
+  , Expression(..)
   , ForBlockSpec
   , ParameterName
+  , UnaryOperationType(..)
   )
 
 interpretExpressions
@@ -60,16 +62,20 @@ interpretExpressions =
 
 interpretExpression ∷ ∀ m. Interpret m Expression
 interpretExpression = case _ of
-  Addition leftOperand rightOperand →
+  BinaryOperation Addition leftOperand rightOperand →
     interpretAddition { leftOperand, rightOperand }
+  BinaryOperation Division leftOperand rightOperand →
+    interpretDivision { leftOperand, rightOperand }
+  BinaryOperation Equation leftOperand rightOperand →
+    interpretEquation { leftOperand, rightOperand }
+  BinaryOperation Exponentiation leftOperand rightOperand →
+    interpretExponentiation { leftOperand, rightOperand }
+  BinaryOperation Multiplication leftOperand rightOperand →
+    interpretMultiplication { leftOperand, rightOperand }
+  BinaryOperation Subtraction leftOperand rightOperand →
+    interpretSubtraction { leftOperand, rightOperand }
   BooleanLiteral b →
     pure $ Just $ BooleanValue b
-  Division leftOperand rightOperand →
-    interpretDivision { leftOperand, rightOperand }
-  Equation leftOperand rightOperand →
-    interpretEquation { leftOperand, rightOperand }
-  Exponentiation leftOperand rightOperand →
-    interpretExponentiation { leftOperand, rightOperand }
   FloatLiteral x →
     pure $ Just $ FloatValue x
   ForBlock spec body →
@@ -81,8 +87,6 @@ interpretExpression = case _ of
     interpretIfElseBlock { condition, positiveBranch, negativeBranch }
   IntegerLiteral n →
     pure $ Just $ IntegerValue n
-  Multiplication leftOperand rightOperand →
-    interpretMultiplication { leftOperand, rightOperand }
   ProcedureCall name arguments →
     interpretProcedureCall { arguments, name }
   ProcedureDefinition { name, parameterNames } body →
@@ -91,8 +95,8 @@ interpretExpression = case _ of
     interpretRepeatBlock { body, times }
   StringLiteral s →
     pure $ Just $ WordValue s
-  Subtraction leftOperand rightOperand →
-    interpretSubtraction { leftOperand, rightOperand }
+  UnaryOperation Negation operand →
+    interpretNegation { operand }
   ValueReference name →
     interpretValueReference name
   VariableAssignment name value →
@@ -144,6 +148,13 @@ interpretMultiplication { leftOperand, rightOperand } =
   interpretProcedureCall
     { arguments: List.fromFoldable [ leftOperand, rightOperand ]
     , name: "product"
+    }
+
+interpretNegation ∷ ∀ m. Interpret m { operand ∷ Expression }
+interpretNegation { operand } =
+  interpretProcedureCall
+    { arguments: List.fromFoldable [ operand ]
+    , name: "negate"
     }
 
 interpretSubtraction

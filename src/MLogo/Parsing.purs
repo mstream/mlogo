@@ -13,7 +13,7 @@ import Prelude
 import Control.Lazy as Lazy
 import Data.Array as Array
 import Data.Foldable (class Foldable, foldl)
-import Data.List (List)
+import Data.List (List(..))
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
@@ -66,8 +66,8 @@ expression context = Lexing.lexer.whiteSpace *>
     , ifBlock context
     , ifElseBlock context
     , literal
-    , procedureDefinition context
     , procedureCall context
+    , procedureDefinition context
     , repeatBlock context
     , valueReference
     , variableAssignment context
@@ -145,7 +145,7 @@ stringLiteral = StringLiteral <$> PC.choice
 
 procedureCall ∷ ParsingContext → Parser String Expression
 procedureCall context = Lazy.defer \_ → do
-  name ← Lexing.lexer.identifier
+  name ← Lexing.lexer.identifier <?> "a valid procedure name"
   Lexing.lexer.whiteSpace
 
   arguments ← case Map.lookup name context of

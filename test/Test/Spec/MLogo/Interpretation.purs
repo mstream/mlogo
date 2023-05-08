@@ -15,17 +15,28 @@ import MLogo.Interpretation as Interpretation
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState, Value(..))
 import MLogo.Interpretation.State as State
-import MLogo.Parsing.Expression (Expression(..))
+import MLogo.Parsing.Expression
+  ( BinaryOperationType(..)
+  , Expression(..)
+  )
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail)
+import Test.Spec.MLogo.Interpretation.Command as Command
+import Test.Spec.MLogo.Interpretation.Types as Types
 
 spec ∷ Spec Unit
 spec = describe "Interpretation" do
+  Command.spec
+  Types.spec
   describe "interpretExpression" do
     expressionTestCase
       "addition of two numeric literals"
       State.initialExecutionState
-      (Addition (FloatLiteral 1.0) (FloatLiteral 2.0))
+      ( BinaryOperation
+          Addition
+          (FloatLiteral 1.0)
+          (FloatLiteral 2.0)
+      )
       ( Right
           $ (Just $ FloatValue 3.0) /\
               State.initialExecutionState
@@ -34,7 +45,11 @@ spec = describe "Interpretation" do
     expressionTestCase
       "subtraction of two numeric literals"
       State.initialExecutionState
-      (Subtraction (FloatLiteral 3.0) (FloatLiteral 2.0))
+      ( BinaryOperation
+          Subtraction
+          (FloatLiteral 3.0)
+          (FloatLiteral 2.0)
+      )
       ( Right
           $ (Just $ FloatValue 1.0) /\
               State.initialExecutionState
@@ -43,7 +58,11 @@ spec = describe "Interpretation" do
     expressionTestCase
       "multiplication of two numeric literals"
       State.initialExecutionState
-      (Multiplication (FloatLiteral 3.0) (FloatLiteral 2.0))
+      ( BinaryOperation
+          Multiplication
+          (FloatLiteral 3.0)
+          (FloatLiteral 2.0)
+      )
       ( Right
           $ (Just $ FloatValue 6.0) /\
               State.initialExecutionState
@@ -52,7 +71,11 @@ spec = describe "Interpretation" do
     expressionTestCase
       "division of two numeric literals"
       State.initialExecutionState
-      (Division (FloatLiteral 6.0) (FloatLiteral 3.0))
+      ( BinaryOperation
+          Division
+          (FloatLiteral 6.0)
+          (FloatLiteral 3.0)
+      )
       ( Right
           $ (Just $ FloatValue 2.0) /\
               State.initialExecutionState
@@ -61,7 +84,11 @@ spec = describe "Interpretation" do
     expressionTestCase
       "exponentiation of two numeric literals"
       State.initialExecutionState
-      (Exponentiation (FloatLiteral 2.0) (FloatLiteral 3.0))
+      ( BinaryOperation
+          Exponentiation
+          (FloatLiteral 2.0)
+          (FloatLiteral 3.0)
+      )
       ( Right
           $ (Just $ FloatValue 8.0) /\
               State.initialExecutionState

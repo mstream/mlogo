@@ -14,7 +14,12 @@
     "clean": "rm -rf output* .spago",
     "lint": "npm run clean && spago build --purs-args '--censor-lib --strict'",
     "release": "release-it",
-    "test": "spago test"
+    "test": "spago test",
+    "test:interpretation": "spago test --exec-args Interpretation",
+    "test:lexing": "spago test --exec-args Lexing",
+    "test:parsing": "spago test --exec-args Parsing",
+    "test:printing": "spago test --exec-args Printing",
+    "test:program": "spago test --exec-args Program"
   },
   "type": "module",
   "devDependencies": {

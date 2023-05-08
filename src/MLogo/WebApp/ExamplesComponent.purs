@@ -26,7 +26,8 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
 
     renderExample (title /\ Example { ast }) =
       let
-        source = Printing.printExpressions ast
+        source = Printing.codeToString
+          $ Printing.printExpressions ast 60
       in
         HH.div
           [ HP.classes

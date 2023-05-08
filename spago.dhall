@@ -26,6 +26,7 @@
   , "newtype"
   , "node-buffer"
   , "node-fs"
+  , "node-process"
   , "nonempty"
   , "numbers"
   , "optparse"

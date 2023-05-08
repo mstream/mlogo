@@ -9,7 +9,11 @@ import Data.Map as Map
 import Data.Symbol (class IsSymbol, reflectSymbol)
 import Heterogeneous.Folding (class FoldingWithIndex)
 import Heterogeneous.Folding as Heterogeneous
-import MLogo.Parsing.Expression (Expression(..))
+import MLogo.Parsing.Expression
+  ( BinaryOperationType(..)
+  , Expression(..)
+  , UnaryOperationType(..)
+  )
 import Type.Proxy (Proxy)
 
 newtype Example = Example
@@ -43,7 +47,8 @@ examplesByTitle =
                 ( List.fromFoldable
                     [ ProcedureCall "setx"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (IntegerLiteral 200)
                                 ( ProcedureCall "sin"
                                     ( List.fromFoldable
@@ -54,11 +59,13 @@ examplesByTitle =
                         )
                     , ProcedureCall "sety"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (ProcedureCall "xcor" Nil)
                                 ( ProcedureCall "cos"
                                     ( List.fromFoldable
-                                        [ Multiplication
+                                        [ BinaryOperation
+                                            Multiplication
                                             (IntegerLiteral 2)
                                             ( ProcedureCall "repcount"
                                                 Nil
@@ -88,8 +95,10 @@ examplesByTitle =
                         (List.fromFoldable [ IntegerLiteral 8 ])
                     , ProcedureCall "seth"
                         ( List.fromFoldable
-                            [ Division
-                                ( Multiplication
+                            [ BinaryOperation
+                                Division
+                                ( BinaryOperation
+                                    Multiplication
                                     (IntegerLiteral 360)
                                     ( ProcedureCall
                                         "power"
@@ -116,11 +125,13 @@ examplesByTitle =
                 ( List.fromFoldable
                     [ ProcedureCall "setx"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (IntegerLiteral 200)
                                 ( ProcedureCall "sin"
                                     ( List.fromFoldable
-                                        [ Multiplication
+                                        [ BinaryOperation
+                                            Multiplication
                                             (IntegerLiteral 2)
                                             ( ProcedureCall "repcount"
                                                 Nil
@@ -132,7 +143,8 @@ examplesByTitle =
                         )
                     , ProcedureCall "sety"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (ProcedureCall "xcor" Nil)
                                 ( ProcedureCall "cos"
                                     ( List.fromFoldable
@@ -194,11 +206,13 @@ examplesByTitle =
                 ( List.fromFoldable
                     [ ProcedureCall "setx"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (IntegerLiteral 200)
                                 ( ProcedureCall "cos"
                                     ( List.fromFoldable
-                                        [ Multiplication
+                                        [ BinaryOperation
+                                            Multiplication
                                             (IntegerLiteral 2)
                                             ( ProcedureCall "repcount"
                                                 Nil
@@ -210,7 +224,8 @@ examplesByTitle =
                         )
                     , ProcedureCall "sety"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (ProcedureCall "xcor" Nil)
                                 ( ProcedureCall "cos"
                                     ( List.fromFoldable
@@ -275,12 +290,14 @@ examplesByTitle =
                     , ProcedureCall
                         "rt"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (IntegerLiteral 180)
                                 ( ProcedureCall
                                     "sin"
                                     ( List.fromFoldable
-                                        [ Multiplication
+                                        [ BinaryOperation
+                                            Multiplication
                                             (ValueReference "i")
                                             (ValueReference "i")
                                         ]
@@ -305,7 +322,8 @@ examplesByTitle =
                     [ ProcedureCall
                         "fd"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (IntegerLiteral 25)
                                 ( ProcedureCall "sin"
                                     ( List.fromFoldable
@@ -317,7 +335,8 @@ examplesByTitle =
                     , ProcedureCall
                         "rt"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (ValueReference "i")
                                 (ValueReference "i")
                             ]
@@ -416,7 +435,8 @@ examplesByTitle =
                     [ ProcedureCall "setxy"
                         ( List.fromFoldable
                             [ ValueReference "x"
-                            , Multiplication
+                            , BinaryOperation
+                                Multiplication
                                 (IntegerLiteral 70)
                                 ( ProcedureCall "sin"
                                     ( List.fromFoldable
@@ -445,7 +465,8 @@ examplesByTitle =
                           (List.fromFoldable [ IntegerLiteral 5 ])
                       , ProcedureCall "rt"
                           ( List.fromFoldable
-                              [ Multiplication
+                              [ BinaryOperation
+                                  Multiplication
                                   (IntegerLiteral 90)
                                   ( ProcedureCall "sin"
                                       ( List.fromFoldable
@@ -463,7 +484,9 @@ examplesByTitle =
         { ast:
             [ ProcedureCall "pu" Nil
             , ProcedureCall "setx"
-                (List.fromFoldable [ IntegerLiteral (-157) ])
+                ( List.fromFoldable
+                    [ UnaryOperation Negation (IntegerLiteral 157) ]
+                )
             , ProcedureCall "pd" Nil
             , ForBlock
                 { binder: "t"
@@ -474,7 +497,8 @@ examplesByTitle =
                 ( List.fromFoldable
                     [ ProcedureCall "setxy"
                         ( List.fromFoldable
-                            [ Multiplication
+                            [ BinaryOperation
+                                Multiplication
                                 (ValueReference "t")
                                 ( ProcedureCall
                                     "sin"
@@ -482,11 +506,13 @@ examplesByTitle =
                                         [ ValueReference "t" ]
                                     )
                                 )
-                            , Multiplication
+                            , BinaryOperation
+                                Multiplication
                                 (ValueReference "t")
                                 ( ProcedureCall "cos"
                                     ( List.fromFoldable
-                                        [ Multiplication
+                                        [ BinaryOperation
+                                            Multiplication
                                             (IntegerLiteral 2)
                                             (ValueReference "t")
                                         ]

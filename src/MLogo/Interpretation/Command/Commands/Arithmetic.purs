@@ -9,6 +9,7 @@ import MLogo.Interpretation.Command (Command)
 import MLogo.Interpretation.Command.Commands.Arithmetic.Cos as Cos
 import MLogo.Interpretation.Command.Commands.Arithmetic.Difference as Difference
 import MLogo.Interpretation.Command.Commands.Arithmetic.EqualP as EqualP
+import MLogo.Interpretation.Command.Commands.Arithmetic.Minus as Minus
 import MLogo.Interpretation.Command.Commands.Arithmetic.Power as Power
 import MLogo.Interpretation.Command.Commands.Arithmetic.Product as Product
 import MLogo.Interpretation.Command.Commands.Arithmetic.Quotient as Quotient
@@ -22,6 +23,7 @@ commandsByAlias = foldl
   [ Cos.commandsByAlias
   , Difference.commandsByAlias
   , EqualP.commandsByAlias
+  , Minus.commandsByAlias
   , Power.commandsByAlias
   , Product.commandsByAlias
   , Quotient.commandsByAlias

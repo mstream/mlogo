@@ -30,10 +30,13 @@ import MLogo.Lexing as Lexing
 import MLogo.Parsing (ParsingContext)
 import MLogo.Parsing as Parsing
 import MLogo.Parsing.Expression
-  ( Expression(..)
+  ( BinaryOperationType(..)
+  , Expression(..)
   , ParameterName(..)
   , ProcedureSignature
+  , UnaryOperationType(..)
   )
+import MLogo.Parsing.Expression as Expression
 import MLogo.Parsing.Expression.Gen as ExpressionGen
 import Parsing as P
 import Test.QuickCheck (Result(..), quickCheckGen)
@@ -41,29 +44,27 @@ import Test.QuickCheck.Gen (Gen)
 import Test.QuickCheck.Gen as Gen
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail)
+import Test.Spec.MLogo.Parsing.Operator as Operator
 import Test.Utils as Utils
 
 spec ∷ Spec Unit
 spec = describe "Parsing" do
+  Operator.spec
+
   describe "expression" do
     arithmeticalBinaryOperatorTestCase
-      "="
       Equation
 
     arithmeticalBinaryOperatorTestCase
-      "+"
       Addition
 
     arithmeticalBinaryOperatorTestCase
-      "/"
       Division
 
     arithmeticalBinaryOperatorTestCase
-      "^"
       Exponentiation
 
     arithmeticalBinaryOperatorTestCase
-      "*"
       Multiplication
 
     expressionTestCase
@@ -78,9 +79,10 @@ spec = describe "Parsing" do
             (Number.fromString =<< parts !! 3)
           in
             { context: Map.empty
-            , expected: Subtraction
-                (FloatLiteral leftOperand)
-                (FloatLiteral rightOperand)
+            , expected: BinaryOperation
+                Subtraction
+                (floatToExpression leftOperand)
+                (floatToExpression rightOperand)
             }
       )
 
@@ -91,9 +93,10 @@ spec = describe "Parsing" do
           firstInteger ← parseBackInteger parts "first integer" 0
           in
             { context: Map.empty
-            , expected: Addition
+            , expected: BinaryOperation
+                Addition
                 (IntegerLiteral firstInteger)
-                (IntegerLiteral (-1))
+                (UnaryOperation Negation (IntegerLiteral 1))
             }
       )
 
@@ -104,9 +107,10 @@ spec = describe "Parsing" do
           firstInteger ← parseBackInteger parts "first integer" 0
           in
             { context: Map.empty
-            , expected: Equation
-                (IntegerLiteral firstInteger)
-                (IntegerLiteral (-1))
+            , expected: BinaryOperation
+                Equation
+                (intToExpression firstInteger)
+                (intToExpression (-1))
             }
       )
 
@@ -119,11 +123,13 @@ spec = describe "Parsing" do
           thirdFloat ← parseBackFloat parts "third float" 4
           in
             { context: Map.empty
-            , expected: Addition
-                (FloatLiteral firstFloat)
-                ( Multiplication
-                    (FloatLiteral secondFloat)
-                    (FloatLiteral thirdFloat)
+            , expected: BinaryOperation
+                Addition
+                (floatToExpression firstFloat)
+                ( BinaryOperation
+                    Multiplication
+                    (floatToExpression secondFloat)
+                    (floatToExpression thirdFloat)
                 )
             }
       )
@@ -137,13 +143,49 @@ spec = describe "Parsing" do
           thirdFloat ← parseBackFloat parts "third float" 4
           in
             { context: Map.empty
-            , expected: Division
-                ( Multiplication
-                    (FloatLiteral firstFloat)
-                    (FloatLiteral secondFloat)
+            , expected: BinaryOperation
+                Division
+                ( BinaryOperation
+                    Multiplication
+                    (floatToExpression firstFloat)
+                    (floatToExpression secondFloat)
                 )
-                (FloatLiteral thirdFloat)
+                (floatToExpression thirdFloat)
 
+            }
+      )
+
+    expressionTestCase
+      "a procedure call and a chain of binary operations precedence"
+      [ genProcedureName
+      , pure " "
+      , genFloat
+      , pure "*"
+      , genFloat
+      , pure "/"
+      , genFloat
+      ]
+      ( \parts → ado
+          procedureName ← parseBackIdentifier parts "procedure name" 0
+          firstFloat ← parseBackFloat parts "first argument" 2
+          secondFloat ← parseBackFloat parts "second argument" 4
+          thirdFloat ← parseBackFloat parts "second argument" 6
+          in
+            { context: Map.fromFoldable [ procedureName /\ Just 1 ]
+            , expected:
+                ProcedureCall
+                  procedureName
+                  ( List.fromFoldable
+                      [ BinaryOperation
+                          Division
+                          ( BinaryOperation
+                              Multiplication
+                              (floatToExpression firstFloat)
+                              (floatToExpression secondFloat)
+                          )
+                          (floatToExpression thirdFloat)
+                      ]
+                  )
             }
       )
 
@@ -179,7 +221,7 @@ spec = describe "Parsing" do
       [ genFloat ]
       ( \parts → ado
           float ← parseBackFloat parts "float" 0
-          in { context: Map.empty, expected: FloatLiteral float }
+          in { context: Map.empty, expected: floatToExpression float }
       )
 
     expressionTestCase
@@ -189,7 +231,7 @@ spec = describe "Parsing" do
           float ← parseBackFloat parts "float" 1
           in
             { context: Map.empty
-            , expected: FloatLiteral float
+            , expected: floatToExpression float
             }
       )
 
@@ -239,8 +281,8 @@ spec = describe "Parsing" do
                 ProcedureCall
                   procedureName
                   ( List.fromFoldable
-                      [ FloatLiteral firstArgument
-                      , FloatLiteral secondArgument
+                      [ floatToExpression firstArgument
+                      , floatToExpression secondArgument
                       ]
                   )
             }
@@ -271,8 +313,10 @@ spec = describe "Parsing" do
             , expected: ProcedureCall
                 procedureName
                 ( List.fromFoldable
-                    [ Addition (FloatLiteral firstOperationArgument)
-                        (FloatLiteral secondOperationArgument)
+                    [ BinaryOperation
+                        Addition
+                        (floatToExpression firstOperationArgument)
+                        (floatToExpression secondOperationArgument)
                     ]
                 )
             }
@@ -305,9 +349,10 @@ spec = describe "Parsing" do
             , expected: ProcedureCall
                 procedureName
                 ( List.fromFoldable
-                    [ Addition
-                        (FloatLiteral firstOperationArgument)
-                        (FloatLiteral secondOperationArgument)
+                    [ BinaryOperation
+                        Addition
+                        (floatToExpression firstOperationArgument)
+                        (floatToExpression secondOperationArgument)
                     ]
                 )
             }
@@ -343,7 +388,8 @@ spec = describe "Parsing" do
             , expected: ProcedureCall
                 procedureName
                 ( List.fromFoldable
-                    [ Addition
+                    [ BinaryOperation
+                        Addition
                         (ValueReference firstOperationArgument)
                         (ValueReference secondOperationArgument)
                     ]
@@ -369,12 +415,13 @@ spec = describe "Parsing" do
             4
           in
             { context: Map.fromFoldable [ procedureName /\ Just 1 ]
-            , expected: Addition
-                (FloatLiteral firstOperationArgument)
+            , expected: BinaryOperation
+                Addition
+                (floatToExpression firstOperationArgument)
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ FloatLiteral procedureArgument ]
+                        [ floatToExpression procedureArgument ]
                     )
                 )
             }
@@ -402,12 +449,13 @@ spec = describe "Parsing" do
             5
           in
             { context: Map.fromFoldable [ procedureName /\ Just 1 ]
-            , expected: Addition
-                (FloatLiteral firstOperationArgument)
+            , expected: BinaryOperation
+                Addition
+                (floatToExpression firstOperationArgument)
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ FloatLiteral procedureArgument
+                        [ floatToExpression procedureArgument
                         ]
                     )
                 )
@@ -442,14 +490,16 @@ spec = describe "Parsing" do
             7
           in
             { context: Map.fromFoldable [ procedureName /\ Just 1 ]
-            , expected: Addition
-                (FloatLiteral firstOperationArgument)
+            , expected: BinaryOperation
+                Addition
+                (floatToExpression firstOperationArgument)
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ Addition
-                            (FloatLiteral firstProcedureArgument)
-                            (FloatLiteral secondProcedureArgument)
+                        [ BinaryOperation
+                            Addition
+                            (floatToExpression firstProcedureArgument)
+                            (floatToExpression secondProcedureArgument)
                         ]
                     )
                 )
@@ -484,12 +534,14 @@ spec = describe "Parsing" do
             7
           in
             { context: Map.fromFoldable [ procedureName /\ Just 1 ]
-            , expected: Addition
-                (FloatLiteral firstOperationArgument)
+            , expected: BinaryOperation
+                Addition
+                (floatToExpression firstOperationArgument)
                 ( ProcedureCall
                     procedureName
                     ( List.fromFoldable
-                        [ Addition
+                        [ BinaryOperation
+                            Addition
                             (ValueReference firstProcedureArgument)
                             (ValueReference secondProcedureArgument)
                         ]
@@ -604,7 +656,8 @@ spec = describe "Parsing" do
                 Map.fromFoldable
                   [ "proc1" /\ Just 1, "proc2" /\ Just 1 ]
             , expected: IfBlock
-                ( Equation
+                ( BinaryOperation
+                    Equation
                     (IntegerLiteral firstInteger)
                     (IntegerLiteral secondInteger)
                 )
@@ -765,22 +818,28 @@ spec = describe "Parsing" do
     expressionsTestCase
       "a negative and a positive integer literals"
       "-1 2"
-      [ IntegerLiteral (-1), IntegerLiteral 2 ]
+      [ UnaryOperation Negation (IntegerLiteral 1), IntegerLiteral 2 ]
 
     expressionsTestCase
       "a positive and a negative integer literals"
       "1 -2"
-      [ IntegerLiteral 1, IntegerLiteral (-2) ]
+      [ IntegerLiteral 1, UnaryOperation Negation (IntegerLiteral 2) ]
 
     expressionsTestCase
       "two negative integer literals"
       "-1 -2"
-      [ IntegerLiteral (-1), IntegerLiteral (-2) ]
+      [ UnaryOperation Negation (IntegerLiteral 1)
+      , UnaryOperation Negation (IntegerLiteral 2)
+      ]
 
     expressionsTestCase
       "subtraction"
       "1 - 2"
-      [ Subtraction (IntegerLiteral 1) (IntegerLiteral 2) ]
+      [ BinaryOperation
+          Subtraction
+          (IntegerLiteral 1)
+          (IntegerLiteral 2)
+      ]
 
   describe "procedureSignature" do
     procedureSignatureTestCase
@@ -873,27 +932,30 @@ spec = describe "Parsing" do
       ]
 
 arithmeticalBinaryOperatorTestCase
-  ∷ String
-  → (Expression → Expression → Expression)
+  ∷ BinaryOperationType
   → Spec Unit
-arithmeticalBinaryOperatorTestCase symbol expected =
-  expressionTestCase
-    ("\"" <> symbol <> "\" symbol")
-    [ genFloat, pure symbol, genFloat ]
-    ( \parts → ado
-        leftOperand ← Either.note
-          "can't parse the left operand back"
-          (Number.fromString =<< parts !! 0)
-        rightOperand ← Either.note
-          "can't parse the right operand back"
-          (Number.fromString =<< parts !! 2)
-        in
-          { context: Map.empty
-          , expected: expected
-              (FloatLiteral leftOperand)
-              (FloatLiteral rightOperand)
-          }
-    )
+arithmeticalBinaryOperatorTestCase operationType =
+  let
+    symbol = Expression.binaryOperationTypeSymbol operationType
+  in
+    expressionTestCase
+      ("\"" <> symbol <> "\" symbol")
+      [ genFloat, pure symbol, genFloat ]
+      ( \parts → ado
+          leftOperand ← Either.note
+            "can't parse the left operand back"
+            (Number.fromString =<< parts !! 0)
+          rightOperand ← Either.note
+            "can't parse the right operand back"
+            (Number.fromString =<< parts !! 2)
+          in
+            { context: Map.empty
+            , expected: BinaryOperation
+                operationType
+                (floatToExpression leftOperand)
+                (floatToExpression rightOperand)
+            }
+      )
 
 genBoolean ∷ Gen String
 genBoolean = show <$> ExpressionGen.genBoolean
@@ -1144,3 +1206,17 @@ parseBack
 parseBack parts name index fromString = Either.note
   ("can't parse back the " <> name)
   (fromString =<< parts !! index)
+
+floatToExpression ∷ Number → Expression
+floatToExpression x =
+  if x < 0.0 then
+    UnaryOperation Negation (FloatLiteral (-x))
+  else
+    FloatLiteral x
+
+intToExpression ∷ Int → Expression
+intToExpression n =
+  if n < 0 then
+    UnaryOperation Negation (IntegerLiteral (-n))
+  else
+    IntegerLiteral n

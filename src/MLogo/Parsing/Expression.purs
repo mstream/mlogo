@@ -1,39 +1,139 @@
 module MLogo.Parsing.Expression
-  ( Expression(..)
+  ( BinaryOperationType(..)
+  , Expression(..)
   , ForBlockSpec
   , ParameterName(..)
   , ProcedureSignature
+  , UnaryOperationType(..)
+  , binaryOperationTypeSymbol
+  , unaryOperationTypeSymbol
   ) where
 
 import Prelude
 
 import Data.Argonaut.Encode (class EncodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Argonaut.Encode.Generic as AEG
 import Data.Generic.Rep (class Generic)
 import Data.List (List)
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
+import MLogo.Lexing as Lexing
 import Test.QuickCheck (class Arbitrary)
 
 data Expression
-  = Addition Expression Expression
+  = BinaryOperation BinaryOperationType Expression Expression
   | BooleanLiteral Boolean
-  | Division Expression Expression
-  | Equation Expression Expression
-  | Exponentiation Expression Expression
   | IfBlock Expression (List Expression)
   | IfElseBlock Expression (List Expression) (List Expression)
   | IntegerLiteral Int
   | FloatLiteral Number
   | ForBlock ForBlockSpec (List Expression)
-  | Multiplication Expression Expression
   | ProcedureCall String (List Expression)
   | ProcedureDefinition ProcedureSignature (List Expression)
   | RepeatBlock Expression (List Expression)
   | StringLiteral String
-  | Subtraction Expression Expression
+  | UnaryOperation UnaryOperationType Expression
   | ValueReference String
   | VariableAssignment String Expression
+
+data BinaryOperationType
+  = Addition
+  | Division
+  | Equation
+  | Exponentiation
+  | Multiplication
+  | Subtraction
+
+derive instance Eq BinaryOperationType
+derive instance Generic BinaryOperationType _
+
+instance EncodeJson BinaryOperationType where
+  encodeJson = genericEncodeJson
+
+instance Ord BinaryOperationType where
+  compare = case _, _ of
+    Addition, Addition →
+      EQ
+    Addition, Subtraction →
+      EQ
+    Addition, _ →
+      GT
+    Division, Addition →
+      LT
+    Division, Division →
+      EQ
+    Division, Multiplication →
+      EQ
+    Division, Subtraction →
+      LT
+    Division, _ →
+      GT
+    Equation, Equation →
+      EQ
+    Equation, _ →
+      LT
+    Exponentiation, Equation →
+      GT
+    Exponentiation, Exponentiation →
+      EQ
+    Exponentiation, _ →
+      LT
+    Multiplication, Addition →
+      LT
+    Multiplication, Division →
+      EQ
+    Multiplication, Multiplication →
+      EQ
+    Multiplication, Subtraction →
+      LT
+    Multiplication, _ →
+      GT
+    Subtraction, Addition →
+      EQ
+    Subtraction, Subtraction →
+      EQ
+    Subtraction, _ →
+      GT
+
+instance Show BinaryOperationType where
+  show = genericShow
+
+binaryOperationTypeSymbol ∷ BinaryOperationType → String
+binaryOperationTypeSymbol = case _ of
+  Addition →
+    Lexing.plusSymbol
+  Division →
+    Lexing.slashSymbol
+  Equation →
+    Lexing.equalSymbol
+  Exponentiation →
+    Lexing.caretSymbol
+  Multiplication →
+    Lexing.asteriskSymbol
+  Subtraction →
+    Lexing.minusSymbol
+
+data UnaryOperationType = Negation
+
+derive instance Eq UnaryOperationType
+derive instance Generic UnaryOperationType _
+
+instance EncodeJson UnaryOperationType where
+  encodeJson = genericEncodeJson
+
+instance Ord UnaryOperationType where
+  compare = case _, _ of
+    Negation, Negation →
+      EQ
+
+instance Show UnaryOperationType where
+  show = genericShow
+
+unaryOperationTypeSymbol ∷ UnaryOperationType → String
+unaryOperationTypeSymbol = case _ of
+  Negation →
+    Lexing.minusSymbol
 
 type ProcedureSignature =
   { name ∷ String

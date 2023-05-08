@@ -18,7 +18,10 @@ import Data.Char.Gen as GenChar
 import Data.Int as Int
 import Data.String as String
 import Data.String.Gen as StringGen
-import MLogo.Parsing.Expression (Expression(..))
+import MLogo.Parsing.Expression
+  ( BinaryOperationType(..)
+  , Expression(..)
+  )
 
 genExpression
   ∷ ∀ m. MonadGen m ⇒ MonadRec m ⇒ Lazy (m Expression) ⇒ m Expression
@@ -38,25 +41,12 @@ genExpression = Gen.resize (min 3) (Gen.sized go)
 
   genBranch ∷ m Expression
   genBranch = Gen.oneOf $ ArrayNE.cons'
-    genAddition
-    [ genDivision
-    , genEquation
-    , genExponentiation
-    , genIfBlock
-    , genMultiplication
+    genBinaryOperation
+    [ genIfBlock
     ]
-
-  genAddition ∷ m Expression
-  genAddition = genBinaryOperation Addition
 
   genBooleanLiteral ∷ m Expression
   genBooleanLiteral = BooleanLiteral <$> genBoolean
-
-  genEquation ∷ m Expression
-  genEquation = genBinaryOperation Equation
-
-  genExponentiation ∷ m Expression
-  genExponentiation = genBinaryOperation Exponentiation
 
   genIfBlock ∷ m Expression
   genIfBlock = do
@@ -73,12 +63,6 @@ genExpression = Gen.resize (min 3) (Gen.sized go)
   genStringLiteral ∷ m Expression
   genStringLiteral = StringLiteral <$> genString
 
-  genDivision ∷ m Expression
-  genDivision = Lazy.defer \_ → genBinaryOperation Division
-
-  genMultiplication ∷ m Expression
-  genMultiplication = Lazy.defer \_ → genBinaryOperation Multiplication
-
   genValueReference ∷ m Expression
   genValueReference = ValueReference <$> genIdentifier
 
@@ -93,12 +77,23 @@ genExpression = Gen.resize (min 3) (Gen.sized go)
       $ String.fromCodePointArray
       $ String.codePointFromChar <$> ([ firstChar ] <> otherChars)
 
-  genBinaryOperation
-    ∷ (Expression → Expression → Expression) → m Expression
-  genBinaryOperation make = do
-    leftOperand ← Lazy.defer \_ → genExpression
-    rightOperand ← Lazy.defer \_ → genExpression
-    pure $ make leftOperand rightOperand
+genBinaryOperation
+  ∷ ∀ m. Lazy (m Expression) ⇒ MonadGen m ⇒ MonadRec m ⇒ m Expression
+genBinaryOperation = ado
+  leftOperand ← Lazy.defer \_ → genExpression
+  rightOperand ← Lazy.defer \_ → genExpression
+  operationType ← genBinaryOperationType
+  in BinaryOperation operationType leftOperand rightOperand
+
+genBinaryOperationType ∷ ∀ m. MonadGen m ⇒ m BinaryOperationType
+genBinaryOperationType = Gen.elements $ ArrayNE.cons'
+  Addition
+  [ Division
+  , Equation
+  , Exponentiation
+  , Multiplication
+  , Subtraction
+  ]
 
 genBoolean ∷ ∀ m. MonadGen m ⇒ m Boolean
 genBoolean = Gen.chooseBool
@@ -114,5 +109,10 @@ genFloat = do
 genInteger ∷ ∀ m. MonadGen m ⇒ m Int
 genInteger = Gen.chooseInt 0 99
 
+{- TODO make generate more types of strings -}
 genString ∷ ∀ m. MonadGen m ⇒ MonadRec m ⇒ m String
-genString = StringGen.genAlphaString
+genString = do
+  firstCharacter ← GenChar.genAlpha
+  suffix ← StringGen.genAlphaString
+  pure $ (String.singleton $ String.codePointFromChar firstCharacter)
+    <> suffix
