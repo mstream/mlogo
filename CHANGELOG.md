@@ -1,5 +1,12 @@
 
 
+### [0.29.1](https://github.com/mstream/mlogo/compare/0.29.0...0.29.1) (2023-05-08)
+
+
+### Bug Fixes
+
+* include function signature pre-parsing in the web app ([ed602b8](https://github.com/mstream/mlogo/commit/ed602b8f3894aefa62cb618b9cc85625dbc742aa))
+
 ## [0.29.0](https://github.com/mstream/mlogo/compare/0.28.0...0.29.0) (2023-05-08)
 
 
