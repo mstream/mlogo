@@ -1,4 +1,4 @@
-module MLogo.Program (run, interpretAst) where
+module MLogo.Program (run, interpretAst, parseExpressions) where
 
 import Prelude
 

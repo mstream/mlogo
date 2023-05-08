@@ -22,10 +22,9 @@ import Halogen.HTML.Properties as HP
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Subscription as HS
-import MLogo.Interpretation.Command.Commands as Commands
-import MLogo.Parsing as Parsing
 import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
+import MLogo.Program as Program
 import Parsing (ParseError)
 import Parsing as P
 
@@ -193,6 +192,4 @@ formatSource ast = Printing.codeToString
   $ Printing.printExpressions ast 50
 
 parseSource ∷ String → ParseError \/ List Expression
-parseSource source = P.runParser
-  source
-  (Parsing.expressions Commands.parsingContext)
+parseSource = Program.parseExpressions
