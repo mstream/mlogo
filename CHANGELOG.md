@@ -1,5 +1,12 @@
 
 
+### [0.29.3](https://github.com/mstream/mlogo/compare/0.29.2...0.29.3) (2023-05-08)
+
+
+### Bug Fixes
+
+* history rewriting correction ([ef6dd9f](https://github.com/mstream/mlogo/commit/ef6dd9f0d74c2975a22b3a356355ae6a81ad5c6e))
+
 ### [0.29.2](https://github.com/mstream/mlogo/compare/0.29.1...0.29.2) (2023-05-08)
 
 
