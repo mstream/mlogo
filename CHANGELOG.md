@@ -1,5 +1,12 @@
 
 
+## [0.29.0](https://github.com/mstream/mlogo/compare/0.28.0...0.29.0) (2023-05-08)
+
+
+### Features
+
+* add a favicon ([27df53d](https://github.com/mstream/mlogo/commit/27df53dfac423982b28a4df668aae0e6b405b8ce))
+
 ## [0.28.0](https://github.com/mstream/mlogo/compare/0.27.0...0.28.0) (2023-05-08)
 
 
