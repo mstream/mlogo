@@ -2,6 +2,8 @@ module MLogo.WebApp.ExamplesComponent (Output(..), component) where
 
 import Prelude
 
+import Data.List (List)
+import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Tuple.Nested ((/\))
@@ -12,17 +14,21 @@ import Halogen.HTML (ClassName(..))
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
+import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
 
 type Input = Map String Example
-data Output = SourceTryRequested String
+
+data Output = SourceTryRequested (List Expression)
 
 component ∷ ∀ m q. MonadAff m ⇒ Component q Input Output m
 component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
   let
-    handleTryButtonClick = Hooks.raise outputToken
-      <<< SourceTryRequested
+    handleTryButtonClick ∷ List Expression → HookM m Unit
+    handleTryButtonClick =
+      Hooks.raise outputToken <<< SourceTryRequested
 
     renderExample (title /\ Example { ast }) =
       let
@@ -43,7 +49,8 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
                   ]
               ]
               [ HH.button
-                  [ HE.onClick \_ → handleTryButtonClick source
+                  [ HE.onClick \_ →
+                      handleTryButtonClick $ List.fromFoldable ast
                   , HP.classes [ ClassName "button" ]
                   ]
                   [ HH.span

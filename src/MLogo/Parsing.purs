@@ -13,7 +13,7 @@ import Prelude
 import Control.Lazy as Lazy
 import Data.Array as Array
 import Data.Foldable (class Foldable, foldl)
-import Data.List (List(..))
+import Data.List (List)
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map

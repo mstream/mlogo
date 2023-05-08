@@ -1,4 +1,4 @@
-module MLogo.Program (run) where
+module MLogo.Program (run, interpretAst) where
 
 import Prelude
 
@@ -22,28 +22,13 @@ import Parsing as P
 
 run ∷ String → String \/ VisibleState
 run source = do
-  expressions ← case parseExpressions source of
+  ast ← case parseExpressions source of
     Left parseError →
       Left $ "Syntax error:\n" <> show parseError
     Right expressions →
       Right expressions
 
-  let
-    result = Interpret.runInterpret
-      Interpretation.interpretExpressions
-      State.initialExecutionState
-      expressions
-
-  { callStack, pointer, screen } ← unwrap <$> case result of
-    Left interpretationError →
-      Left $ "\n\nRuntime error: "
-        <> interpretationError
-    Right (_ /\ state) →
-      Right state
-
-  if List.null callStack then
-    Right { pointer, screen }
-  else Left "call stack not cleared"
+  interpretAst ast
 
 parseExpressions ∷ String → ParseError \/ List Expression
 parseExpressions source = do
@@ -56,4 +41,23 @@ parseExpressions source = do
       Commands.parsingContext
 
   P.runParser source (Parsing.expressions parsingContext)
+
+interpretAst ∷ List Expression → String \/ VisibleState
+interpretAst ast = do
+  let
+    result = Interpret.runInterpret
+      Interpretation.interpretExpressions
+      State.initialExecutionState
+      ast
+
+  { callStack, pointer, screen } ← unwrap <$> case result of
+    Left interpretationError →
+      Left $ "\n\nRuntime error: "
+        <> interpretationError
+    Right (_ /\ state) →
+      Right state
+
+  if List.null callStack then
+    Right { pointer, screen }
+  else Left "call stack not cleared"
 
