@@ -1,5 +1,12 @@
 
 
+## [0.28.0](https://github.com/mstream/mlogo/compare/0.27.0...0.28.0) (2023-05-08)
+
+
+### Features
+
+* make source code persist an the URL query string ([73975a7](https://github.com/mstream/mlogo/commit/73975a793a92752e3c80eeda53a798b76ecc57bb))
+
 ## [0.27.0](https://github.com/mstream/mlogo/compare/0.26.1...0.27.0) (2023-05-08)
 
 
