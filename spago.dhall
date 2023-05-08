@@ -34,6 +34,7 @@
   , "parsing"
   , "prelude"
   , "quickcheck"
+  , "routing-duplex"
   , "spec"
   , "spec-quickcheck"
   , "strings"
@@ -43,6 +44,7 @@
   , "unfoldable"
   , "unicode"
   , "web-dom"
+  , "web-html"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

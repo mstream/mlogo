@@ -14,6 +14,7 @@
     "clean": "rm -rf output* .spago",
     "lint": "npm run clean && spago build --purs-args '--censor-lib --strict'",
     "release": "release-it",
+    "serve": "http-server static",
     "test": "spago test",
     "test:interpretation": "spago test --exec-args Interpretation",
     "test:lexing": "spago test --exec-args Lexing",
@@ -24,10 +25,12 @@
   "type": "module",
   "devDependencies": {
     "@release-it/conventional-changelog": "^5",
+    "http-server": "^14",
     "release-it": "^15"
   },
   "dependencies": {
-    "ace-builds": "^1"
+    "ace-builds": "^1",
+    "lz-string": "^1"
   },
   "release-it": {
     "git": {

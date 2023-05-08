@@ -2,17 +2,18 @@ module Main.WebApp (main) where
 
 import Prelude
 
-import Data.Either (Either(..))
+import Data.Either (Either(..), hush)
 import Data.Foldable (for_)
 import Data.List (List(..))
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Aff.Class (class MonadAff)
+import Effect.Class (liftEffect)
 import Halogen (ClassName(..), Component)
 import Halogen.Aff (selectElement)
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
@@ -24,8 +25,16 @@ import MLogo.WebApp.EditorComponent as EditorComponent
 import MLogo.WebApp.ExamplesComponent (Output(..))
 import MLogo.WebApp.ExamplesComponent as ExamplesComponent
 import MLogo.WebApp.SideBarComponent as SideBarComponent
+import Routing.Duplex (RouteDuplex')
+import Routing.Duplex as R
 import Type.Proxy (Proxy(..))
+import Utils as Utils
 import Web.DOM.ParentNode (QuerySelector(..))
+import Web.HTML as HTML
+import Web.HTML.History (DocumentTitle(..), URL(..))
+import Web.HTML.History as History
+import Web.HTML.Location as Location
+import Web.HTML.Window as Window
 
 main ∷ Effect Unit
 main = launchAff_ do
@@ -36,13 +45,13 @@ main = launchAff_ do
 rootComp ∷ ∀ i m o q. MonadAff m ⇒ Component q i o m
 rootComp = Hooks.component \{ slotToken } _ → Hooks.do
   astResult /\ astResultId ← Hooks.useState $ Right Nil
-  astToggle /\ astToggleId ← Hooks.useState false
 
   let
     handleEditorOutput ∷ EditorComponent.Output → HookM m Unit
     handleEditorOutput = case _ of
-      AstChanged newAst →
-        Hooks.put astResultId (Right newAst)
+      AstChanged { ast, source } → do
+        liftEffect $ setSourceInUrl source
+        Hooks.put astResultId (Right ast)
       SyntaxErrorDetected errorMessage →
         Hooks.put astResultId (Left errorMessage)
 
@@ -56,8 +65,32 @@ rootComp = Hooks.component \{ slotToken } _ → Hooks.do
         unit
         (SetAst exampleAst)
 
-    handleAstToggleClick ∷ HookM m Unit
-    handleAstToggleClick = Hooks.modify_ astToggleId not
+    renderLeftColumn = HH.div
+      [ HP.classes
+          [ ClassName "column"
+          , ClassName "is-6"
+          ]
+      ]
+      [ HH.div
+          [ HP.id "editor" ]
+          [ HH.slot
+              (Proxy ∷ Proxy "editor")
+              unit
+              EditorComponent.component
+              unit
+              handleEditorOutput
+          ]
+      , HH.div
+          [ HP.id "side-bar"
+          ]
+          [ HH.slot
+              (Proxy ∷ Proxy "sideBar")
+              unit
+              SideBarComponent.component
+              unit
+              handleSideBarOutput
+          ]
+      ]
 
     renderRightColumn = HH.div
       [ HP.classes
@@ -65,36 +98,35 @@ rootComp = Hooks.component \{ slotToken } _ → Hooks.do
           , ClassName "is-6"
           ]
       ]
-      [ HH.div
-          [ HP.classes
-              [ ClassName "is-flex"
-              , ClassName "is-flex-direction-column"
+      [ case astResult >>= Program.interpretAst of
+          Left errorMessage →
+            HH.div
+              [ HP.classes [ ClassName "error" ] ]
+              [ HH.text errorMessage ]
+          Right visibleState →
+            HH.div
+              [ HP.id "canvas" ]
+              [ HH.slot_
+                  (Proxy ∷ Proxy "canvas")
+                  unit
+                  CanvasComponent.component
+                  visibleState
               ]
-          ]
-          [ HH.button
-              [ HE.onClick \_ → handleAstToggleClick
-              , HP.classes [ ClassName "button" ]
-              ]
-              [ HH.text
-                  if astToggle then "View drawing" else "View AST"
-              ]
-          , if astToggle then HH.text $ show astResult
-            else case astResult >>= Program.interpretAst of
-              Left errorMessage →
-                HH.div
-                  [ HP.classes [ ClassName "error" ] ]
-                  [ HH.text errorMessage ]
-              Right visibleState →
-                HH.div
-                  [ HP.id "canvas" ]
-                  [ HH.slot_
-                      (Proxy ∷ Proxy "canvas")
-                      unit
-                      CanvasComponent.component
-                      visibleState
-                  ]
-          ]
       ]
+
+  Hooks.useLifecycleEffect do
+    mbSource ← liftEffect $ getSourceFromUrl
+    case mbSource of
+      Just source →
+        Hooks.tell
+          slotToken
+          (Proxy ∷ Proxy "editor")
+          unit
+          (SetSource source)
+      Nothing →
+        pure unit
+
+    pure Nothing
 
   Hooks.pure do
     HH.div
@@ -104,32 +136,47 @@ rootComp = Hooks.component \{ slotToken } _ → Hooks.do
           ]
       , HP.id "container"
       ]
-      [ HH.div
-          [ HP.classes
-              [ ClassName "column"
-              , ClassName "is-6"
-              ]
-          ]
-          [ HH.div
-              [ HP.id "editor" ]
-              [ HH.slot
-                  (Proxy ∷ Proxy "editor")
-                  unit
-                  EditorComponent.component
-                  unit
-                  handleEditorOutput
-              ]
-          , HH.div
-              [ HP.id "side-bar"
-              ]
-              [ HH.slot
-                  (Proxy ∷ Proxy "sideBar")
-                  unit
-                  SideBarComponent.component
-                  unit
-                  handleSideBarOutput
-              ]
-          ]
+      [ renderLeftColumn
       , renderRightColumn
       ]
 
+getSourceFromUrl ∷ Effect (Maybe String)
+getSourceFromUrl = do
+  window ← HTML.window
+  location ← Window.location window
+  search ← Location.search location
+  pure do
+    { s } ← parseSearch search
+    encoded ← s
+    Utils.decodeFromString encoded
+
+setSourceInUrl ∷ String → Effect Unit
+setSourceInUrl source = do
+  window ← HTML.window
+  history ← Window.history window
+  historyState ← History.state history
+  location ← Window.location window
+  origin ← Location.origin location
+
+  let
+    path = printSearch
+      { s: Utils.uriEncodedStringToString
+          <$> Utils.encodeToUriComponent source
+      }
+
+  History.replaceState
+    historyState
+    (DocumentTitle "MLogo")
+    (URL $ origin <> path)
+    history
+
+type Search = { s ∷ Maybe String }
+
+parseSearch ∷ String → Maybe Search
+parseSearch = hush <<< R.parse route
+
+printSearch ∷ Search → String
+printSearch = R.print route
+
+route ∷ RouteDuplex' { s ∷ Maybe String }
+route = R.params { s: R.optional <<< R.string }

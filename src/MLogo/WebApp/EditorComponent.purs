@@ -29,9 +29,11 @@ import MLogo.Printing as Printing
 import Parsing (ParseError)
 import Parsing as P
 
-data Output = AstChanged (List Expression) | SyntaxErrorDetected String
+data Output
+  = AstChanged ({ ast ∷ List Expression, source ∷ String })
+  | SyntaxErrorDetected String
 
-data Query a = SetAst (List Expression) a
+data Query a = SetAst (List Expression) a | SetSource String a
 
 data SourceInfo
   = Parsable
@@ -84,9 +86,9 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
             Parsable info →
               when
                 (ast /= info.ast)
-                (Hooks.raise outputToken (AstChanged ast))
+                (Hooks.raise outputToken (AstChanged { ast, source }))
             Unparsable _ →
-              Hooks.raise outputToken (AstChanged ast)
+              Hooks.raise outputToken (AstChanged { ast, source })
 
           Hooks.put
             sourceInfoId
@@ -133,6 +135,9 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
   Hooks.useQuery queryToken case _ of
     SetAst ast next → do
       updateSource $ formatSource ast
+      pure $ Just next
+    SetSource source next → do
+      updateSource source
       pure $ Just next
 
   Hooks.pure do
