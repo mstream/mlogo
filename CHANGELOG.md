@@ -1,5 +1,12 @@
 
 
+### [0.29.2](https://github.com/mstream/mlogo/compare/0.29.1...0.29.2) (2023-05-08)
+
+
+### Bug Fixes
+
+* make minus sign being interpreted properly ([dbae16f](https://github.com/mstream/mlogo/commit/dbae16f44ea61a8d646bd71f3674ecfa981f68b0))
+
 ### [0.29.1](https://github.com/mstream/mlogo/compare/0.29.0...0.29.1) (2023-05-08)
 
 
