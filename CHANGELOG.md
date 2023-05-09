@@ -1,5 +1,12 @@
 
 
+### [0.29.5](https://github.com/mstream/mlogo/compare/0.29.4...0.29.5) (2023-05-09)
+
+
+### Bug Fixes
+
+* correct various parsing/printing inconsistencies ([bfedd78](https://github.com/mstream/mlogo/commit/bfedd781bcdf32aae658e7d42cdc5a080c7bd7fa))
+
 ### [0.29.4](https://github.com/mstream/mlogo/compare/0.29.3...0.29.4) (2023-05-08)
 
 
