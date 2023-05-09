@@ -7,7 +7,7 @@ import Data.Int as Int
 import Data.Number as Number
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
-import Halogen (ClassName(..), Component)
+import Halogen (Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
@@ -20,6 +20,7 @@ import MLogo.Interpretation.State
   , Position(..)
   , VisibleState
   )
+import MLogo.Webapp.Utils (classes)
 
 type Input = VisibleState
 
@@ -100,10 +101,10 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
           ]
 
     renderZoomPanel = HH.div
-      [ HP.classes
-          [ ClassName "is-flex"
-          , ClassName "is-flex-direction-row"
-          , ClassName "is-justify-content-space-between"
+      [ classes
+          [ "is-flex"
+          , "is-flex-direction-row"
+          , "is-justify-content-space-between"
           ]
       , HP.id "zoom-panel"
       ]
@@ -114,39 +115,30 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
 
     renderZoomButton iconName clickHandler = HH.button
       [ HE.onClick \_ → clickHandler
-      , HP.classes [ ClassName "button", ClassName "square" ]
+      , classes [ "button", "square" ]
       ]
       [ HH.span
-          [ HP.classes
-              [ ClassName "icon", ClassName "is-small" ]
-          ]
+          [ classes [ "icon", "is-small" ] ]
           [ HH.i
-              [ HP.classes
-                  [ ClassName "mdi", ClassName iconName ]
-              ]
+              [ classes [ "mdi", iconName ] ]
               []
           ]
       ]
 
   Hooks.pure do
     HH.div
-      [ HP.classes
-          [ ClassName "body"
-          , ClassName "has-background-grey-lighter"
-          , ClassName "is-align-items-center"
-          , ClassName "is-justify-content-center"
-          , ClassName "is-flex"
-          , ClassName "is-relative"
-          , ClassName "square"
+      [ classes
+          [ "body"
+          , "has-background-grey-lighter"
+          , "is-align-items-center"
+          , "is-justify-content-center"
+          , "is-flex"
+          , "is-relative"
+          , "square"
           ]
       ]
       [ HH.div
-          [ HP.classes
-              [ ClassName "has-background-white"
-              , ClassName "wrapper"
-              , ClassName "square"
-              ]
-          ]
+          [ classes [ "has-background-white", "wrapper", "square" ] ]
           [ SE.svg
               [ SA.viewBox zero zero canvasSize canvasSize ]
               (renderScreen screen <> renderPointer pointer)

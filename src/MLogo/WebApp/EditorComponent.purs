@@ -13,7 +13,7 @@ import Effect.Aff.Class (class MonadAff)
 import Effect.Class (liftEffect)
 import Effect.Class.Console (info)
 import Effect.Exception (throw)
-import Halogen (ClassName(..), RefLabel(..), SubscriptionId)
+import Halogen (RefLabel(..), SubscriptionId)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -25,6 +25,7 @@ import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
 import MLogo.Printing.Code as Code
 import MLogo.Program as Program
+import MLogo.Webapp.Utils (classes)
 import Parsing as P
 
 data Output
@@ -140,21 +141,12 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ HP.classes
-          [ ClassName "body"
-          , ClassName "is-flex"
-          , ClassName "is-flex-direction-column"
-          ]
-      ]
+      [ classes [ "body", "is-flex", "is-flex-direction-column" ] ]
       [ HH.div
-          [ HP.classes
-              [ ClassName "is-flex"
-              , ClassName "is-flex-direction-row"
-              ]
-          ]
+          [ classes [ "is-flex", "is-flex-direction-row" ] ]
           [ HH.button
               [ HE.onClick \_ → handleFormatButtonClick
-              , HP.classes [ ClassName "button" ]
+              , classes [ "button" ]
               , HP.disabled case sourceInfo of
                   Parsable { formatted, unformatted } →
                     formatted == unformatted
@@ -162,15 +154,13 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
                     true
               ]
               [ HH.span
-                  [ HP.classes
-                      [ ClassName "icon", ClassName "is-small" ]
-                  ]
+                  [ classes [ "icon", "is-small" ] ]
                   [ HH.i
-                      [ HP.classes
-                          [ ClassName "aria-hidden"
-                          , ClassName "mdi"
-                          , ClassName "mdi-format-align-left"
-                          , ClassName "mr-1"
+                      [ classes
+                          [ "aria-hidden"
+                          , "mdi"
+                          , "mdi-format-align-left"
+                          , "mr-1"
                           ]
                       ]
                       []

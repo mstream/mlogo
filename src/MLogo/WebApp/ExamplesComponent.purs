@@ -6,19 +6,19 @@ import Data.List (List)
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff.Class (class MonadAff)
 import Examples (Example(..))
 import Halogen (Component)
-import Halogen.HTML (ClassName(..))
+import Halogen.HTML (HTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
-import Halogen.HTML.Properties as HP
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
 import MLogo.Printing.Code as Code
+import MLogo.Webapp.Utils (classes)
 
 type Input = Map String Example
 
@@ -28,42 +28,32 @@ component ∷ ∀ m q. MonadAff m ⇒ Component q Input Output m
 component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
   let
     handleTryButtonClick ∷ List Expression → HookM m Unit
-    handleTryButtonClick =
-      Hooks.raise outputToken <<< SourceTryRequested
+    handleTryButtonClick = Hooks.raise outputToken
+      <<< SourceTryRequested
 
+    renderExample ∷ ∀ w. String /\ Example → HTML w (HookM m Unit)
     renderExample (title /\ Example { ast }) =
       let
-        source = Code.codeToString
-          $ Printing.printExpressions ast 50
+        source ∷ String
+        source = Code.codeToString $ Printing.printExpressions ast 50
       in
         HH.div
-          [ HP.classes
-              [ ClassName "block"
-              , ClassName "is-flex"
-              , ClassName "is-flex-direction-column"
-              ]
-          ]
+          [ classes [ "block", "is-flex", "is-flex-direction-column" ] ]
           [ HH.div
-              [ HP.classes
-                  [ ClassName "is-flex"
-                  , ClassName "is-flex-direction-row"
-                  ]
-              ]
+              [ classes [ "is-flex", "is-flex-direction-row" ] ]
               [ HH.button
                   [ HE.onClick \_ →
                       handleTryButtonClick $ List.fromFoldable ast
-                  , HP.classes [ ClassName "button" ]
+                  , classes [ "button" ]
                   ]
                   [ HH.span
-                      [ HP.classes
-                          [ ClassName "icon", ClassName "is-small" ]
-                      ]
+                      [ classes [ "icon", "is-small" ] ]
                       [ HH.i
-                          [ HP.classes
-                              [ ClassName "aria-hidden"
-                              , ClassName "mdi"
-                              , ClassName "mdi-play-circle"
-                              , ClassName "mr-1"
+                          [ classes
+                              [ "aria-hidden"
+                              , "mdi"
+                              , "mdi-play-circle"
+                              , "mr-1"
                               ]
                           ]
                           []
@@ -71,7 +61,7 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
                   , HH.span_ [ HH.text "try" ]
                   ]
               , HH.h3
-                  [ HP.classes [ ClassName "is-3", ClassName "title" ] ]
+                  [ classes [ "is-3", "title" ] ]
                   [ HH.text title ]
               ]
           , HH.div_
@@ -84,8 +74,6 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ HP.classes
-          [ ClassName "is-flex", ClassName "is-flex-direction-column" ]
-      ]
+      [ classes [ "is-flex", "is-flex-direction-column" ] ]
       (renderExample <$> Map.toUnfoldable examplesByTitle)
 

@@ -16,6 +16,7 @@
   , "gen"
   , "halogen"
   , "halogen-hooks"
+  , "halogen-hooks-extra"
   , "halogen-subscriptions"
   , "halogen-svg-elems"
   , "heterogeneous"
