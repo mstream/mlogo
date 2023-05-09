@@ -1,5 +1,6 @@
 module MLogo.Parsing.Expression.Gen
-  ( genBoolean
+  ( genBinaryOperationType
+  , genBoolean
   , genExpression
   , genFloat
   , genInteger
@@ -21,6 +22,7 @@ import Data.String.Gen as StringGen
 import MLogo.Parsing.Expression
   ( BinaryOperationType(..)
   , Expression(..)
+  , UnaryOperationType(..)
   )
 
 genExpression
@@ -42,7 +44,8 @@ genExpression = Gen.resize (min 3) (Gen.sized go)
   genBranch ∷ m Expression
   genBranch = Gen.oneOf $ ArrayNE.cons'
     genBinaryOperation
-    [ genIfBlock
+    [ genBinaryOperation
+    , genIfBlock
     ]
 
   genBooleanLiteral ∷ m Expression
@@ -55,10 +58,18 @@ genExpression = Gen.resize (min 3) (Gen.sized go)
     pure $ IfBlock condition positiveBranch
 
   genIntegerLiteral ∷ m Expression
-  genIntegerLiteral = IntegerLiteral <$> genInteger
+  genIntegerLiteral = do
+    n ← genInteger
+    pure
+      if n < 0 then UnaryOperation Negation (IntegerLiteral (-n))
+      else IntegerLiteral n
 
   genFloatLiteral ∷ m Expression
-  genFloatLiteral = FloatLiteral <$> genFloat
+  genFloatLiteral = do
+    x ← genFloat
+    pure
+      if x < 0.0 then UnaryOperation Negation (FloatLiteral (-x))
+      else FloatLiteral x
 
   genStringLiteral ∷ m Expression
   genStringLiteral = StringLiteral <$> genString

@@ -42,3 +42,9 @@ spec = describe "Lexing" do
         expected = Right (-0.5)
       actual `shouldEqual` expected
 
+    it "parses a string literal" do
+      let
+        actual = P.runParser "\"abc" Lexing.lexer.stringLiteral
+        expected = Right "abc"
+      actual `shouldEqual` expected
+

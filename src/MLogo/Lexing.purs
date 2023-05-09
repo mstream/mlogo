@@ -41,10 +41,21 @@ import Parsing.Token (GenLanguageDef(..), GenTokenParser, LanguageDef)
 import Parsing.Token as PT
 
 lexer ∷ GenTokenParser String Identity
-lexer = lexer' { float = float <?> "float" }
+lexer = lexer'
+  { float = float <?> "float"
+  , stringLiteral = stringLiteral <?> "string literal"
+  }
   where
   lexer' ∷ GenTokenParser String Identity
   lexer' = PT.makeTokenParser languageDef
+
+  stringLiteral ∷ ParserT String Identity String
+  stringLiteral = PS.string "\"" *> do
+    chars ← PC.many PSB.alphaNum
+    pure
+      $ String.fromCodePointArray
+      $ Array.fromFoldable
+      $ String.codePointFromChar <$> chars
 
   float ∷ ParserT String Identity Number
   float = do

@@ -18,6 +18,7 @@ import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
+import MLogo.Printing.Code as Code
 
 type Input = Map String Example
 
@@ -32,7 +33,7 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
 
     renderExample (title /\ Example { ast }) =
       let
-        source = Printing.codeToString
+        source = Code.codeToString
           $ Printing.printExpressions ast 50
       in
         HH.div

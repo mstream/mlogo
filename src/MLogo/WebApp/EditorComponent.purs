@@ -23,6 +23,7 @@ import Halogen.Hooks as Hooks
 import Halogen.Subscription as HS
 import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
+import MLogo.Printing.Code as Code
 import MLogo.Program as Program
 import Parsing as P
 
@@ -186,6 +187,5 @@ aceRefLabel ∷ RefLabel
 aceRefLabel = RefLabel "ace"
 
 formatSource ∷ List Expression → String
-formatSource ast = Printing.codeToString
-  $ Printing.printExpressions ast 50
+formatSource ast = Code.codeToString $ Printing.printExpressions ast 50
 

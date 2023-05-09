@@ -5,13 +5,16 @@ import Prelude
 import Data.Argonaut.Core as A
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode as AE
+import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Foldable (class Foldable)
-import Data.FoldableWithIndex (traverseWithIndex_)
+import Data.FoldableWithIndex (forWithIndex_)
 import Data.List (List(..))
 import Data.List as List
+import Data.String (Pattern(..))
 import Data.String as String
+import Effect.Class (liftEffect)
 import Examples (Example(..))
 import Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
@@ -20,39 +23,31 @@ import MLogo.Parsing.Expression
   ( BinaryOperationType(..)
   , Expression(..)
   , ParameterName(..)
+  , UnaryOperationType(..)
   )
-import MLogo.Printing (Code(..), CodeWord(..))
+import MLogo.Parsing.Expression.Gen as ExpressionGen
 import MLogo.Printing as Printing
+import MLogo.Printing.Code (codeToString) as Code
 import Parsing (ParseError)
 import Parsing as P
+import Test.QuickCheck (Result(..), quickCheckGen)
+import Test.QuickCheck.Gen as Gen
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (fail)
+import Test.Spec.MLogo.Printing.Code (spec) as Code
 import Test.Utils as Utils
 
 spec ∷ Spec Unit
 spec = describe "Printing" do
-  describe "codeWidth" do
-    codeWidthTestCase
-      "single line, three words of different lengths"
-      ( SingleLine $ List.fromFoldable
-          [ CodeWord "abc"
-          , CodeWord "de"
-          , CodeWord "f"
-          ]
-      )
-      8
-
-    codeWidthTestCase
-      "single line, three words of different lengths, indented"
-      ( Indented $ SingleLine $ List.fromFoldable
-          [ CodeWord "abc"
-          , CodeWord "de"
-          , CodeWord "f"
-          ]
-      )
-      10
+  Code.spec
 
   describe "printExpressions" do
+
+    astBasedPrintTestCase
+      "single word negated integer literal"
+      [ UnaryOperation Negation (IntegerLiteral 1) ]
+      100
+      (String.joinWith "\n" [ "-1" ])
 
     astBasedPrintTestCase
       "single word string literal"
@@ -123,6 +118,54 @@ spec = describe "Printing" do
           , "+"
           , "3"
           , "+"
+          , "4"
+          ]
+      )
+
+-}
+    astBasedPrintTestCase
+      "a chain of subtractions in a single line"
+      [ BinaryOperation
+          Subtraction
+          ( BinaryOperation
+              Subtraction
+              ( BinaryOperation
+                  Subtraction
+                  (IntegerLiteral 1)
+                  (IntegerLiteral 2)
+              )
+              (IntegerLiteral 3)
+          )
+          (IntegerLiteral 4)
+      ]
+      100
+      (String.joinWith "\n" [ "1 - 2 - 3 - 4" ])
+
+    {- TODO: implement
+
+    astBasedPrintTestCase
+      "a chain of subtractions over multiple lines"
+      [ BinaryOperation
+          Subtraction
+          ( BinaryOperation
+              Subtraction
+              ( BinaryOperation
+                  Subtraction
+                  (IntegerLiteral 1)
+                  (IntegerLiteral 2)
+              )
+              (IntegerLiteral 3)
+          )
+          (IntegerLiteral 4)
+      ]
+      10
+      ( String.joinWith "\n"
+          [ "1"
+          , "-"
+          , "2"
+          , "-"
+          , "3"
+          , "-"
           , "4"
           ]
       )
@@ -529,11 +572,15 @@ spec = describe "Printing" do
       [ IntegerLiteral 1 ]
 
     printTestCase
+      "a negated integer literal"
+      [ UnaryOperation Negation (IntegerLiteral 1) ]
+
+    printTestCase
       "float literal"
       [ FloatLiteral 1.0 ]
 
     printTestCase
-      "operations out of priority order"
+      "operations out of precedence order"
       [ BinaryOperation
           Multiplication
           ( BinaryOperation
@@ -544,13 +591,69 @@ spec = describe "Printing" do
           (IntegerLiteral 3)
       ]
 
-    traverseWithIndex_
-      ( \title (Example { ast, source }) →
-          sourceBasedPrintTestCase title source ast
-      )
-      Examples.examplesByTitle
+    printTestCase
+      "negating an ifelse expression"
+      [ UnaryOperation
+          Negation
+          ( IfElseBlock
+              (BooleanLiteral true)
+              (List.fromFoldable [ IntegerLiteral 1 ])
+              (List.fromFoldable [ IntegerLiteral 2 ])
+          )
+      ]
 
-{- TODO: implement
+    printTestCase
+      "subtracting two ifelse expressions"
+      [ BinaryOperation
+          Subtraction
+          ( IfElseBlock
+              (BooleanLiteral true)
+              (List.fromFoldable [ IntegerLiteral 1 ])
+              (List.fromFoldable [ IntegerLiteral 2 ])
+          )
+          ( IfElseBlock
+              (BooleanLiteral true)
+              (List.fromFoldable [ IntegerLiteral 3 ])
+              (List.fromFoldable [ IntegerLiteral 4 ])
+          )
+      ]
+
+    printTestCase
+      "non-commutative operation chain"
+      [ BinaryOperation
+          Subtraction
+          ( BinaryOperation
+              Subtraction
+              (IntegerLiteral 1)
+              (IntegerLiteral 2)
+          )
+          ( BinaryOperation
+              Subtraction
+              (IntegerLiteral 3)
+              (IntegerLiteral 4)
+          )
+      ]
+
+    printTestCase
+      "same precedence in the right operand, left associativity"
+      [ BinaryOperation
+          Equation
+          ( BinaryOperation
+              Multiplication
+              (ValueReference "var1")
+              (ValueReference "var2")
+          )
+          ( BinaryOperation
+              Equation
+              (BooleanLiteral false)
+              (StringLiteral "s1")
+          )
+      ]
+
+    forWithIndex_
+      Examples.examplesByTitle
+      \title (Example { ast, source }) →
+        sourceBasedPrintTestCase title source ast
 
     it "parses back a printed source of a random AST" do
       liftEffect $ quickCheckGen do
@@ -558,7 +661,7 @@ spec = describe "Printing" do
 
         let
           printedSource ∷ String
-          printedSource = Printing.codeToString
+          printedSource = Code.codeToString
             $ Printing.printExpressions ast maxLineLength
 
           parsingResult ∷ ParseError \/ List Expression
@@ -570,6 +673,9 @@ spec = describe "Printing" do
           Left parseError →
             Failed $ "--- error >>> ---\n"
               <> show parseError
+              <> "\n--- AST >>> ---\n"
+              <> A.stringify (AE.encodeJson ast)
+              <> "\n--- <<< AST ---"
               <> "\n--- printed source >>> ---\n"
               <> Utils.emphasizeWhitespaces printedSource
               <> "\n--- <<< printed source ---"
@@ -601,9 +707,13 @@ spec = describe "Printing" do
           ast ← Gen.arrayOf $ ExpressionGen.genExpression
 
           let
+            {- TODO: remove relaxation once formatting is improved -}
+            maxLineLengthWithGrace ∷ Int
+            maxLineLengthWithGrace = maxLineLength * 3 / 2
+
             printedSource ∷ String
-            printedSource = Printing.codeToString
-              $ Printing.printExpressions ast maxLineLength
+            printedSource = Code.codeToString
+              $ Printing.printExpressions ast maxLineLengthWithGrace
 
             printedSourceLines ∷ Array String
             printedSourceLines = String.split
@@ -611,21 +721,19 @@ spec = describe "Printing" do
               printedSource
 
             isTooLong ∷ String → Boolean
-            isTooLong = (_ > maxLineLength) <<< String.length
+            isTooLong = (_ > maxLineLengthWithGrace) <<< String.length
 
           pure
             if Array.any isTooLong printedSourceLines then
               Failed $ "--- error >>> ---\n"
                 <> "There is at least one line longer than "
-                <> show maxLineLength
+                <> show maxLineLengthWithGrace
                 <> " characters"
                 <> "\n--- printed source >>> ---\n"
                 <> Utils.emphasizeWhitespaces printedSource
                 <> "\n--- <<< printed source ---"
                 <> "\n--- <<< error ---"
             else Success
-
--}
 
 astBasedPrintTestCase
   ∷ ∀ f
@@ -646,7 +754,7 @@ astBasedPrintTestCase title ast pageWidth expected =
     do
       let
         actual ∷ String
-        actual = Printing.codeToString
+        actual = Code.codeToString
           $ Printing.printExpressions ast pageWidth
 
       if actual == expected then pure unit
@@ -674,7 +782,7 @@ sourceBasedPrintTestCase title source ast =
 
     let
       printedSource ∷ String
-      printedSource = Printing.codeToString
+      printedSource = Code.codeToString
         $ Printing.printExpressions ast maxLineLength
 
       parsingResult ∷ ParseError \/ List Expression
@@ -719,8 +827,8 @@ printTestCase title ast =
 
     let
       printedSource ∷ String
-      printedSource = Printing.codeToString
-        $ Printing.printExpressions ast maxLineLength
+      printedSource = Code.codeToString
+        $ Printing.printExpressions ast 10
 
       parsingResult ∷ ParseError \/ List Expression
       parsingResult = P.runParser
@@ -746,22 +854,6 @@ printTestCase title ast =
         <> "\n--- printed source >>> ---\n"
         <> Utils.emphasizeWhitespaces printedSource
         <> "\n--- <<< printed source ---"
-        <> "\n--- <<< error ---"
-
-codeWidthTestCase ∷ String → Code → Int → Spec Unit
-codeWidthTestCase title code expected =
-  it ("calculates the width of \"" <> title <> "\" code") do
-    let
-      actual = Printing.codeWidth code
-    if actual == expected then pure unit
-    else
-      fail $ "--- error >>> ---\n"
-        <> show actual
-        <> "\nis not equal to\n"
-        <> show expected
-        <> "\n--- printed code >>> ---\n"
-        <> (Utils.emphasizeWhitespaces $ Printing.codeToString code)
-        <> "\n--- <<< printed code ---"
         <> "\n--- <<< error ---"
 
 maxLineLength ∷ Int

@@ -51,51 +51,6 @@ derive instance Generic BinaryOperationType _
 instance EncodeJson BinaryOperationType where
   encodeJson = genericEncodeJson
 
-instance Ord BinaryOperationType where
-  compare = case _, _ of
-    Addition, Addition →
-      EQ
-    Addition, Subtraction →
-      EQ
-    Addition, _ →
-      GT
-    Division, Addition →
-      LT
-    Division, Division →
-      EQ
-    Division, Multiplication →
-      EQ
-    Division, Subtraction →
-      LT
-    Division, _ →
-      GT
-    Equation, Equation →
-      EQ
-    Equation, _ →
-      LT
-    Exponentiation, Equation →
-      GT
-    Exponentiation, Exponentiation →
-      EQ
-    Exponentiation, _ →
-      LT
-    Multiplication, Addition →
-      LT
-    Multiplication, Division →
-      EQ
-    Multiplication, Multiplication →
-      EQ
-    Multiplication, Subtraction →
-      LT
-    Multiplication, _ →
-      GT
-    Subtraction, Addition →
-      EQ
-    Subtraction, Subtraction →
-      EQ
-    Subtraction, _ →
-      GT
-
 instance Show BinaryOperationType where
   show = genericShow
 
