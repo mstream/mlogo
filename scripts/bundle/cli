@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+npm run build:production 
+purs-backend-es bundle-app -m Main.CLI --minify --no-build -p node -t dist/cli.js

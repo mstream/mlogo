@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+spago -x spago.production.dhall build
