@@ -12,50 +12,50 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.Home as Home
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState(..))
-import Test.QuickCheck ((===))
-import Test.Spec (Spec, describe, it)
-import Test.Spec.QuickCheck (quickCheck)
+import Test.QuickCheck (arbitrary, (===))
+import Test.Spec (describe)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Home" do
   describe "interpret" do
-    it
+    generativeTestCase
       "moves the pointer back to the origin - with pen up"
       do
-        quickCheck \(ExecutionState state) →
-          let
-            actual = Interpret.runInterpret
-              Home.interpret
-              ( wrap state
-                  { pointer = state.pointer { isDown = false } }
-              )
-              unit
-            expected = Right $ Nothing /\
-              ( ExecutionState $ state
-                  { pointer = state.pointer
-                      { isDown = false, position = zero }
-                  }
-              )
-          in
-            actual === expected
+        (ExecutionState state) ← arbitrary
+        let
+          actual = Interpret.runInterpret
+            Home.interpret
+            ( wrap state
+                { pointer = state.pointer { isDown = false } }
+            )
+            unit
+          expected = Right $ Nothing /\
+            ( ExecutionState $ state
+                { pointer = state.pointer
+                    { isDown = false, position = zero }
+                }
+            )
 
-    it
+        pure $ actual === expected
+
+    generativeTestCase
       "moves the pointer back to the origin - with pen down"
       do
-        quickCheck \(ExecutionState state) →
-          let
-            actual = Interpret.runInterpret
-              Home.interpret
-              (wrap state { pointer = state.pointer { isDown = true } })
-              unit
-            expected = Right $ Nothing /\
-              ( ExecutionState $ state
-                  { pointer = state.pointer
-                      { isDown = true, position = zero }
-                  , screen = { p1: state.pointer.position, p2: zero } :
-                      state.screen
-                  }
-              )
-          in
-            actual === expected
+        (ExecutionState state) ← arbitrary
+        let
+          actual = Interpret.runInterpret
+            Home.interpret
+            (wrap state { pointer = state.pointer { isDown = true } })
+            unit
+          expected = Right $ Nothing /\
+            ( ExecutionState $ state
+                { pointer = state.pointer
+                    { isDown = true, position = zero }
+                , screen = { p1: state.pointer.position, p2: zero } :
+                    state.screen
+                }
+            )
+        pure $ actual === expected
 

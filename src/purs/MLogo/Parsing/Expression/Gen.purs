@@ -3,6 +3,7 @@ module MLogo.Parsing.Expression.Gen
   , genBoolean
   , genExpression
   , genFloat
+  , genIdentifier
   , genInteger
   , genString
   ) where
@@ -17,11 +18,14 @@ import Control.Monad.Rec.Class (class MonadRec)
 import Data.Array.NonEmpty as ArrayNE
 import Data.Char.Gen as GenChar
 import Data.Int as Int
+import Data.Set as Set
 import Data.String as String
 import Data.String.Gen as StringGen
+import MLogo.Lexing as Lexing
 import MLogo.Parsing.Expression
   ( BinaryOperationType(..)
   , Expression(..)
+  , ForBlockSpec
   , UnaryOperationType(..)
   )
 
@@ -45,17 +49,41 @@ genExpression = Gen.resize (min 3) (Gen.sized go)
   genBranch = Gen.oneOf $ ArrayNE.cons'
     genBinaryOperation
     [ genBinaryOperation
+    , genForBlock
     , genIfBlock
+    , genIfElseBlock
+    , genRepeatBlock
     ]
 
   genBooleanLiteral ∷ m Expression
   genBooleanLiteral = BooleanLiteral <$> genBoolean
+
+  genForBlock ∷ m Expression
+  genForBlock = do
+    spec ← genForBlockSpec
+    body ← Gen.unfoldable $ Lazy.defer \_ → genExpression
+    pure $ ForBlock spec body
+
+  genForBlockSpec ∷ m ForBlockSpec
+  genForBlockSpec = do
+    binder ← genIdentifier
+    initialValue ← genInteger
+    n ← genInteger
+    step ← Gen.chooseInt 1 9
+    pure { binder, initialValue, step, terminalValue: initialValue + n }
 
   genIfBlock ∷ m Expression
   genIfBlock = do
     condition ← Lazy.defer \_ → genExpression
     positiveBranch ← Gen.unfoldable $ Lazy.defer \_ → genExpression
     pure $ IfBlock condition positiveBranch
+
+  genIfElseBlock ∷ m Expression
+  genIfElseBlock = do
+    condition ← Lazy.defer \_ → genExpression
+    positiveBranch ← Gen.unfoldable $ Lazy.defer \_ → genExpression
+    negativeBranch ← Gen.unfoldable $ Lazy.defer \_ → genExpression
+    pure $ IfElseBlock condition positiveBranch negativeBranch
 
   genIntegerLiteral ∷ m Expression
   genIntegerLiteral = do
@@ -71,14 +99,23 @@ genExpression = Gen.resize (min 3) (Gen.sized go)
       if x < 0.0 then UnaryOperation Negation (FloatLiteral (-x))
       else FloatLiteral x
 
+  genRepeatBlock ∷ m Expression
+  genRepeatBlock = do
+    times ← Lazy.defer \_ → genExpression
+    body ← Gen.unfoldable $ Lazy.defer \_ → genExpression
+    pure $ RepeatBlock times body
+
   genStringLiteral ∷ m Expression
   genStringLiteral = StringLiteral <$> genString
 
   genValueReference ∷ m Expression
   genValueReference = ValueReference <$> genIdentifier
 
-  genIdentifier ∷ m String
-  genIdentifier = do
+genIdentifier ∷ ∀ m. MonadGen m ⇒ MonadRec m ⇒ m String
+genIdentifier = gen `Gen.suchThat` \s →
+  not (s `Set.member` Lexing.reservedNames)
+  where
+  gen = do
     firstChar ← GenChar.genAlpha
 
     otherChars ← Gen.unfoldable

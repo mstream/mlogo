@@ -11,32 +11,33 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Arithmetic.Quotient as Quotient
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState(..), Value(..))
-import Test.QuickCheck ((===))
+import Test.QuickCheck (arbitrary, (===))
 import Test.Spec (Spec, describe, it)
-import Test.Spec.QuickCheck (quickCheck)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Quotient" do
   describe "interpret" do
-    it "divides numbers" do
-      quickCheck \(ExecutionState state) →
-        let
-          actual = Interpret.runInterpret
-            Quotient.interpret
-            (wrap state)
-            { dividend: 6.0, divisor: 2.0 }
-          expected = Right $ (Just $ FloatValue 3.0) /\ (wrap state)
-        in
-          actual === expected
+    generativeTestCase "divides numbers" do
+      executionState ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          Quotient.interpret
+          executionState
+          { dividend: 6.0, divisor: 2.0 }
+        expected = Right $ (Just $ FloatValue 3.0) /\ executionState
 
-    it "divides numbers - division by zero" do
-      quickCheck \(ExecutionState state) →
-        let
-          actual = Interpret.runInterpret
-            Quotient.interpret
-            (wrap state)
-            { dividend: 6.0, divisor: zero }
-          expected = Left "division by zero"
-        in
-          actual === expected
+      pure $ actual === expected
+
+    generativeTestCase "divides numbers - division by zero" do
+      executionState ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          Quotient.interpret
+          executionState
+          { dividend: 6.0, divisor: zero }
+        expected = Left "division by zero"
+
+      pure $ actual === expected
 

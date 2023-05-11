@@ -2,15 +2,16 @@ module Test.Spec.MLogo.Parsing.Operator (spec) where
 
 import Prelude
 
-import Effect.Class (liftEffect)
 import MLogo.Parsing.Expression (BinaryOperationType(..))
 import MLogo.Parsing.Expression.Gen as ExpressionGen
 import MLogo.Parsing.Operator as Operator
-import Test.QuickCheck (Result(..), quickCheckGen)
-import Test.Spec (Spec, describe, it)
+import Test.QuickCheck (Result(..))
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Operator" do
   describe "isLowerPriorityThan" do
     it "considers addition of lower priority than multiplication"
@@ -44,32 +45,32 @@ spec = describe "Operator" do
 
         actual `shouldEqual` expected
 
-    it "maintains the transitivity" do
-      liftEffect $ quickCheckGen do
-        firstOperationType ← ExpressionGen.genBinaryOperationType
-        secondOperationType ← ExpressionGen.genBinaryOperationType
+    generativeTestCase "maintains the transitivity" do
+      firstOperationType ← ExpressionGen.genBinaryOperationType
+      secondOperationType ← ExpressionGen.genBinaryOperationType
 
-        let
-          originPrecedence = firstOperationType
-            `Operator.precedenceComparingTo` secondOperationType
+      let
+        originPrecedence ∷ Ordering
+        originPrecedence = firstOperationType
+          `Operator.precedenceComparingTo` secondOperationType
 
-          inversedPrecedence = secondOperationType
-            `Operator.precedenceComparingTo` firstOperationType
+        inversedPrecedence ∷ Ordering
+        inversedPrecedence = secondOperationType
+          `Operator.precedenceComparingTo` firstOperationType
 
-        let
-          fail ∷ Result
-          fail = Failed $ show
-            { firstOperationType
-            , inversedPrecedence
-            , originPrecedence
-            , secondOperationType
-            }
+        fail ∷ Result
+        fail = Failed $ show
+          { firstOperationType
+          , inversedPrecedence
+          , originPrecedence
+          , secondOperationType
+          }
 
-        pure case originPrecedence of
-          EQ →
-            if inversedPrecedence /= EQ then fail else Success
-          GT →
-            if inversedPrecedence /= LT then fail else Success
-          LT →
-            if inversedPrecedence /= GT then fail else Success
+      pure case originPrecedence of
+        EQ →
+          if inversedPrecedence /= EQ then fail else Success
+        GT →
+          if inversedPrecedence /= LT then fail else Success
+        LT →
+          if inversedPrecedence /= GT then fail else Success
 

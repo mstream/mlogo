@@ -7,8 +7,9 @@ import MLogo.Lexing as Lexing
 import Parsing as P
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
+import Test.Types (TestSpec)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Lexing" do
   describe "integer" do
     it "parses a positive integer" do
@@ -46,5 +47,11 @@ spec = describe "Lexing" do
       let
         actual = P.runParser "\"abc" Lexing.lexer.stringLiteral
         expected = Right "abc"
+      actual `shouldEqual` expected
+
+    it "parses a string literal - otherwise a reserved word" do
+      let
+        actual = P.runParser "\"if" Lexing.lexer.stringLiteral
+        expected = Right "if"
       actual `shouldEqual` expected
 

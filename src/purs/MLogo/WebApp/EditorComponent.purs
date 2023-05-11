@@ -220,5 +220,8 @@ aceRefLabel ∷ RefLabel
 aceRefLabel = RefLabel "ace"
 
 formatSource ∷ List Expression → String
-formatSource ast = Code.codeToString $ Printing.printExpressions ast 50
+formatSource ast = Code.codeToString
+  $ Printing.printExpressions
+      ast
+      { pageWidth: 50, simplifyBinaryOperations: true }
 

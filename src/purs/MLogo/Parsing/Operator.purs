@@ -1,6 +1,7 @@
 module MLogo.Parsing.Operator
   ( Associativity(..)
   , associativity
+  , isAssociative
   , operatorTable
   , precedenceComparingTo
   ) where
@@ -51,6 +52,21 @@ associativity = Associativity <<< case _ of
     AssocLeft
   Subtraction →
     AssocLeft
+
+isAssociative ∷ BinaryOperationType → Boolean
+isAssociative = case _ of
+  Addition →
+    true
+  Division →
+    false
+  Equation →
+    true
+  Exponentiation →
+    false
+  Multiplication →
+    true
+  Subtraction →
+    false
 
 precedenceComparingTo
   ∷ BinaryOperationType → BinaryOperationType → Ordering

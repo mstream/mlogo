@@ -9,11 +9,12 @@ import Data.List as List
 import Data.String as String
 import MLogo.Interpretation.State (Position(..), VisibleState)
 import MLogo.Program as Program
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (fail)
+import Test.Types (TestSpec)
 import Test.Utils as Utils
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Program" do
   describe "run" do
 
@@ -324,7 +325,7 @@ spec = describe "Program" do
       )
 
 testCase
-  ∷ String → String → String \/ VisibleState → Spec Unit
+  ∷ String → String → String \/ VisibleState → TestSpec
 testCase title source expected = it ("executes \"" <> title <> "\"") do
   let
     actual = Program.run source

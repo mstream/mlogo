@@ -4,6 +4,7 @@ module MLogo.Printing.Code
   , allSingleLine
   , codeToString
   , codeWidth
+  , codeWordLength
   , isSingleLine
   , prependWith
   , words
@@ -14,15 +15,23 @@ import Prelude
 
 import Data.Array as Array
 import Data.Foldable (class Foldable, all, foldMap, foldl, maximum)
+import Data.Generic.Rep (class Generic)
 import Data.List (List(..), (:))
 import Data.List as List
 import Data.Maybe (fromMaybe)
+import Data.Show.Generic (genericShow)
 import Data.String as String
 
 data Code
   = Indented Code
   | MultiLine (List Code)
   | SingleLine (List CodeWord)
+
+derive instance Eq Code
+derive instance Generic Code _
+
+instance Show Code where
+  show code = genericShow code
 
 prependWith ∷ CodeWord → Code → Code
 prependWith prefix@(CodeWord p) = case _ of
@@ -56,7 +65,7 @@ codeWidth = go 0
       in
         indentation + spacesLength + wordsLength
     MultiLine codeLines →
-      indentation + fromMaybe 0 (maximum $ go indentation <$> codeLines)
+      fromMaybe 0 (maximum $ go indentation <$> codeLines)
 
 isSingleLine ∷ Code → Boolean
 isSingleLine = case _ of
@@ -103,6 +112,9 @@ indentationToString ∷ Int → String
 indentationToString n = String.joinWith "" (Array.replicate n " ")
 
 newtype CodeWord = CodeWord String
+
+derive newtype instance Eq CodeWord
+derive newtype instance Show CodeWord
 
 codeWordLength ∷ CodeWord → Int
 codeWordLength (CodeWord s) = String.length s

@@ -35,7 +35,10 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
     renderExample (title /\ Example { ast }) =
       let
         source ∷ String
-        source = Code.codeToString $ Printing.printExpressions ast 50
+        source = Code.codeToString
+          $ Printing.printExpressions
+              ast
+              { pageWidth: 50, simplifyBinaryOperations: false }
       in
         HH.div
           [ classes [ "block", "is-flex", "is-flex-direction-column" ] ]

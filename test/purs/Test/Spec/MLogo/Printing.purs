@@ -14,7 +14,6 @@ import Data.List (List(..))
 import Data.List as List
 import Data.String (Pattern(..))
 import Data.String as String
-import Effect.Class (liftEffect)
 import Examples (Example(..))
 import Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
@@ -30,15 +29,19 @@ import MLogo.Printing as Printing
 import MLogo.Printing.Code (codeToString) as Code
 import Parsing (ParseError)
 import Parsing as P
-import Test.QuickCheck (Result(..), quickCheckGen)
+import Test.QuickCheck (Result(..))
 import Test.QuickCheck.Gen as Gen
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (fail)
+import Test.Spec.MLogo.Printing.BinaryOperation as BinaryOperation
 import Test.Spec.MLogo.Printing.Code (spec) as Code
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 import Test.Utils as Utils
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Printing" do
+  BinaryOperation.spec
   Code.spec
 
   describe "printExpressions" do
@@ -93,8 +96,6 @@ spec = describe "Printing" do
       100
       (String.joinWith "\n" [ "1 + 2 + 3 + 4" ])
 
-    {- TODO: implement
-
     astBasedPrintTestCase
       "a chain of addition over multiple lines"
       [ BinaryOperation
@@ -122,7 +123,6 @@ spec = describe "Printing" do
           ]
       )
 
--}
     astBasedPrintTestCase
       "a chain of subtractions in a single line"
       [ BinaryOperation
@@ -354,24 +354,30 @@ spec = describe "Printing" do
       [ ForBlock
           { binder: "i", initialValue: 1, step: 2, terminalValue: 5 }
           ( List.fromFoldable
-              [ ProcedureCall "proc1" Nil, ProcedureCall "proc2" Nil ]
+              [ ProcedureCall "proc1" Nil
+              , ProcedureCall "proc2" Nil
+              , ProcedureCall "proc3" Nil
+              ]
           )
       ]
       100
-      (String.joinWith "\n" [ "for [ i 1 5 2 ] [ proc1 proc2 ]" ])
+      (String.joinWith "\n" [ "for [ i 1 5 2 ] [ proc1 proc2 proc3 ]" ])
 
     astBasedPrintTestCase
       "a multi line for block, single line body"
       [ ForBlock
           { binder: "i", initialValue: 1, step: 2, terminalValue: 5 }
           ( List.fromFoldable
-              [ ProcedureCall "proc1" Nil, ProcedureCall "proc2" Nil ]
+              [ ProcedureCall "proc1" Nil
+              , ProcedureCall "proc2" Nil
+              , ProcedureCall "proc3" Nil
+              ]
           )
       ]
-      20
+      30
       ( String.joinWith "\n"
           [ "for [ i 1 5 2 ]"
-          , "  [ proc1 proc2 ]"
+          , "  [ proc1 proc2 proc3 ]"
           ]
       )
 
@@ -380,15 +386,42 @@ spec = describe "Printing" do
       [ ForBlock
           { binder: "i", initialValue: 1, step: 2, terminalValue: 5 }
           ( List.fromFoldable
-              [ ProcedureCall "proc1" Nil, ProcedureCall "proc2" Nil ]
+              [ ProcedureCall "proc1" Nil
+              , ProcedureCall "proc2" Nil
+              , ProcedureCall "proc3" Nil
+              ]
           )
       ]
-      10
+      20
       ( String.joinWith "\n"
           [ "for [ i 1 5 2 ]"
           , "  ["
           , "    proc1"
           , "    proc2"
+          , "    proc3"
+          , "  ]"
+          ]
+      )
+
+    astBasedPrintTestCase
+      "a multi line for block, multi line body and spec"
+      [ ForBlock
+          { binder: "i", initialValue: 1, step: 2, terminalValue: 5 }
+          ( List.fromFoldable
+              [ ProcedureCall "proc1" Nil
+              , ProcedureCall "proc2" Nil
+              , ProcedureCall "proc3" Nil
+              ]
+          )
+      ]
+      10
+      ( String.joinWith "\n"
+          [ "for"
+          , "  [ i 1 5 2 ]"
+          , "  ["
+          , "    proc1"
+          , "    proc2"
+          , "    proc3"
           , "  ]"
           ]
       )
@@ -655,85 +688,91 @@ spec = describe "Printing" do
       \title (Example { ast, source }) →
         sourceBasedPrintTestCase title source ast
 
-    it "parses back a printed source of a random AST" do
-      liftEffect $ quickCheckGen do
-        ast ← Gen.arrayOf $ ExpressionGen.genExpression
+    generativeTestCase "parses back a printed source of a random AST" do
+      ast ← Gen.arrayOf $ ExpressionGen.genExpression
 
-        let
-          printedSource ∷ String
-          printedSource = Code.codeToString
-            $ Printing.printExpressions ast maxLineLength
+      let
+        printedSource ∷ String
+        printedSource = Code.codeToString
+          $ Printing.printExpressions
+              ast
+              { pageWidth: maxLineLength
+              , simplifyBinaryOperations: false
+              }
 
-          parsingResult ∷ ParseError \/ List Expression
-          parsingResult = P.runParser
-            printedSource
-            (Parsing.expressions Commands.parsingContext)
+        parsingResult ∷ ParseError \/ List Expression
+        parsingResult = P.runParser
+          printedSource
+          (Parsing.expressions Commands.parsingContext)
 
-        pure case parsingResult of
-          Left parseError →
-            Failed $ "--- error >>> ---\n"
-              <> show parseError
-              <> "\n--- AST >>> ---\n"
-              <> A.stringify (AE.encodeJson ast)
-              <> "\n--- <<< AST ---"
-              <> "\n--- printed source >>> ---\n"
-              <> Utils.emphasizeWhitespaces printedSource
-              <> "\n--- <<< printed source ---"
-              <> "\n--- <<< error ---"
-          Right actual →
-            let
-              expected ∷ List Expression
-              expected = List.fromFoldable ast
+      pure case parsingResult of
+        Left parseError →
+          Failed $ "--- error >>> ---\n"
+            <> show parseError
+            <> "\n--- AST >>> ---\n"
+            <> A.stringify (AE.encodeJson ast)
+            <> "\n--- <<< AST ---"
+            <> "\n--- printed source >>> ---\n"
+            <> Utils.emphasizeWhitespaces printedSource
+            <> "\n--- <<< printed source ---"
+            <> "\n--- <<< error ---"
+        Right actual →
+          let
+            expected ∷ List Expression
+            expected = List.fromFoldable ast
 
-            in
-              if actual == expected then Success
-              else
-                Failed $ "--- error >>> ---\n"
-                  <> (A.stringify $ AE.encodeJson actual)
-                  <> "\nis not equal to\n"
-                  <> (A.stringify $ AE.encodeJson expected)
-                  <> "\n--- printed source >>> ---\n"
-                  <> Utils.emphasizeWhitespaces printedSource
-                  <> "\n--- <<< printed source ---"
-                  <> "\n--- <<< error ---"
+          in
+            if actual == expected then Success
+            else
+              Failed $ "--- error >>> ---\n"
+                <> (A.stringify $ AE.encodeJson actual)
+                <> "\nis not equal to\n"
+                <> (A.stringify $ AE.encodeJson expected)
+                <> "\n--- printed source >>> ---\n"
+                <> Utils.emphasizeWhitespaces printedSource
+                <> "\n--- <<< printed source ---"
+                <> "\n--- <<< error ---"
 
-    it
+    generativeTestCase
       ( "does not produce source code lines wider than "
           <> show maxLineLength
           <> " characters"
       )
       do
-        liftEffect $ quickCheckGen do
-          ast ← Gen.arrayOf $ ExpressionGen.genExpression
+        ast ← Gen.arrayOf $ ExpressionGen.genExpression
 
-          let
-            {- TODO: remove relaxation once formatting is improved -}
-            maxLineLengthWithGrace ∷ Int
-            maxLineLengthWithGrace = maxLineLength * 3 / 2
+        let
+          {- TODO: remove relaxation once formatting is improved -}
+          maxLineLengthWithGrace ∷ Int
+          maxLineLengthWithGrace = maxLineLength * 3
 
-            printedSource ∷ String
-            printedSource = Code.codeToString
-              $ Printing.printExpressions ast maxLineLengthWithGrace
+          printedSource ∷ String
+          printedSource = Code.codeToString
+            $ Printing.printExpressions
+                ast
+                { pageWidth: maxLineLengthWithGrace
+                , simplifyBinaryOperations: true
+                }
 
-            printedSourceLines ∷ Array String
-            printedSourceLines = String.split
-              (Pattern "\n")
-              printedSource
+          printedSourceLines ∷ Array String
+          printedSourceLines = String.split
+            (Pattern "\n")
+            printedSource
 
-            isTooLong ∷ String → Boolean
-            isTooLong = (_ > maxLineLengthWithGrace) <<< String.length
+          isTooLong ∷ String → Boolean
+          isTooLong = (_ > maxLineLengthWithGrace) <<< String.length
 
-          pure
-            if Array.any isTooLong printedSourceLines then
-              Failed $ "--- error >>> ---\n"
-                <> "There is at least one line longer than "
-                <> show maxLineLengthWithGrace
-                <> " characters"
-                <> "\n--- printed source >>> ---\n"
-                <> Utils.emphasizeWhitespaces printedSource
-                <> "\n--- <<< printed source ---"
-                <> "\n--- <<< error ---"
-            else Success
+        pure
+          if Array.any isTooLong printedSourceLines then
+            Failed $ "--- error >>> ---\n"
+              <> "There is at least one line longer than "
+              <> show maxLineLengthWithGrace
+              <> " characters"
+              <> "\n--- printed source >>> ---\n"
+              <> Utils.emphasizeWhitespaces printedSource
+              <> "\n--- <<< printed source ---"
+              <> "\n--- <<< error ---"
+          else Success
 
 astBasedPrintTestCase
   ∷ ∀ f
@@ -745,7 +784,7 @@ astBasedPrintTestCase
   → f Expression
   → Int
   → String
-  → Spec Unit
+  → TestSpec
 astBasedPrintTestCase title ast pageWidth expected =
   it
     ( "prints \"" <> title <> "\" for a page of width " <> show
@@ -755,7 +794,9 @@ astBasedPrintTestCase title ast pageWidth expected =
       let
         actual ∷ String
         actual = Code.codeToString
-          $ Printing.printExpressions ast pageWidth
+          $ Printing.printExpressions
+              ast
+              { pageWidth, simplifyBinaryOperations: true }
 
       if actual == expected then pure unit
       else
@@ -776,14 +817,18 @@ sourceBasedPrintTestCase
   ⇒ String
   → String
   → f Expression
-  → Spec Unit
+  → TestSpec
 sourceBasedPrintTestCase title source ast =
   it ("parses back a printed source of \"" <> title <> "\"") do
 
     let
       printedSource ∷ String
       printedSource = Code.codeToString
-        $ Printing.printExpressions ast maxLineLength
+        $ Printing.printExpressions
+            ast
+            { pageWidth: maxLineLength
+            , simplifyBinaryOperations: false
+            }
 
       parsingResult ∷ ParseError \/ List Expression
       parsingResult = P.runParser
@@ -821,14 +866,16 @@ printTestCase
   ⇒ Show (f Expression)
   ⇒ String
   → f Expression
-  → Spec Unit
+  → TestSpec
 printTestCase title ast =
   it ("parses back a printed source of \"" <> title <> "\"") do
 
     let
       printedSource ∷ String
       printedSource = Code.codeToString
-        $ Printing.printExpressions ast 10
+        $ Printing.printExpressions
+            ast
+            { pageWidth: 10, simplifyBinaryOperations: false }
 
       parsingResult ∷ ParseError \/ List Expression
       parsingResult = P.runParser

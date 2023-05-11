@@ -8,59 +8,63 @@ import Data.Either (Either(..))
 import Data.List (List(..))
 import Data.List as List
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Arithmetic.EqualP as EqualP
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State (ExecutionState(..), Value(..))
-import Test.QuickCheck ((===))
-import Test.Spec (Spec, describe, it)
-import Test.Spec.QuickCheck (quickCheck)
+import MLogo.Interpretation.State (Value(..))
+import Test.QuickCheck (arbitrary, (===))
+import Test.Spec (describe)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "EqualP" do
   describe "interpret" do
-    it "checks values equality - zero arguments" do
-      quickCheck \(ExecutionState state) →
-        let
-          actual = Interpret.runInterpret
-            EqualP.interpret
-            (wrap state)
-            Nil
-          expected = Right $ (Just $ BooleanValue true) /\ (wrap state)
-        in
-          actual === expected
 
-    it "checks values equality - one argument" do
-      quickCheck \(ExecutionState state) →
-        let
-          actual = Interpret.runInterpret
-            EqualP.interpret
-            (wrap state)
-            (List.fromFoldable [ FloatValue 1.0 ])
-          expected = Right $ (Just $ BooleanValue true) /\ (wrap state)
-        in
-          actual === expected
+    generativeTestCase "checks values equality - zero arguments" do
+      executionState ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          EqualP.interpret
+          executionState
+          Nil
+        expected = Right $ (Just $ BooleanValue true) /\ executionState
 
-    it "checks values equality - two same arguments" do
-      quickCheck \(ExecutionState state) →
-        let
-          actual = Interpret.runInterpret
-            EqualP.interpret
-            (wrap state)
-            (List.fromFoldable [ FloatValue 1.0, FloatValue 1.0 ])
-          expected = Right $ (Just $ BooleanValue true) /\ (wrap state)
-        in
-          actual === expected
+      pure $ actual === expected
 
-    it "checks values equality - two different arguments" do
-      quickCheck \(ExecutionState state) →
+    generativeTestCase "checks values equality - one argument" do
+      executionState ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          EqualP.interpret
+          executionState
+          (List.fromFoldable [ FloatValue 1.0 ])
+        expected = Right $ (Just $ BooleanValue true) /\ executionState
+
+      pure $ actual === expected
+
+    generativeTestCase "checks values equality - two same arguments" do
+      executionState ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          EqualP.interpret
+          executionState
+          (List.fromFoldable [ FloatValue 1.0, FloatValue 1.0 ])
+        expected = Right $ (Just $ BooleanValue true) /\ executionState
+
+      pure $ actual === expected
+
+    generativeTestCase
+      "checks values equality - two different arguments"
+      do
+        executionState ← arbitrary
         let
           actual = Interpret.runInterpret
             EqualP.interpret
-            (wrap state)
+            executionState
             (List.fromFoldable [ FloatValue 1.0, FloatValue 2.0 ])
-          expected = Right $ (Just $ BooleanValue false) /\ (wrap state)
-        in
-          actual === expected
+          expected = Right $ (Just $ BooleanValue false) /\
+            executionState
+
+        pure $ actual === expected
 

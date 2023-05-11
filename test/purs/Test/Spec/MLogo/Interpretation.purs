@@ -19,12 +19,13 @@ import MLogo.Parsing.Expression
   ( BinaryOperationType(..)
   , Expression(..)
   )
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (fail)
 import Test.Spec.MLogo.Interpretation.Command as Command
 import Test.Spec.MLogo.Interpretation.Types as Types
+import Test.Types (TestSpec)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Interpretation" do
   Command.spec
   Types.spec
@@ -125,7 +126,7 @@ expressionTestCase
   → ExecutionState
   → Expression
   → String \/ (Maybe Value /\ ExecutionState)
-  → Spec Unit
+  → TestSpec
 expressionTestCase title state expression expected = it title
   do
     let
@@ -151,7 +152,7 @@ expressionsTestCase
   . Foldable f
   ⇒ String
   → f Expression
-  → Spec Unit
+  → TestSpec
 expressionsTestCase title expressions = it
   ("terminates execution of \"" <> title <> "\"")
   do

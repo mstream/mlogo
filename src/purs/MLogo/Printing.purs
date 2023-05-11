@@ -1,4 +1,4 @@
-module MLogo.Printing (printExpressions) where
+module MLogo.Printing (printExpression, printExpressions) where
 
 import Prelude
 
@@ -19,16 +19,18 @@ import MLogo.Parsing.Expression
 import MLogo.Parsing.Expression as Expression
 import MLogo.Parsing.Operator (Associativity)
 import MLogo.Parsing.Operator as Operator
+import MLogo.Printing.BinaryOperation as BinaryOperation
 import MLogo.Printing.Code (Code(..), CodeWord(..))
 import MLogo.Printing.Code as Code
 import MLogo.Printing.Print (Print)
 import Parsing.Expr (Assoc(..))
 
 printExpressions ∷ ∀ f. Foldable f ⇒ Functor f ⇒ Print (f Expression)
-printExpressions expressions pageWidth =
+printExpressions expressions printConfig =
   if
     Code.allSingleLine printedExpressions
-      && Code.codeWidth singleLineForm <= pageWidth then singleLineForm
+      && Code.codeWidth singleLineForm <= printConfig.pageWidth then
+    singleLineForm
   else multiLineForm
   where
   singleLineForm ∷ Code
@@ -39,12 +41,16 @@ printExpressions expressions pageWidth =
 
   printedExpressions ∷ List Code
   printedExpressions = List.fromFoldable
-    $ flip printExpression pageWidth <$> expressions
+    $ flip printExpression printConfig <$> expressions
 
 printExpression ∷ Print Expression
 printExpression = case _ of
   BinaryOperation operationType leftOperand rightOperand →
-    printBinaryOperation { leftOperand, operationType, rightOperand }
+    BinaryOperation.print
+      printExpression
+      operationType
+      leftOperand
+      rightOperand
   BooleanLiteral b →
     printBooleanLiteral b
   FloatLiteral x →
@@ -72,97 +78,43 @@ printExpression = case _ of
   VariableAssignment name value →
     printVariableAssignment { name, value }
 
-printBinaryOperation
-  ∷ Print
-      { leftOperand ∷ Expression
-      , operationType ∷ BinaryOperationType
-      , rightOperand ∷ Expression
-      }
-printBinaryOperation
-  { leftOperand, operationType, rightOperand }
-  pageWidth =
-  if Code.codeWidth singleLineForm <= pageWidth then singleLineForm
-  else multiLineForm
-  where
-  singleLineForm ∷ Code
-  singleLineForm = SingleLine
-    $ Code.words printedLeftOperand
-        <> List.singleton symbolCodeWord
-        <> Code.words printedRightOperand
-
-  multiLineForm ∷ Code
-  multiLineForm = MultiLine $ List.fromFoldable
-    [ printedLeftOperand
-    , SingleLine $ List.singleton symbolCodeWord
-    , printedRightOperand
-    ]
-
-  symbolCodeWord ∷ CodeWord
-  symbolCodeWord = CodeWord
-    $ Expression.binaryOperationTypeSymbol operationType
-
-  printedLeftOperand ∷ Code
-  printedLeftOperand = printOperand (wrap AssocLeft) leftOperand
-
-  printedRightOperand ∷ Code
-  printedRightOperand = printOperand (wrap AssocRight) rightOperand
-
-  printOperand ∷ Associativity → Expression → Code
-  printOperand neutralAssociativity operand =
-    let
-      unwrappedForm = printExpression operand pageWidth
-
-      wrappedForm = SingleLine
-        $ Code.wrapInParentheses
-        $ Code.words
-        $ printExpression operand pageWidth
-    in
-      case operand of
-        BinaryOperation operandOperationType _ _ →
-          case
-            operandOperationType `Operator.precedenceComparingTo`
-              operationType
-            of
-            EQ →
-              if
-                Operator.associativity operationType ==
-                  neutralAssociativity then
-                unwrappedForm
-              else wrappedForm
-            GT →
-              unwrappedForm
-            LT →
-              wrappedForm
-        BooleanLiteral _ →
-          unwrappedForm
-        FloatLiteral _ →
-          unwrappedForm
-        IntegerLiteral _ →
-          unwrappedForm
-        StringLiteral _ →
-          unwrappedForm
-        ProcedureCall _ arguments →
-          if null arguments then unwrappedForm else wrappedForm
-        _ →
-          unwrappedForm
-
 printForBlock ∷ Print { body ∷ List Expression, spec ∷ ForBlockSpec }
-printForBlock { body, spec } pageWidth =
-  if
-    Code.isSingleLine printedBody
-      && Code.codeWidth singleLineForm <= pageWidth then
-    singleLineForm
-  else multiLineForm
+printForBlock { body, spec } printConfig =
+  let
+    willFit code = Code.codeWidth code <= printConfig.pageWidth
+  in
+    if willFit singleLineCode then singleLineCode
+    else if willFit singleLineKeywordAndSpecCode then
+      MultiLine $ List.fromFoldable
+        [ singleLineKeywordAndSpecCode
+        , indentedPrintedBody
+        ]
+    else
+      MultiLine $ List.fromFoldable
+        [ SingleLine $ List.singleton keywordCodeWord
+        , Indented printedSpec
+        , indentedPrintedBody
+        ]
   where
-  singleLineForm ∷ Code
-  singleLineForm = SingleLine
-    $ forCodeWord : Code.words printedSpec <> Code.words printedBody
+  singleLineCode = SingleLine $
+    keywordCodeWord
+      : Code.words printedSpec
+      <> Code.words printedBody
 
-  multiLineForm ∷ Code
-  multiLineForm = MultiLine $ List.fromFoldable
-    [ SingleLine $ forCodeWord : Code.words printedSpec
-    , Indented printedBody
-    ]
+  singleLineKeywordAndSpecCode =
+    SingleLine $ keywordCodeWord : Code.words printedSpec
+
+  keywordCodeWord ∷ CodeWord
+  keywordCodeWord = CodeWord Lexing.forKeyword
+
+  indentedPrintedBody ∷ Code
+  indentedPrintedBody = Indented
+    $ printBlockOfExpressions
+        body
+        printConfig { pageWidth = printConfig.pageWidth - 2 }
+
+  printedBody ∷ Code
+  printedBody = printBlockOfExpressions body printConfig
 
   printedSpec ∷ Code
   printedSpec = SingleLine $ List.fromFoldable
@@ -174,18 +126,13 @@ printForBlock { body, spec } pageWidth =
         <> [ CodeWord "]" ]
     )
 
-  printedBody ∷ Code
-  printedBody = printBlockOfExpressions body pageWidth
-
-  forCodeWord ∷ CodeWord
-  forCodeWord = CodeWord Lexing.forKeyword
-
 printIfBlock
   ∷ Print { condition ∷ Expression, positiveBranch ∷ List Expression }
-printIfBlock { condition, positiveBranch } pageWidth =
+printIfBlock { condition, positiveBranch } printConfig =
   if
     Code.allSingleLine [ printedCondition, printedPositiveBranch ]
-      && Code.codeWidth singleLineForm <= pageWidth then singleLineForm
+      && Code.codeWidth singleLineForm <= printConfig.pageWidth then
+    singleLineForm
   else multiLineForm
   where
   singleLineForm ∷ Code
@@ -203,12 +150,12 @@ printIfBlock { condition, positiveBranch } pageWidth =
   printedPositiveBranch ∷ Code
   printedPositiveBranch = printBlockOfExpressions
     positiveBranch
-    pageWidth
+    printConfig
 
   printedCondition ∷ Code
   printedCondition =
     let
-      printedExpression = printExpression condition pageWidth
+      printedExpression = printExpression condition printConfig
       printedWords = Code.words printedExpression
     in
       SingleLine
@@ -222,46 +169,59 @@ printIfElseBlock
       , negativeBranch ∷ List Expression
       , positiveBranch ∷ List Expression
       }
-printIfElseBlock { condition, negativeBranch, positiveBranch } pageWidth =
-  if
-    Code.allSingleLine
-      [ printedCondition, printedNegativeBranch, printedPositiveBranch ]
-      && Code.codeWidth singleLineForm <= pageWidth then singleLineForm
-  else multiLineForm
+printIfElseBlock
+  { condition, negativeBranch, positiveBranch }
+  printConfig =
+  let
+    willFit code = Code.codeWidth code <= printConfig.pageWidth
+  in
+    if willFit singleLineCode then singleLineCode
+    else if willFit singleLineKeywordAndConditionCode then
+      MultiLine $ List.fromFoldable
+        [ singleLineKeywordAndConditionCode
+        , Indented printedPositiveBranch
+        , Indented printedNegativeBranch
+        ]
+    else
+      MultiLine $ List.fromFoldable
+        [ SingleLine $ List.singleton keywordCodeWord
+        , Indented printedCondition
+        , Indented printedPositiveBranch
+        , Indented printedNegativeBranch
+        ]
   where
-  singleLineForm ∷ Code
-  singleLineForm = SingleLine
-    $ CodeWord Lexing.ifElseKeyword : (Code.words printedCondition)
-        <> (Code.words printedPositiveBranch)
-        <> (Code.words printedNegativeBranch)
+  singleLineCode = SingleLine $
+    keywordCodeWord
+      : Code.words printedCondition
+      <> Code.words printedPositiveBranch
+      <> Code.words printedNegativeBranch
 
-  multiLineForm ∷ Code
-  multiLineForm = MultiLine $ List.fromFoldable
-    [ SingleLine
-        $ CodeWord Lexing.ifElseKeyword : (Code.words printedCondition)
-    , Indented printedPositiveBranch
-    , Indented printedNegativeBranch
-    ]
+  singleLineKeywordAndConditionCode =
+    SingleLine $ keywordCodeWord : Code.words printedCondition
+
+  keywordCodeWord ∷ CodeWord
+  keywordCodeWord = CodeWord Lexing.ifElseKeyword
 
   printedNegativeBranch ∷ Code
   printedNegativeBranch = printBlockOfExpressions
     negativeBranch
-    pageWidth
+    printConfig
 
   printedPositiveBranch ∷ Code
   printedPositiveBranch = printBlockOfExpressions
     positiveBranch
-    pageWidth
+    printConfig
 
   printedCondition ∷ Code
-  printedCondition = printExpression condition pageWidth
+  printedCondition = printExpression condition printConfig
 
 printProcedureCall
   ∷ Print { arguments ∷ List Expression, name ∷ String }
-printProcedureCall { arguments, name } pageWidth =
+printProcedureCall { arguments, name } printConfig =
   if
     Code.allSingleLine printedArguments
-      && Code.codeWidth singleLineForm <= pageWidth then singleLineForm
+      && Code.codeWidth singleLineForm <= printConfig.pageWidth then
+    singleLineForm
   else multiLineForm
   where
   singleLineForm ∷ Code
@@ -274,7 +234,7 @@ printProcedureCall { arguments, name } pageWidth =
       (Indented <$> printedArguments)
 
   printedArguments ∷ List Code
-  printedArguments = flip printExpression pageWidth <$> arguments
+  printedArguments = flip printExpression printConfig <$> arguments
 
 printProcedureDefinition
   ∷ Print
@@ -299,52 +259,66 @@ printProcedureDefinition { body, name, parameterNames } pageWidth =
     CodeWord $ ":" <> s
 
 printRepeatBlock ∷ Print { body ∷ List Expression, times ∷ Expression }
-printRepeatBlock { body, times } pageWidth =
-  if
-    Code.allSingleLine [ printedBody, printedTimes ]
-      && Code.codeWidth singleLineForm <= pageWidth then singleLineForm
-  else multiLineForm
+printRepeatBlock { body, times } printConfig =
+  let
+    willFit code = Code.codeWidth code <= printConfig.pageWidth
+  in
+    if willFit singleLineCode then singleLineCode
+    else if willFit singleLineKeywordAndTimesCode then
+      MultiLine $ List.fromFoldable
+        [ singleLineKeywordAndTimesCode
+        , Indented printedBody
+        ]
+    else
+      MultiLine $ List.fromFoldable
+        [ SingleLine $ List.singleton keywordCodeWord
+        , Indented printedTimes
+        , Indented printedBody
+        ]
   where
-  singleLineForm ∷ Code
-  singleLineForm = SingleLine
-    $ CodeWord Lexing.repeatKeyword : (Code.words printedTimes)
-        <> (Code.words printedBody)
+  singleLineCode = SingleLine $
+    keywordCodeWord
+      : Code.words printedTimes
+      <> Code.words printedBody
 
-  multiLineForm ∷ Code
-  multiLineForm = MultiLine $ List.fromFoldable
-    [ SingleLine
-        $ CodeWord Lexing.repeatKeyword : (Code.words printedTimes)
-    , Indented $ printedBody
-    ]
+  singleLineKeywordAndTimesCode =
+    SingleLine $ keywordCodeWord : Code.words printedTimes
+
+  keywordCodeWord ∷ CodeWord
+  keywordCodeWord = CodeWord Lexing.repeatKeyword
 
   printedBody ∷ Code
-  printedBody = printBlockOfExpressions body pageWidth
+  printedBody = printBlockOfExpressions body printConfig
 
   printedTimes ∷ Code
-  printedTimes = printExpression times pageWidth
+  printedTimes = printExpression times printConfig
 
 printBlockOfExpressions
   ∷ ∀ f. Foldable f ⇒ Functor f ⇒ Print (f Expression)
-printBlockOfExpressions expressions pageWidth =
+printBlockOfExpressions expressions printConfig =
   if null expressions then SingleLine $ List.singleton $ CodeWord "[]"
-  else if Code.isSingleLine printedExpressions then
-    SingleLine $ (List.singleton leftBracket)
-      <> (Code.words printedExpressions)
-      <> (List.singleton rightBracket)
+  else if Code.isSingleLine printedExpressionsMinus4 then
+    SingleLine $ (List.singleton leftBracketCodeWord)
+      <> (Code.words printedExpressionsMinus4)
+      <> (List.singleton rightBracketCodeWord)
   else MultiLine $ List.fromFoldable
-    [ SingleLine $ List.singleton leftBracket
-    , Indented printedExpressions
-    , SingleLine $ List.singleton rightBracket
+    [ SingleLine $ List.singleton leftBracketCodeWord
+    , Indented $ printExpressions
+        expressions
+        printConfig { pageWidth = printConfig.pageWidth - 2 }
+    , SingleLine $ List.singleton rightBracketCodeWord
     ]
   where
-  printedExpressions ∷ Code
-  printedExpressions = printExpressions expressions pageWidth
+  printedExpressionsMinus4 ∷ Code
+  printedExpressionsMinus4 = printExpressions
+    expressions
+    printConfig { pageWidth = printConfig.pageWidth - 4 }
 
-  leftBracket ∷ CodeWord
-  leftBracket = CodeWord "["
+  leftBracketCodeWord ∷ CodeWord
+  leftBracketCodeWord = CodeWord "["
 
-  rightBracket ∷ CodeWord
-  rightBracket = CodeWord "]"
+  rightBracketCodeWord ∷ CodeWord
+  rightBracketCodeWord = CodeWord "]"
 
 printValueReference ∷ Print String
 printValueReference name _ =

@@ -13,8 +13,9 @@ import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.XCor as XCor
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.YCor as YCor
+import Test.Types (TestSpec)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Graphics" do
   Clean.spec
   ClearScreen.spec

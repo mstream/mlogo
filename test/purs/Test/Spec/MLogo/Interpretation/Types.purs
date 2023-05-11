@@ -14,10 +14,11 @@ import MLogo.Interpretation.Types
   , VariableInputParser
   )
 import MLogo.Interpretation.Types as Types
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
+import Test.Types (TestSpec)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Input" do
 
   describe "parametersFromFixedInputParser" do
@@ -170,7 +171,7 @@ parametersFromFixedInputParserTestCase
   . String
   → FixedInputParser a
   → Array Parameter
-  → Spec Unit
+  → TestSpec
 parametersFromFixedInputParserTestCase title parser expected = it
   ("extracts parameters from a fixed input parser \"" <> title <> "\"")
   ( (Types.parametersFromFixedInputParser parser)
@@ -183,7 +184,7 @@ parametersFromVariableInputParserTestCase
   . String
   → VariableInputParser a
   → Parameter
-  → Spec Unit
+  → TestSpec
 parametersFromVariableInputParserTestCase title parser expected = it
   ( "extracts parameters from a variable input parser \"" <> title <>
       "\""
@@ -201,7 +202,7 @@ runFixedInputParserTestCase
   → FixedInputParser a
   → Array Value
   → String \/ a
-  → Spec Unit
+  → TestSpec
 runFixedInputParserTestCase title parser arguments expected = it
   ("parses fixed input \"" <> title <> "\"")
   ( (Types.runFixedInputParser parser $ List.fromFoldable arguments)
@@ -217,7 +218,7 @@ runVariableInputParserTestCase
   → VariableInputParser a
   → Array Value
   → String \/ Array a
-  → Spec Unit
+  → TestSpec
 runVariableInputParserTestCase title parser arguments expected = it
   ("parses variable input \"" <> title <> "\"")
   ( ( Types.runVariableInputParser parser $ List.fromFoldable

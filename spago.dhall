@@ -37,7 +37,6 @@
   , "quickcheck"
   , "routing-duplex"
   , "spec"
-  , "spec-quickcheck"
   , "strings"
   , "tailrec"
   , "transformers"

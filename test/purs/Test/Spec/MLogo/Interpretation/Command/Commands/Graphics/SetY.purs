@@ -12,63 +12,61 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState(..))
-import Test.QuickCheck ((===))
-import Test.Spec (Spec, describe, it)
-import Test.Spec.QuickCheck (quickCheck)
+import Test.QuickCheck (arbitrary, (===))
+import Test.Spec (describe)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "SetY" do
   describe "interpret" do
-    it
-      "sets pointer's y coordinate - with pen up"
-      do
-        quickCheck \(ExecutionState state) y →
-          let
-            actual = Interpret.runInterpret
-              SetY.interpret
-              ( wrap state
-                  { pointer = state.pointer { isDown = false } }
-              )
-              y
-            expected = Right $ Nothing /\
-              ( ExecutionState $ state
-                  { pointer = state.pointer
-                      { isDown = false
-                      , position = modify
-                          (_ { y = y })
-                          state.pointer.position
-                      }
+    generativeTestCase "sets pointer's y coordinate - with pen up" do
+      (ExecutionState state) ← arbitrary
+      y ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          SetY.interpret
+          ( wrap state
+              { pointer = state.pointer { isDown = false } }
+          )
+          y
+        expected = Right $ Nothing /\
+          ( wrap state
+              { pointer = state.pointer
+                  { isDown = false
+                  , position = modify
+                      (_ { y = y })
+                      state.pointer.position
                   }
-              )
-          in
-            actual === expected
+              }
+          )
+      pure $ actual === expected
 
-    it
-      "sets pointer's y coordinate - with pen down"
-      do
-        quickCheck \(ExecutionState state) y →
-          let
-            actual = Interpret.runInterpret
-              SetY.interpret
-              (wrap state { pointer = state.pointer { isDown = true } })
-              y
-            expected = Right $ Nothing /\
-              ( ExecutionState $ state
-                  { pointer = state.pointer
-                      { isDown = true
-                      , position = modify
-                          (_ { y = y })
-                          state.pointer.position
-                      }
-                  , screen =
-                      { p1: state.pointer.position
-                      , p2: modify
-                          (_ { y = y })
-                          state.pointer.position
-                      } :
-                        state.screen
+    generativeTestCase "sets pointer's y coordinate - with pen down" do
+      (ExecutionState state) ← arbitrary
+      y ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          SetY.interpret
+          (wrap state { pointer = state.pointer { isDown = true } })
+          y
+        expected = Right $ Nothing /\
+          ( ExecutionState $ state
+              { pointer = state.pointer
+                  { isDown = true
+                  , position = modify
+                      (_ { y = y })
+                      state.pointer.position
                   }
-              )
-          in
-            actual === expected
+              , screen =
+                  { p1: state.pointer.position
+                  , p2: modify
+                      (_ { y = y })
+                      state.pointer.position
+                  } :
+                    state.screen
+              }
+          )
+
+      pure $ actual === expected
 

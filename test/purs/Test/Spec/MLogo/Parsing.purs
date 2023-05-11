@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Array ((!!))
 import Data.Array as Array
-import Data.Char.Gen as CharGen
 import Data.Either (Either(..))
 import Data.Either as Either
 import Data.Either.Nested (type (\/))
@@ -22,11 +21,9 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.Traversable (class Traversable, sequence)
 import Data.Tuple.Nested ((/\))
-import Effect.Class (liftEffect)
 import Examples (Example(..))
 import Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
-import MLogo.Lexing as Lexing
 import MLogo.Parsing (ParsingContext)
 import MLogo.Parsing as Parsing
 import MLogo.Parsing.Expression
@@ -39,15 +36,17 @@ import MLogo.Parsing.Expression
 import MLogo.Parsing.Expression as Expression
 import MLogo.Parsing.Expression.Gen as ExpressionGen
 import Parsing as P
-import Test.QuickCheck (Result(..), quickCheckGen)
+import Test.QuickCheck (Result(..))
 import Test.QuickCheck.Gen (Gen)
 import Test.QuickCheck.Gen as Gen
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (fail)
 import Test.Spec.MLogo.Parsing.Operator as Operator
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 import Test.Utils as Utils
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Parsing" do
   Operator.spec
 
@@ -239,7 +238,7 @@ spec = describe "Parsing" do
       "a string literal"
       [ ado
           quote ← pure "\""
-          word ← genIdentifier
+          word ← ExpressionGen.genIdentifier
           in quote <> word
       ]
       ( \parts → ado
@@ -933,7 +932,7 @@ spec = describe "Parsing" do
 
 arithmeticalBinaryOperatorTestCase
   ∷ BinaryOperationType
-  → Spec Unit
+  → TestSpec
 arithmeticalBinaryOperatorTestCase operationType =
   let
     symbol = Expression.binaryOperationTypeSymbol operationType
@@ -976,21 +975,11 @@ genValueReference = genParameter
 
 genParameter ∷ Gen String
 genParameter = do
-  identifier ← genIdentifier
+  identifier ← ExpressionGen.genIdentifier
   pure $ ":" <> identifier
 
 genProcedureName ∷ Gen String
-genProcedureName = genIdentifier
-
-genIdentifier ∷ Gen String
-genIdentifier =
-  gen `Gen.suchThat` (_ `Array.notElem` Lexing.reservedNames)
-  where
-  gen = do
-    chars ← Gen.arrayOf1 CharGen.genAlpha
-    pure
-      $ String.fromCodePointArray
-      $ String.codePointFromChar <$> Array.fromFoldable chars
+genProcedureName = ExpressionGen.genIdentifier
 
 expressionTestCase
   ∷ ∀ f
@@ -1001,9 +990,9 @@ expressionTestCase
   → ( Array String
       → String \/ { expected ∷ Expression, context ∷ ParsingContext }
     )
-  → Spec Unit
-expressionTestCase title partGenerators makeExpected = it title do
-  liftEffect $ quickCheckGen do
+  → TestSpec
+expressionTestCase title partGenerators makeExpected =
+  generativeTestCase title do
     parts ← sequence partGenerators
     source ← Utils.addRedundantSpaces parts
 
@@ -1042,7 +1031,7 @@ arityTestCase
       }
       → { expected ∷ Expression, context ∷ ParsingContext }
     )
-  → Spec Unit
+  → TestSpec
 arityTestCase title makeExpected = expressionTestCase
   ("arity - " <> title)
   [ do
@@ -1077,7 +1066,7 @@ expressionsTestCase
   ⇒ String
   → String
   → f Expression
-  → Spec Unit
+  → TestSpec
 expressionsTestCase title source expected = it title do
   let
     parsingResult = P.runParser
@@ -1108,33 +1097,32 @@ procedureSignatureTestCase
   ⇒ String
   → f (Gen String)
   → (Array String → String \/ ProcedureSignature)
-  → Spec Unit
-procedureSignatureTestCase title partGenerators makeExpected = it title
-  do
-    liftEffect $ quickCheckGen do
-      parts ← sequence partGenerators
-      source ← Utils.addRedundantSpaces parts
+  → TestSpec
+procedureSignatureTestCase title partGenerators makeExpected =
+  generativeTestCase title do
+    parts ← sequence partGenerators
+    source ← Utils.addRedundantSpaces parts
 
-      let
-        actual = case P.runParser source Parsing.procedureSignature of
-          Left parseError →
-            Left $ show parseError
-          Right procedureSignature →
-            Right procedureSignature
+    let
+      actual = case P.runParser source Parsing.procedureSignature of
+        Left parseError →
+          Left $ show parseError
+        Right procedureSignature →
+          Right procedureSignature
 
-        expected = makeExpected $ Array.fromFoldable parts
+      expected = makeExpected $ Array.fromFoldable parts
 
-      pure $
-        if actual == expected then Success
-        else Failed $
-          "--- error >>> ---\n"
-            <> show actual
-            <> "\nis not equal to\n"
-            <> show expected
-            <> "\n--- source >>> ---\n"
-            <> Utils.emphasizeWhitespaces source
-            <> "\n--- <<< source ---"
-            <> "\n--- <<< error ---"
+    pure $
+      if actual == expected then Success
+      else Failed $
+        "--- error >>> ---\n"
+          <> show actual
+          <> "\nis not equal to\n"
+          <> show expected
+          <> "\n--- source >>> ---\n"
+          <> Utils.emphasizeWhitespaces source
+          <> "\n--- <<< source ---"
+          <> "\n--- <<< error ---"
 
 procedureSignaturesTestCase
   ∷ ∀ f
@@ -1144,7 +1132,7 @@ procedureSignaturesTestCase
   ⇒ String
   → f String
   → f ProcedureSignature
-  → Spec Unit
+  → TestSpec
 procedureSignaturesTestCase title sourceLines expected = it title do
   let
     source = String.joinWith "\n" (Array.fromFoldable sourceLines)

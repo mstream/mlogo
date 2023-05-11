@@ -10,8 +10,9 @@ import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Power as Power
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Quotient as Quotient
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Sin as Sin
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Sum as Sum
+import Test.Types (TestSpec)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Arithmetic" do
   Difference.spec
   EqualP.spec

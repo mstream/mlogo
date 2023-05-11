@@ -15,24 +15,25 @@ import MLogo.Interpretation.State
   , Position(..)
   , Value(..)
   )
-import Test.QuickCheck ((===))
-import Test.Spec (Spec, describe, it)
-import Test.Spec.QuickCheck (quickCheck)
+import Test.QuickCheck (arbitrary, (===))
+import Test.Spec (describe)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "YCor" do
   describe "interpret" do
-    it "outputs pointer's y coordinate" do
-      quickCheck \(ExecutionState state) →
-        let
-          actual = Interpret.runInterpret
-            YCor.interpret
-            (wrap state)
-            unit
+    generativeTestCase "outputs pointer's y coordinate" do
+      (ExecutionState state) ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          YCor.interpret
+          (wrap state)
+          unit
 
-          (Position { y }) = state.pointer.position
+        (Position { y }) = state.pointer.position
 
-          expected = Right $ (Just $ FloatValue y) /\ (wrap state)
-        in
-          actual === expected
+        expected = Right $ (Just $ FloatValue y) /\ (wrap state)
+
+      pure $ actual === expected
 

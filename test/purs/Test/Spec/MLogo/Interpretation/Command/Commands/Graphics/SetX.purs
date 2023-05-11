@@ -12,63 +12,62 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.SetX as SetX
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState(..))
-import Test.QuickCheck ((===))
-import Test.Spec (Spec, describe, it)
-import Test.Spec.QuickCheck (quickCheck)
+import Test.QuickCheck (arbitrary, (===))
+import Test.Spec (describe)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "SetX" do
   describe "interpret" do
-    it
-      "sets pointer's x coordinate - with pen up"
-      do
-        quickCheck \(ExecutionState state) x →
-          let
-            actual = Interpret.runInterpret
-              SetX.interpret
-              ( wrap state
-                  { pointer = state.pointer { isDown = false } }
-              )
-              x
-            expected = Right $ Nothing /\
-              ( ExecutionState $ state
-                  { pointer = state.pointer
-                      { isDown = false
-                      , position = modify
-                          (_ { x = x })
-                          state.pointer.position
-                      }
+    generativeTestCase "sets pointer's x coordinate - with pen up" do
+      (ExecutionState state) ← arbitrary
+      x ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          SetX.interpret
+          ( wrap state
+              { pointer = state.pointer { isDown = false } }
+          )
+          x
+        expected = Right $ Nothing /\
+          ( ExecutionState $ state
+              { pointer = state.pointer
+                  { isDown = false
+                  , position = modify
+                      (_ { x = x })
+                      state.pointer.position
                   }
-              )
-          in
-            actual === expected
+              }
+          )
 
-    it
-      "sets pointer's x coordinate - with pen down"
-      do
-        quickCheck \(ExecutionState state) x →
-          let
-            actual = Interpret.runInterpret
-              SetX.interpret
-              (wrap state { pointer = state.pointer { isDown = true } })
-              x
-            expected = Right $ Nothing /\
-              ( ExecutionState $ state
-                  { pointer = state.pointer
-                      { isDown = true
-                      , position = modify
-                          (_ { x = x })
-                          state.pointer.position
-                      }
-                  , screen =
-                      { p1: state.pointer.position
-                      , p2: modify
-                          (_ { x = x })
-                          state.pointer.position
-                      } :
-                        state.screen
+      pure $ actual === expected
+
+    generativeTestCase "sets pointer's x coordinate - with pen down" do
+      (ExecutionState state) ← arbitrary
+      x ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          SetX.interpret
+          (wrap state { pointer = state.pointer { isDown = true } })
+          x
+        expected = Right $ Nothing /\
+          ( ExecutionState $ state
+              { pointer = state.pointer
+                  { isDown = true
+                  , position = modify
+                      (_ { x = x })
+                      state.pointer.position
                   }
-              )
-          in
-            actual === expected
+              , screen =
+                  { p1: state.pointer.position
+                  , p2: modify
+                      (_ { x = x })
+                      state.pointer.position
+                  } :
+                    state.screen
+              }
+          )
+
+      pure $ actual === expected
 

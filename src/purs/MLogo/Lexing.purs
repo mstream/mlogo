@@ -29,6 +29,8 @@ import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.Maybe as Maybe
 import Data.Number as Number
+import Data.Set (Set)
+import Data.Set as Set
 import Data.String as String
 import Parsing (ParserT)
 import Parsing as P
@@ -110,12 +112,12 @@ languageDef ∷ LanguageDef
 languageDef = LanguageDef (PT.unGenLanguageDef PL.emptyDef)
   { identLetter = PSB.alphaNum
   , identStart = PSB.letter
-  , reservedNames = reservedNames
+  , reservedNames = Array.fromFoldable reservedNames
   , reservedOpNames = reservedOpNames
   }
 
-reservedNames ∷ Array String
-reservedNames =
+reservedNames ∷ Set String
+reservedNames = Set.fromFoldable
   [ ifKeyword
   , endKeyword
   , falseKeyword

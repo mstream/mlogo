@@ -3,28 +3,28 @@ module Test.Main where
 import Prelude
 
 import Data.Array ((!!))
-import Data.Foldable (sequence_)
+import Data.Foldable (class Foldable, sequence_)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Aff (launchAff_)
+import Effect.Aff (Aff, launchAff_)
 import Effect.Exception (throw)
 import Node.Process as Process
-import Test.Spec (Spec)
 import Test.Spec.MLogo.Interpretation as Interpretation
 import Test.Spec.MLogo.Lexing as Lexing
 import Test.Spec.MLogo.Parsing as Parsing
 import Test.Spec.MLogo.Printing as Printing
 import Test.Spec.MLogo.Program as Program
 import Test.Spec.Reporter (consoleReporter)
-import Test.Spec.Runner (runSpec)
+import Test.Spec.Runner (defaultConfig, runSpecT)
+import Test.Types (TestSpec)
 
 main ∷ Effect Unit
 main = do
   args ← Process.argv
   specs ← selectSpecs $ args !! 2
-  launchAff_ $ runSpec [ consoleReporter ] (sequence_ specs)
+  launchAff_ $ runTestSpecs specs
   where
-  selectSpecs ∷ Maybe String → Effect (Array (Spec Unit))
+  selectSpecs ∷ Maybe String → Effect (Array TestSpec)
   selectSpecs = case _ of
     Nothing →
       pure allSpecs
@@ -50,3 +50,13 @@ main = do
     , Printing.spec
     , Program.spec
     ]
+
+runTestSpecs ∷ ∀ f. Foldable f ⇒ f TestSpec → Aff Unit
+runTestSpecs specs = do
+  resultsAff ← runSpecT
+    defaultConfig
+    [ consoleReporter ]
+    (sequence_ specs)
+
+  void resultsAff
+

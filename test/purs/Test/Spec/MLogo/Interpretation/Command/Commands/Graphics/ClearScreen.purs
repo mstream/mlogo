@@ -12,28 +12,29 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.ClearScreen as ClearScreen
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState(..))
-import Test.QuickCheck ((===))
+import Test.QuickCheck (arbitrary, (===))
 import Test.Spec (Spec, describe, it)
-import Test.Spec.QuickCheck (quickCheck)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "ClearScreen" do
   describe "interpret" do
-    it
+    generativeTestCase
       "makes drawings disappear and moves the pointer back to the origin"
       do
-        quickCheck \(ExecutionState state) →
-          let
-            actual = Interpret.runInterpret
-              ClearScreen.interpret
-              (wrap state)
-              unit
-            expected = Right $ Nothing /\
-              ( ExecutionState $ state
-                  { pointer = state.pointer { position = zero }
-                  , screen = Nil
-                  }
-              )
-          in
-            actual === expected
+        (ExecutionState state) ← arbitrary
+        let
+          actual = Interpret.runInterpret
+            ClearScreen.interpret
+            (wrap state)
+            unit
+          expected = Right $ Nothing /\
+            ( ExecutionState $ state
+                { pointer = state.pointer { position = zero }
+                , screen = Nil
+                }
+            )
+
+        pure $ actual === expected
 

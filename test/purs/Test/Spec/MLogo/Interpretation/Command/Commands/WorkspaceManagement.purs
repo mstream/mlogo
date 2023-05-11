@@ -5,7 +5,8 @@ module Test.Spec.MLogo.Interpretation.Command.Commands.WorkspaceManagement
 import Prelude
 
 import Test.Spec (Spec, describe)
+import Test.Types (TestSpec)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "WorkspaceManagement" do
   pure unit

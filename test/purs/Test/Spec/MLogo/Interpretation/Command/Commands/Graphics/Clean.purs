@@ -12,22 +12,23 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.Clean as Clean
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState(..))
-import Test.QuickCheck ((===))
+import Test.QuickCheck (arbitrary, (===))
 import Test.Spec (Spec, describe, it)
-import Test.Spec.QuickCheck (quickCheck)
+import Test.Types (TestSpec)
+import Test.Utils (generativeTestCase)
 
-spec ∷ Spec Unit
+spec ∷ TestSpec
 spec = describe "Clean" do
   describe "interpret" do
-    it "makes drawings disappear" do
-      quickCheck \(ExecutionState state) →
-        let
-          actual = Interpret.runInterpret
-            Clean.interpret
-            (wrap state)
-            unit
-          expected = Right $ Nothing /\
-            (ExecutionState $ state { screen = Nil })
-        in
-          actual === expected
+    generativeTestCase "makes drawings disappear" do
+      (ExecutionState state) ← arbitrary
+      let
+        actual = Interpret.runInterpret
+          Clean.interpret
+          (wrap state)
+          unit
+        expected = Right $ Nothing /\
+          (ExecutionState $ state { screen = Nil })
+
+      pure $ actual === expected
 
