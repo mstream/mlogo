@@ -1,5 +1,12 @@
 
 
+## [0.30.0](https://github.com/mstream/mlogo/compare/0.29.7...0.30.0) (2023-05-12)
+
+
+### Features
+
+* add syntax error marker in the web app editor ([d46cdd6](https://github.com/mstream/mlogo/commit/d46cdd68d01496a2ca750219168808d84728837b))
+
 ### [0.29.7](https://github.com/mstream/mlogo/compare/0.29.6...0.29.7) (2023-05-10)
 
 ### [0.29.6](https://github.com/mstream/mlogo/compare/0.29.5...0.29.6) (2023-05-09)
