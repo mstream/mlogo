@@ -21,6 +21,9 @@
 .mdi-book-play::before {
   content: "\F0E82"; }
 
+.mdi-close-box::before {
+  content: "\F0157"; }
+
 .mdi-format-align-left::before {
   content: "\F0262"; }
 
@@ -550,14 +553,6 @@ pre {
 #canvas {
   height: 100vh; }
 
-#canvas .wrapper {
-  width: 100%; }
-
-#canvas svg {
-  aspect-ratio: 1;
-  height: 100%;
-  width: 100%; }
-
 #editor {
   box-sizing: border-box;
   height: 50vh; }
@@ -571,19 +566,21 @@ pre {
   top: 0;
   z-index: 1; }
 
-#side-bar .body {
+#side-bar > *:first-child {
   overflow-y: scroll; }
 
 #zoom-panel {
   position: absolute;
   top: 1rem; }
 
-.body {
-  height: 100%;
+.is-full-height {
+  height: 100%; }
+
+.is-full-width {
   width: 100%; }
 
 .error {
   border: 0.1em dashed red; }
 
-.square {
+.is-square {
   aspect-ratio: 1; }
