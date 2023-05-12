@@ -49,8 +49,7 @@ interpretAst ast = do
 
   { callStack, pointer, screen } ← unwrap <$> case result of
     Left interpretationError →
-      Left $ "\n\nRuntime error: "
-        <> interpretationError
+      Left interpretationError
     Right (_ /\ state) →
       Right state
 

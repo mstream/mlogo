@@ -14,16 +14,6 @@ $mdi-font-path: fonts;
   height: 100vh;
 }
 
-#canvas .wrapper {
-  width: 100%;
-}
-
-#canvas svg {
-  aspect-ratio: 1;
-  height: 100%;
-  width: 100%;
-}
-
 #editor {
   box-sizing: border-box;
   height: 50vh;
@@ -40,7 +30,7 @@ $mdi-font-path: fonts;
   z-index: 1;
 }
 
-#side-bar .body {
+#side-bar > *:first-child {
   overflow-y: scroll;
 }
 
@@ -49,12 +39,11 @@ $mdi-font-path: fonts;
   top: 1rem;
 }
 
-.ace_editor {
+.is-full-height {
   height: 100%;
 }
 
-.body {
-  height: 100%;
+.is-full-width {
   width: 100%;
 }
 
@@ -62,7 +51,7 @@ $mdi-font-path: fonts;
   border: 0.1em dashed red;
 }
 
-.square {
+.is-square {
   aspect-ratio: 1;
 }
 

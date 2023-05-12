@@ -135,7 +135,9 @@ component = Hooks.component \_ commandsByAliasByCategory → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ classes [ "body" ] ]
+      [ classes
+          [ "is-background-white", "is-full-width" ]
+      ]
       (renderCategory <$> Map.toUnfoldable entriesByAliasByCategory)
 
 generateEntries

@@ -83,7 +83,11 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ classes [ "body" ] ]
+      [ classes
+          [ "is-full-height"
+          , "is-full-width"
+          ]
+      ]
       [ HH.nav
           [ classes
               [ "is-boxed"
@@ -95,7 +99,11 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
           ]
           [ HH.ul_ [ renderTab ReferenceTab, renderTab ExamplesTab ] ]
       , HH.div
-          [ classes [ "has-background-white-bis", "p-1" ]
+          [ classes
+              [ "has-background-white-bis"
+              , "is-full-height"
+              , "p-1"
+              ]
           ]
           [ currentComponent ]
       ]

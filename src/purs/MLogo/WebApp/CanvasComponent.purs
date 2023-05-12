@@ -7,7 +7,7 @@ import Data.Int as Int
 import Data.Number as Number
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
-import Halogen (Component)
+import Halogen (ClassName(..), Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
@@ -128,21 +128,24 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
   Hooks.pure do
     HH.div
       [ classes
-          [ "body"
-          , "has-background-grey-lighter"
+          [ "has-background-grey-lighter"
           , "is-align-items-center"
           , "is-justify-content-center"
           , "is-flex"
+          , "is-full-height"
+          , "is-full-width"
           , "is-relative"
-          , "square"
           ]
       ]
-      [ HH.div
-          [ classes [ "has-background-white", "wrapper", "square" ] ]
-          [ SE.svg
-              [ SA.viewBox zero zero canvasSize canvasSize ]
-              (renderScreen screen <> renderPointer pointer)
+      [ SE.svg
+          [ SA.viewBox zero zero canvasSize canvasSize
+          , SA.classes
+              [ ClassName "has-background-white"
+              , ClassName "is-full-width"
+              , ClassName "is-square"
+              ]
           ]
+          (renderScreen screen <> renderPointer pointer)
       , renderZoomPanel
       ]
 

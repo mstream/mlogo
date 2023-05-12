@@ -2,7 +2,7 @@ module MLogo.WebApp.AppComponent (component) where
 
 import Prelude
 
-import Data.Either (Either(..), hush)
+import Data.Either (Either(..), hush, note)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
@@ -35,20 +35,20 @@ import Web.HTML.Window as Window
 
 component ∷ ∀ i m o q. MonadAff m ⇒ Component q i o m
 component = Hooks.component \{ slotToken } _ → Hooks.do
-  astResult /\ putAstResult ← ExtraHooks.usePutState $ Right Nil
+  mbAst /\ putMbAst ← ExtraHooks.usePutState $ Just Nil
 
   let
     handleEditorOutput ∷ EditorComponent.Output → HookM m Unit
     handleEditorOutput = case _ of
       AstChanged { ast, source } → do
         liftEffect $ setSourceInUrl source
-        putAstResult $ Right ast
-      SyntaxErrorDetected errorMessage →
-        putAstResult $ Left $ "Syntax error: " <> errorMessage
+        putMbAst $ Just ast
+      SyntaxErrorDetected →
+        putMbAst Nothing
 
     handleSideBarOutput ∷ ExamplesComponent.Output → HookM m Unit
     handleSideBarOutput (SourceTryRequested exampleAst) = do
-      putAstResult $ Right exampleAst
+      putMbAst $ Just exampleAst
 
       Hooks.tell
         slotToken
@@ -69,6 +69,7 @@ component = Hooks.component \{ slotToken } _ → Hooks.do
           ]
       , HH.div
           [ HP.id "side-bar"
+          , classes [ "if-full-height" ]
           ]
           [ HH.slot
               (Proxy ∷ Proxy "sideBar")
@@ -81,11 +82,20 @@ component = Hooks.component \{ slotToken } _ → Hooks.do
 
     renderRightColumn = HH.div
       [ classes [ "column", "is-6" ] ]
-      [ case astResult >>= Program.interpretAst of
+      [ case (note "Syntax Error" mbAst) >>= Program.interpretAst of
           Left errorMessage →
             HH.div
               [ classes [ "error" ] ]
-              [ HH.text errorMessage ]
+              [ HH.span
+                  [ classes [ "icon", "is-small" ] ]
+                  [ HH.i
+                      [ classes
+                          [ "aria-hidden", "mdi", "mdi-close-box" ]
+                      ]
+                      []
+                  ]
+              , HH.text $ "Runtime Error: " <> errorMessage
+              ]
           Right visibleState →
             HH.div
               [ HP.id "canvas" ]
