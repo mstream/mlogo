@@ -1,5 +1,12 @@
 
 
+### [0.31.1](https://github.com/mstream/mlogo/compare/0.31.0...0.31.1) (2023-05-14)
+
+
+### Bug Fixes
+
+* disable AST update optimization until a proper fixed is found ([17265ad](https://github.com/mstream/mlogo/commit/17265adf85db3ada86c6ccf6fc018ae119e1e593))
+
 ## [0.31.0](https://github.com/mstream/mlogo/compare/0.30.1...0.31.0) (2023-05-14)
 
 
