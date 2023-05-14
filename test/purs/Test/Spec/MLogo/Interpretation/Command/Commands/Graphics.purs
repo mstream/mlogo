@@ -2,7 +2,7 @@ module Test.Spec.MLogo.Interpretation.Command.Commands.Graphics (spec) where
 
 import Prelude
 
-import Test.Spec (Spec, describe)
+import Test.Spec (describe)
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.Clean as Clean
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.ClearScreen as ClearScreen
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.Home as Home

@@ -6,13 +6,12 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Arithmetic.Quotient as Quotient
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State (ExecutionState(..), Value(..))
+import MLogo.Interpretation.State (Value(..))
 import Test.QuickCheck (arbitrary, (===))
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
 

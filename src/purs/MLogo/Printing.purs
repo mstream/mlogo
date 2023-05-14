@@ -5,25 +5,20 @@ import Prelude
 import Data.Foldable (class Foldable, foldMap, null)
 import Data.List (List, (:))
 import Data.List as List
-import Data.Newtype (wrap)
 import Data.Number as Number
 import Data.Number.Format as NumberFormat
 import MLogo.Lexing as Lexing
 import MLogo.Parsing.Expression
-  ( BinaryOperationType
-  , Expression(..)
+  ( Expression(..)
   , ForBlockSpec
   , ParameterName(..)
   , UnaryOperationType(..)
   )
 import MLogo.Parsing.Expression as Expression
-import MLogo.Parsing.Operator (Associativity)
-import MLogo.Parsing.Operator as Operator
 import MLogo.Printing.BinaryOperation as BinaryOperation
 import MLogo.Printing.Code (Code(..), CodeWord(..))
 import MLogo.Printing.Code as Code
 import MLogo.Printing.Print (Print)
-import Parsing.Expr (Assoc(..))
 
 printExpressions ∷ ∀ f. Foldable f ⇒ Functor f ⇒ Print (f Expression)
 printExpressions expressions printConfig =

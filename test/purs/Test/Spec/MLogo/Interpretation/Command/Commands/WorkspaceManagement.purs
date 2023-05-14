@@ -4,7 +4,7 @@ module Test.Spec.MLogo.Interpretation.Command.Commands.WorkspaceManagement
 
 import Prelude
 
-import Test.Spec (Spec, describe)
+import Test.Spec (describe)
 import Test.Types (TestSpec)
 
 spec ∷ TestSpec

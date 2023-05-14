@@ -5,7 +5,7 @@ import Prelude
 import Data.Either (Either(..))
 import MLogo.Lexing as Lexing
 import Parsing as P
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Types (TestSpec)
 

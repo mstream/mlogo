@@ -13,7 +13,7 @@ import MLogo.Interpretation.Command.Commands.Graphics.Clean as Clean
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState(..))
 import Test.QuickCheck (arbitrary, (===))
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
 

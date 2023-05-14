@@ -10,9 +10,13 @@ import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.XCor as XCor
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State (ExecutionState(..), Position(..), Value(..))
+import MLogo.Interpretation.State
+  ( ExecutionState(..)
+  , Position(..)
+  , Value(..)
+  )
 import Test.QuickCheck (arbitrary, (===))
-import Test.Spec (Spec, describe, it)
+import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
 
@@ -20,7 +24,7 @@ spec ∷ TestSpec
 spec = describe "XCor" do
   describe "interpret" do
     generativeTestCase "outputs pointer's x coordinate" do
-      (ExecutionState state) <- arbitrary
+      (ExecutionState state) ← arbitrary
       let
         actual = Interpret.runInterpret
           XCor.interpret

@@ -126,18 +126,6 @@ collect simplifyBinaryOperations operationType = case _, _ of
         ListNonEmpty.singleton
           $ operationType /\ BinaryOperation rot rlo rro
 
-mergeCollectionsWith
-  ∷ BinaryOperationType
-  → BinaryOperationCollection
-  → BinaryOperationCollection
-  → BinaryOperationCollection
-mergeCollectionsWith operationType c1 c2 =
-  c1
-    { tail = c1.tail
-        <> ListNonEmpty.singleton (operationType /\ c2.head)
-        <> c2.tail
-    }
-
 print
   ∷ Print Expression
   → BinaryOperationType

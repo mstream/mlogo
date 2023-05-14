@@ -2,7 +2,7 @@ module Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic (spec) where
 
 import Prelude
 
-import Test.Spec (Spec, describe)
+import Test.Spec (describe)
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Difference as Difference
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.EqualP as EqualP
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Minus as Minus
