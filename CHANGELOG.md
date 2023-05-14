@@ -1,5 +1,12 @@
 
 
+## [0.31.0](https://github.com/mstream/mlogo/compare/0.30.1...0.31.0) (2023-05-14)
+
+
+### Features
+
+* implement printing binary operations over multiple lines ([030a76a](https://github.com/mstream/mlogo/commit/030a76aeb7294bd4cf8bf53447733f23392016a3))
+
 ### [0.30.1](https://github.com/mstream/mlogo/compare/0.30.0...0.30.1) (2023-05-12)
 
 ## [0.30.0](https://github.com/mstream/mlogo/compare/0.29.7...0.30.0) (2023-05-12)
