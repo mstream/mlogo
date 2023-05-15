@@ -1,4 +1,4 @@
-module MLogo.Webapp.Utils (classes) where
+module MLogo.WebApp.Utils (classes) where
 
 import Prelude
 

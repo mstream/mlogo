@@ -1,4 +1,4 @@
-module MLogo.WebApp.CanvasComponent where
+module MLogo.WebApp.Components.Canvas where
 
 import Prelude
 
@@ -20,7 +20,8 @@ import MLogo.Interpretation.State
   , Position(..)
   , VisibleState
   )
-import MLogo.Webapp.Utils (classes)
+import MLogo.WebApp.Parts as Parts
+import MLogo.WebApp.Utils (classes)
 
 type Input = VisibleState
 
@@ -117,13 +118,7 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
       [ HE.onClick \_ → clickHandler
       , classes [ "button", "square" ]
       ]
-      [ HH.span
-          [ classes [ "icon", "is-small" ] ]
-          [ HH.i
-              [ classes [ "mdi", iconName ] ]
-              []
-          ]
-      ]
+      [ Parts.icon iconName ]
 
   Hooks.pure do
     HH.div

@@ -1,4 +1,4 @@
-module MLogo.WebApp.ExamplesComponent (Output(..), component) where
+module MLogo.WebApp.Components.Examples (Output(..), component) where
 
 import Prelude
 
@@ -18,7 +18,8 @@ import Halogen.Hooks as Hooks
 import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
 import MLogo.Printing.Code as Code
-import MLogo.Webapp.Utils (classes)
+import MLogo.WebApp.Parts as Parts
+import MLogo.WebApp.Utils (classes)
 
 type Input = Map String Example
 
@@ -49,19 +50,10 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
                       handleTryButtonClick $ List.fromFoldable ast
                   , classes [ "button" ]
                   ]
-                  [ HH.span
-                      [ classes [ "icon", "is-small" ] ]
-                      [ HH.i
-                          [ classes
-                              [ "aria-hidden"
-                              , "mdi"
-                              , "mdi-play-circle"
-                              , "mr-1"
-                              ]
-                          ]
-                          []
-                      ]
-                  , HH.span_ [ HH.text "try" ]
+                  [ Parts.icon "mdi-play-circle"
+                  , HH.span
+                      [ classes [ "mr-1" ] ]
+                      [ HH.text "try" ]
                   ]
               , HH.h3
                   [ classes [ "is-3", "title" ] ]

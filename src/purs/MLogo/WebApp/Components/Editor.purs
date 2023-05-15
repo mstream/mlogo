@@ -1,4 +1,4 @@
-module MLogo.WebApp.EditorComponent (Output(..), Query(..), component) where
+module MLogo.WebApp.Components.Editor (Output(..), Query(..), component) where
 
 import Prelude
 
@@ -26,7 +26,8 @@ import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
 import MLogo.Printing.Code as Code
 import MLogo.Program as Program
-import MLogo.Webapp.Utils (classes)
+import MLogo.WebApp.Parts as Parts
+import MLogo.WebApp.Utils (classes)
 import Parsing (ParseError(..), Position(..))
 
 data Output
@@ -187,19 +188,10 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
               Nothing →
                 false
           ]
-          [ HH.span
-              [ classes [ "icon", "is-small" ] ]
-              [ HH.i
-                  [ classes
-                      [ "aria-hidden"
-                      , "mdi"
-                      , "mdi-format-align-left"
-                      , "mr-1"
-                      ]
-                  ]
-                  []
-              ]
-          , HH.span_ [ HH.text "format" ]
+          [ Parts.icon "mdi-format-align-left"
+          , HH.span
+              [ classes [ "ml-1" ] ]
+              [ HH.text "format" ]
           ]
       ]
 

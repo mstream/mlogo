@@ -1,4 +1,4 @@
-module MLogo.WebApp.AppComponent (component) where
+module MLogo.WebApp.Components.App (component) where
 
 import Prelude
 
@@ -16,13 +16,14 @@ import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
 import MLogo.Program as Program
-import MLogo.WebApp.CanvasComponent as CanvasComponent
-import MLogo.WebApp.EditorComponent (Output(..), Query(..))
-import MLogo.WebApp.EditorComponent as EditorComponent
-import MLogo.WebApp.ExamplesComponent (Output(..))
-import MLogo.WebApp.ExamplesComponent as ExamplesComponent
-import MLogo.WebApp.SideBarComponent as SideBarComponent
-import MLogo.Webapp.Utils (classes)
+import MLogo.WebApp.Components.Canvas as CanvasComponent
+import MLogo.WebApp.Components.Editor (Output(..), Query(..))
+import MLogo.WebApp.Components.Editor as EditorComponent
+import MLogo.WebApp.Components.Examples (Output(..))
+import MLogo.WebApp.Components.Examples as ExamplesComponent
+import MLogo.WebApp.Components.SideBar as SideBarComponent
+import MLogo.WebApp.Parts as Parts
+import MLogo.WebApp.Utils (classes)
 import Routing.Duplex (RouteDuplex')
 import Routing.Duplex as R
 import Type.Proxy (Proxy(..))
@@ -86,14 +87,7 @@ component = Hooks.component \{ slotToken } _ → Hooks.do
           Left errorMessage →
             HH.div
               [ classes [ "error" ] ]
-              [ HH.span
-                  [ classes [ "icon", "is-small" ] ]
-                  [ HH.i
-                      [ classes
-                          [ "aria-hidden", "mdi", "mdi-close-box" ]
-                      ]
-                      []
-                  ]
+              [ Parts.icon "mdi-close-box"
               , HH.text $ "Runtime Error: " <> errorMessage
               ]
           Right visibleState →

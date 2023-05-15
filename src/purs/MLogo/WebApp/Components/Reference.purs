@@ -1,4 +1,4 @@
-module MLogo.WebApp.ReferenceComponent (component) where
+module MLogo.WebApp.Components.Reference (component) where
 
 import Prelude
 
@@ -19,7 +19,7 @@ import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.State (Value(..))
 import MLogo.Interpretation.Types (Parameters(..), ValueType)
 import MLogo.Interpretation.Types as Types
-import MLogo.Webapp.Utils (classes)
+import MLogo.WebApp.Utils (classes)
 import Test.QuickCheck.Gen as Gen
 
 type Input = Map String (Map String Command)

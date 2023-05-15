@@ -1,4 +1,4 @@
-module MLogo.WebApp.SideBarComponent (component) where
+module MLogo.WebApp.Components.SideBar (component) where
 
 import Prelude
 
@@ -13,12 +13,14 @@ import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
 import MLogo.Interpretation.Command.Commands as Commands
-import MLogo.WebApp.ExamplesComponent as ExamplesComponent
-import MLogo.WebApp.ReferenceComponent as ReferenceComponent
-import MLogo.Webapp.Utils (classes)
+import MLogo.WebApp.Components.About as AboutComponent
+import MLogo.WebApp.Components.Examples as ExamplesComponent
+import MLogo.WebApp.Components.Reference as ReferenceComponent
+import MLogo.WebApp.Parts as Parts
+import MLogo.WebApp.Utils (classes)
 import Type.Proxy (Proxy(..))
 
-data Tab = ExamplesTab | ReferenceTab
+data Tab = AboutTab | ExamplesTab | ReferenceTab
 
 derive instance Eq Tab
 
@@ -35,6 +37,12 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
     handleTabClick tab = putCurrentTab tab
 
     currentComponent = case currentTab of
+      AboutTab →
+        HH.slot_
+          (Proxy ∷ Proxy "about")
+          unit
+          AboutComponent.component
+          unit
       ExamplesTab →
         HH.slot
           (Proxy ∷ Proxy "examples")
@@ -53,6 +61,8 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
     renderTab tab =
       let
         iconName = case tab of
+          AboutTab →
+            "mdi-help-box"
           ExamplesTab →
             "mdi-book-play"
           ReferenceTab →
@@ -61,6 +71,8 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
         isActive = currentTab == tab
 
         label = case tab of
+          AboutTab →
+            "About"
           ExamplesTab →
             "Examples"
           ReferenceTab →
@@ -71,13 +83,10 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
           , classes if isActive then [ "is-active" ] else []
           ]
           [ HH.a_
-              [ HH.span
-                  [ classes [ "icon", "is-small" ] ]
-                  [ HH.i
-                      [ classes [ "aria-hidden", "mdi", iconName ] ]
-                      []
-                  ]
-              , HH.text label
+              [ Parts.icon iconName
+              , HH.span
+                  [ classes [ "ml-1" ] ]
+                  [ HH.text label ]
               ]
           ]
 
@@ -97,7 +106,12 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
               , "tabs"
               ]
           ]
-          [ HH.ul_ [ renderTab ReferenceTab, renderTab ExamplesTab ] ]
+          [ HH.ul_
+              [ renderTab ReferenceTab
+              , renderTab ExamplesTab
+              , renderTab AboutTab
+              ]
+          ]
       , HH.div
           [ classes
               [ "has-background-white-bis"
