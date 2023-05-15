@@ -2,6 +2,7 @@ module MLogo.WebApp.Components.Canvas where
 
 import Prelude
 
+import DOM.HTML.Indexed.StepValue (StepValue(..))
 import Data.Array as Array
 import Data.Int as Int
 import Data.Number as Number
@@ -10,6 +11,7 @@ import Effect.Aff.Class (class MonadAff)
 import Halogen (ClassName(..), Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties (InputType(..))
 import Halogen.HTML.Properties as HP
 import Halogen.Hooks as Hooks
 import Halogen.Svg.Attributes (Color(..), Transform(..))
@@ -32,11 +34,11 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
   let
     handleZoomIn = when
       (zoom < maxZoom)
-      (Hooks.modify_ zoomId (_ + 1))
+      (Hooks.modify_ zoomId (_ + zoomStep))
 
     handleZoomOut = when
-      (zoom > 1)
-      (Hooks.modify_ zoomId (_ - 1))
+      (zoom > minZoom)
+      (Hooks.modify_ zoomId (_ - zoomStep))
 
     canvasSize = Int.toNumber canvasBaseSize
       * (Number.pow 2.0 (Int.toNumber $ maxZoom - zoom))
@@ -46,10 +48,14 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
       , Scale one (-one)
       ]
 
-    renderZoomScale acc n =
-      if n <= maxZoom then
-        renderZoomScale (acc <> if n == zoom then "┼" else "─") (n + 1)
-      else acc
+    renderZoomScale = HH.input
+      [ HP.disabled true
+      , HP.max $ Int.toNumber maxZoom
+      , HP.min $ Int.toNumber minZoom
+      , HP.step $ Step $ Int.toNumber zoomStep
+      , HP.type_ InputRange
+      , HP.value $ show zoom
+      ]
 
     renderPointer { angle: Angle a, position } =
       let
@@ -110,7 +116,7 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
       , HP.id "zoom-panel"
       ]
       [ renderZoomButton "mdi-minus" handleZoomOut
-      , HH.div_ [ HH.text $ renderZoomScale "" 1 ]
+      , renderZoomScale
       , renderZoomButton "mdi-plus" handleZoomIn
       ]
 
@@ -153,3 +159,8 @@ canvasBaseSize = 128
 maxZoom ∷ Int
 maxZoom = 4
 
+minZoom ∷ Int
+minZoom = 1
+
+zoomStep ∷ Int
+zoomStep = 1
