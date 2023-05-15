@@ -1,5 +1,14 @@
 
 
+## [0.32.0](https://github.com/mstream/mlogo/compare/0.31.1...0.32.0) (2023-05-15)
+
+
+### Features
+
+* add a provisional "about" page ([63f7a30](https://github.com/mstream/mlogo/commit/63f7a301b0d03ec1370b480626123656de6f5772))
+* improve the look of the zoom scale ([ebfc66d](https://github.com/mstream/mlogo/commit/ebfc66da531e3cd4c40f13bb4b3f27ff6ebb2678))
+* make the web app look better on mobile devices ([65492d2](https://github.com/mstream/mlogo/commit/65492d257c476dbc7a4161944b0da296df124f16))
+
 ### [0.31.1](https://github.com/mstream/mlogo/compare/0.31.0...0.31.1) (2023-05-14)
 
 
