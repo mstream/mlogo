@@ -27,6 +27,12 @@
 .mdi-format-align-left::before {
   content: "\F0262"; }
 
+.mdi-github::before {
+  content: "\F02A4"; }
+
+.mdi-help-box::before {
+  content: "\F078B"; }
+
 .mdi-minus::before {
   content: "\F0374"; }
 
@@ -35,6 +41,9 @@
 
 .mdi-plus::before {
   content: "\F0415"; }
+
+.mdi-wikipedia::before {
+  content: "\F05AC"; }
 
 @-webkit-keyframes mdi-spin {
   0% {
@@ -117,7 +126,7 @@ input {
 *, *::before, *::after {
   box-sizing: inherit; }
 
-
+article,
 header {
   display: block; }
 
@@ -507,6 +516,9 @@ pre {
 .mr-1 {
   margin-right: 0.25rem !important; }
 
+.ml-1 {
+  margin-left: 0.25rem !important; }
+
 .ml-4 {
   margin-left: 1rem !important; }
 
@@ -550,16 +562,31 @@ pre {
   box-sizing: border-box;
   height: 100vh; }
 
-#canvas {
-  height: 100vh; }
+@media screen and (max-width: 768px) {
+  #canvas {
+    height: 60vh; } }
+
+@media screen and (min-width: 769px), print {
+  #canvas {
+    height: 100vh; } }
 
 #editor {
-  box-sizing: border-box;
-  height: 50vh; }
+  box-sizing: border-box; }
+  @media screen and (max-width: 768px) {
+    #editor {
+      height: 30vh; } }
+  @media screen and (min-width: 769px), print {
+    #editor {
+      height: 50vh; } }
 
 #side-bar {
-  box-sizing: border-box;
-  height: 50vh; }
+  box-sizing: border-box; }
+  @media screen and (max-width: 768px) {
+    #side-bar {
+      height: 30vh; } }
+  @media screen and (min-width: 769px), print {
+    #side-bar {
+      height: 50vh; } }
 
 #side-bar .navigation {
   position: sticky;
