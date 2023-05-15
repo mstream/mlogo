@@ -1,7 +1,6 @@
 module MLogo.WebApp.Parts (icon) where
 
-import DOM.HTML.Indexed (HTMLa)
-import Halogen.HTML (HTML, IProp)
+import Halogen.HTML (HTML)
 import Halogen.HTML as HH
 import MLogo.WebApp.Utils (classes)
 
