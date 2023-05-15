@@ -57,7 +57,7 @@ component = Hooks.component \{ slotToken } _ → Hooks.do
         unit
         (SetAst exampleAst)
 
-    renderLeftColumn = HH.div
+    renderUserInputColumn = HH.div
       [ classes [ "column", "is-6" ] ]
       [ HH.div
           [ HP.id "editor" ]
@@ -81,7 +81,7 @@ component = Hooks.component \{ slotToken } _ → Hooks.do
           ]
       ]
 
-    renderRightColumn = HH.div
+    renderDisplayColumn = HH.div
       [ classes [ "column", "is-6" ] ]
       [ case (note "Syntax Error" mbAst) >>= Program.interpretAst of
           Left errorMessage →
@@ -120,8 +120,8 @@ component = Hooks.component \{ slotToken } _ → Hooks.do
       [ classes [ "columns", "is-gapless" ]
       , HP.id "container"
       ]
-      [ renderLeftColumn
-      , renderRightColumn
+      [ renderDisplayColumn
+      , renderUserInputColumn
       ]
 
 getSourceFromUrl ∷ Effect (Maybe String)

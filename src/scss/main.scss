@@ -11,17 +11,32 @@ $mdi-font-path: fonts;
 }
 
 #canvas {
-  height: 100vh;
+  @include mobile {
+    height: 60vh;
+  }
+  @include tablet {
+    height: 100vh;
+  }
 }
 
 #editor {
   box-sizing: border-box;
-  height: 50vh;
+  @include mobile {
+    height: 30vh;
+  }
+  @include tablet {
+    height: 50vh;
+  }
 }
 
 #side-bar {
   box-sizing: border-box;
-  height: 50vh;
+  @include mobile {
+    height: 30vh;
+  }
+  @include tablet {
+    height: 50vh;
+  }
 }
 
 #side-bar .navigation {

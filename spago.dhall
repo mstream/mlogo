@@ -8,6 +8,7 @@
   , "arrays"
   , "console"
   , "control"
+  , "dom-indexed"
   , "effect"
   , "either"
   , "exceptions"
