@@ -9,7 +9,16 @@ import Control.Monad.Gen.Common as GenCommon
 import Control.Monad.Rec.Class (class MonadRec)
 import Data.Map.Gen as MapGen
 import Data.String.Gen as StringGen
-import MLogo.Interpretation.State (Angle(..), CallStackElement, ExecutionState, PointerState, Position, Procedure, ScreenState, Value(..))
+import MLogo.Interpretation.State
+  ( Angle(..)
+  , CallStackElement
+  , ExecutionState
+  , PointerState
+  , Position
+  , Procedure
+  , ScreenState
+  , Value(..)
+  )
 import MLogo.Parsing.Expression (Expression, ParameterName(..))
 import MLogo.Parsing.Expression.Gen as ExpressionGen
 
