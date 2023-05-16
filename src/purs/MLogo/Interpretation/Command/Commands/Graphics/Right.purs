@@ -41,5 +41,5 @@ command =
       }
 
 interpret ∷ ∀ m. Interpret m Number
-interpret angle = gets (unwrap <<< _.pointer.angle <<< unwrap)
+interpret angle = gets (unwrap <<< _.pointer.angle)
   >>= (SetHeading.interpret <<< add angle)

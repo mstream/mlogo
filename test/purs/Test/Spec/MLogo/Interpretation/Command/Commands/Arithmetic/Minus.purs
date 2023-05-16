@@ -10,7 +10,8 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Arithmetic.Minus as Minus
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (Value(..))
-import Test.QuickCheck (arbitrary, (===))
+import MLogo.Interpretation.State.Gen as StateGen
+import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
@@ -19,7 +20,7 @@ spec ∷ TestSpec
 spec = describe "Minus" do
   describe "interpret" do
     generativeTestCase "negates numbers" do
-      executionState ← arbitrary
+      executionState ← StateGen.genExecutionState
 
       let
         actual = Interpret.runInterpret

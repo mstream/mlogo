@@ -7,7 +7,6 @@ import Data.Either.Nested (type (\/))
 import Data.List (List)
 import Data.List as List
 import Data.Map as Map
-import Data.Newtype (unwrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation as Interpretation
 import MLogo.Interpretation.Command.Commands as Commands
@@ -47,7 +46,7 @@ interpretAst ast = do
       State.initialExecutionState
       ast
 
-  { callStack, pointer, screen } ← unwrap <$> case result of
+  { callStack, pointer, screen } ← case result of
     Left interpretationError →
       Left interpretationError
     Right (_ /\ state) →

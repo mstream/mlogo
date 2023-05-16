@@ -10,7 +10,8 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Arithmetic.Quotient as Quotient
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (Value(..))
-import Test.QuickCheck (arbitrary, (===))
+import MLogo.Interpretation.State.Gen as StateGen
+import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
@@ -19,7 +20,7 @@ spec ∷ TestSpec
 spec = describe "Quotient" do
   describe "interpret" do
     generativeTestCase "divides numbers" do
-      executionState ← arbitrary
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           Quotient.interpret
@@ -30,7 +31,7 @@ spec = describe "Quotient" do
       pure $ actual === expected
 
     generativeTestCase "divides numbers - division by zero" do
-      executionState ← arbitrary
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           Quotient.interpret

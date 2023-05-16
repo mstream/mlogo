@@ -10,7 +10,6 @@ import Control.Monad.State (gets)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
@@ -42,6 +41,6 @@ command =
 
 interpret ∷ ∀ m. Interpret m Unit
 interpret _ = do
-  (Position { x }) ← gets (_.pointer.position <<< unwrap)
+  (Position { x }) ← gets _.pointer.position
   pure $ Just $ FloatValue x
 

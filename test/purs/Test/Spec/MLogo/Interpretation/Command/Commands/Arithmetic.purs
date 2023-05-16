@@ -7,6 +7,7 @@ import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Difference as 
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.EqualP as EqualP
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Minus as Minus
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Power as Power
+import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Product as Product
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Quotient as Quotient
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Sin as Sin
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Sum as Sum
@@ -18,6 +19,7 @@ spec = describe "Arithmetic" do
   EqualP.spec
   Minus.spec
   Power.spec
+  Product.spec
   Quotient.spec
   Sin.spec
   Sum.spec

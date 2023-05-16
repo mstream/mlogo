@@ -10,7 +10,6 @@ import Control.Monad.State (get)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
@@ -35,16 +34,11 @@ command =
           "outputs the repetition count of the innermost current REPEAT or FOREVER, starting from 1"
       , interpret: Command.parseAndInterpretInput
           (Types.runFixedInputParser inputParser)
-          ( const $ (Just <<< IntegerValue <<< _.repCount)
-              <$> unwrap
-              <$> get
-          )
+          (const $ (Just <<< IntegerValue <<< _.repCount) <$> get)
       , name: "repcount"
       , outputValueType: Just IntegerType
       , parameters: Types.parametersFromFixedInputParser inputParser
       }
 
 interpret ∷ ∀ m. Interpret m Unit
-interpret _ = (Just <<< IntegerValue <<< _.repCount)
-  <$> unwrap
-  <$> get
+interpret _ = (Just <<< IntegerValue <<< _.repCount) <$> get

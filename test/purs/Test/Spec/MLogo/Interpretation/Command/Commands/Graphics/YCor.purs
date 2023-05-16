@@ -6,16 +6,13 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.YCor as YCor
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State
-  ( ExecutionState(..)
-  , Position(..)
-  , Value(..)
-  )
-import Test.QuickCheck (arbitrary, (===))
+import MLogo.Interpretation.State (Position(..), Value(..))
+import MLogo.Interpretation.State.Gen as StateGen
+import MLogo.Interpretation.State.Gen as StateGen
+import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
@@ -24,16 +21,11 @@ spec ∷ TestSpec
 spec = describe "YCor" do
   describe "interpret" do
     generativeTestCase "outputs pointer's y coordinate" do
-      (ExecutionState state) ← arbitrary
+      state ← StateGen.genExecutionState
       let
-        actual = Interpret.runInterpret
-          YCor.interpret
-          (wrap state)
-          unit
-
+        actual = Interpret.runInterpret YCor.interpret state unit
         (Position { y }) = state.pointer.position
-
-        expected = Right $ (Just $ FloatValue y) /\ (wrap state)
+        expected = Right $ (Just $ FloatValue y) /\ state
 
       pure $ actual === expected
 

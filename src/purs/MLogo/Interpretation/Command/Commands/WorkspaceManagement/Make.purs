@@ -43,12 +43,9 @@ command =
       }
 
 interpret ∷ ∀ m. Interpret m { name ∷ String, value ∷ Value }
-interpret { name, value } = pure Nothing <* do
-  modify_ $ over ExecutionState
-    ( \st → st
-        { globalVariables = Map.insert
-            name
-            value
-            st.globalVariables
-        }
-    )
+interpret { name, value } = pure Nothing <* modify_ \st → st
+  { globalVariables = Map.insert
+      name
+      value
+      st.globalVariables
+  }

@@ -21,16 +21,12 @@ import Data.List (List(..), (:))
 import Data.List as List
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (over, unwrap, wrap)
+import Data.Newtype (unwrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command (Command(..))
 import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State
-  ( ExecutionState(..)
-  , Value(..)
-  , Variables
-  )
+import MLogo.Interpretation.State (ExecutionState, Value(..), Variables)
 import MLogo.Interpretation.State as State
 import MLogo.Parsing.Expression
   ( BinaryOperationType(..)
@@ -51,13 +47,13 @@ interpretExpressions =
   where
   {- TODO: use a more suitable function than foldM -}
   f _ expression = do
-    state ← unwrap <$> get
+    state ← get
     case state.outputtedValue of
       Just value →
         pure $ Just value
       Nothing → do
         void $ interpretExpression expression
-        state' ← unwrap <$> get
+        state' ← get
         pure state'.outputtedValue
 
 interpretExpression ∷ ∀ m. Interpret m Expression
@@ -197,23 +193,20 @@ interpretForBlock { body, spec } =
         localVariables ∷ Variables
         localVariables = Map.singleton spec.binder (IntegerValue n)
 
-      state ← unwrap <$> get
+      state ← get
 
       when
         (List.length state.callStack >= maximumCallStackSize)
         (throwError "call stack overflow")
 
-      modify_ $ over
-        ExecutionState
-        ( \st → st
-            { callStack = { localVariables, name: "for loop" } :
-                st.callStack
-            }
-        )
+      modify_ \st → st
+        { callStack = { localVariables, name: "for loop" } :
+            st.callStack
+        }
 
       void $ interpretExpressions body
 
-      modify_ $ over ExecutionState _
+      modify_ _
         { callStack = state.callStack
         , outputtedValue = Nothing
         }
@@ -253,7 +246,7 @@ interpretProcedureCall { arguments, name } = do
         Just (Command command) →
           command.interpret evaluatedArguments
         Nothing → do
-          state' ← unwrap <$> get
+          state' ← get
           case Map.lookup name state'.procedures of
             Nothing →
               throwError $ "Unknown procedure name: " <> name
@@ -267,26 +260,24 @@ interpretRepeatBlock
 interpretRepeatBlock { body, times } = do
   mbTimesValue ← interpretExpression times
   case mbTimesValue of
+
     Just timesValue → do
       repCountMax ← liftEither $ State.extractInt timesValue
-      (ExecutionState state) ← get
+      state ← get
+
       let
         go ∷ Int → m (Step Int (Maybe Value))
         go repCount =
           if repCount <= repCountMax then do
-            modify_ $ over
-              ExecutionState
-              (\st → st { repCount = repCount })
-
+            modify_ _ { repCount = repCount }
             void $ interpretExpressions body
             pure $ Loop $ repCount + 1
           else do
-            modify_ $ over
-              ExecutionState
-              (\st → st { repCount = state.repCount })
-
+            modify_ _ { repCount = state.repCount }
             pure $ Done Nothing
+
       tailRecM go 1
+
     Nothing →
       throwError
         "repeat counter expression does not evaluate to a value"
@@ -312,21 +303,18 @@ interpetUserDefinedProcedureCall
         <> " arguments but got "
         <> (show $ Map.size localVariables)
     else do
-      state ← unwrap <$> get
+      state ← get
 
       when
         (List.length state.callStack >= maximumCallStackSize)
         (throwError "call stack overflow")
 
-      modify_ $ over
-        ExecutionState
-        ( \st → st
-            { callStack = { localVariables, name } : st.callStack }
-        )
+      modify_ \st → st
+        { callStack = { localVariables, name } : st.callStack }
 
       mbValue ← interpretExpressions body
 
-      modify_ $ over ExecutionState _
+      modify_ _
         { callStack = state.callStack
         , outputtedValue = Nothing
         }
@@ -363,17 +351,18 @@ interpretProcedureDefinition
       , parameterNames ∷ List ParameterName
       }
 interpretProcedureDefinition { body, name, parameterNames } = do
-  modify_ \(ExecutionState state) → wrap $ state
+  modify_ \st → st
     { procedures = Map.insert
         name
         { body, parameterNames }
-        state.procedures
+        st.procedures
     }
+
   pure Nothing
 
 interpretValueReference ∷ ∀ m. Interpret m String
 interpretValueReference name = do
-  { callStack, globalVariables } ← unwrap <$> get
+  { callStack, globalVariables } ← get
 
   let
     localVariables ∷ Variables

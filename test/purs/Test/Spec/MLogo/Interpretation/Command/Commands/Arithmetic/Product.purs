@@ -1,4 +1,4 @@
-module Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Sum
+module Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Product
   ( spec
   ) where
 
@@ -9,7 +9,7 @@ import Data.List (List(..))
 import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
-import MLogo.Interpretation.Command.Commands.Arithmetic.Sum as Sum
+import MLogo.Interpretation.Command.Commands.Arithmetic.Product as Product
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (Value(..))
 import MLogo.Interpretation.State.Gen as StateGen
@@ -19,36 +19,36 @@ import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
 
 spec ∷ TestSpec
-spec = describe "Sum" do
+spec = describe "Product" do
   describe "interpret" do
-    generativeTestCase "sums up addends - zero arguments" do
+    generativeTestCase "multiplies factors - zero arguments" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
-          Sum.interpret
+          Product.interpret
           executionState
           Nil
-        expected = Right $ (Just $ FloatValue 0.0) /\ executionState
+        expected = Right $ (Just $ FloatValue 1.0) /\ executionState
 
       pure $ actual === expected
 
-    generativeTestCase "sums up addends - one argument" do
+    generativeTestCase "multiplies factors - one argument" do
       executionTestCase ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
-          Sum.interpret
+          Product.interpret
           executionTestCase
-          (List.fromFoldable [ 1.0 ])
-        expected = Right $ (Just $ FloatValue 1.0) /\ executionTestCase
+          (List.fromFoldable [ 2.0 ])
+        expected = Right $ (Just $ FloatValue 2.0) /\ executionTestCase
       pure $ actual === expected
 
-    generativeTestCase "sums up addends - two arguments" do
+    generativeTestCase "multiplies factors - two arguments" do
       executionTestCase ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
-          Sum.interpret
+          Product.interpret
           executionTestCase
-          (List.fromFoldable [ 1.0, 2.0 ])
-        expected = Right $ (Just $ FloatValue 3.0) /\ executionTestCase
+          (List.fromFoldable [ 2.0, 3.0 ])
+        expected = Right $ (Just $ FloatValue 6.0) /\ executionTestCase
       pure $ actual === expected
 

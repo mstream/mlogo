@@ -7,12 +7,12 @@ import Prelude
 import Data.Either (Either(..))
 import Data.List ((:))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.Home as Home
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State (ExecutionState(..))
-import Test.QuickCheck (arbitrary, (===))
+import MLogo.Interpretation.State (Position)
+import MLogo.Interpretation.State.Gen as StateGen
+import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
@@ -23,39 +23,34 @@ spec = describe "Home" do
     generativeTestCase
       "moves the pointer back to the origin - with pen up"
       do
-        (ExecutionState state) ← arbitrary
+        state ← StateGen.genExecutionState
         let
           actual = Interpret.runInterpret
             Home.interpret
-            ( wrap state
-                { pointer = state.pointer { isDown = false } }
-            )
+            (state { pointer = state.pointer { isDown = false } })
             unit
-          expected = Right $ Nothing /\
-            ( ExecutionState $ state
-                { pointer = state.pointer
-                    { isDown = false, position = zero }
-                }
-            )
+          expected = Right $ Nothing /\ state
+            { pointer = state.pointer
+                { isDown = false, position = (zero ∷ Position) }
+            }
 
         pure $ actual === expected
 
     generativeTestCase
       "moves the pointer back to the origin - with pen down"
       do
-        (ExecutionState state) ← arbitrary
+        state ← StateGen.genExecutionState
         let
           actual = Interpret.runInterpret
             Home.interpret
-            (wrap state { pointer = state.pointer { isDown = true } })
+            (state { pointer = state.pointer { isDown = true } })
             unit
-          expected = Right $ Nothing /\
-            ( ExecutionState $ state
-                { pointer = state.pointer
-                    { isDown = true, position = zero }
-                , screen = { p1: state.pointer.position, p2: zero } :
-                    state.screen
-                }
-            )
+          expected = Right $ Nothing /\ state
+            { pointer = state.pointer
+                { isDown = true, position = (zero ∷ Position) }
+            , screen = { p1: state.pointer.position, p2: zero } :
+                state.screen
+            }
+
         pure $ actual === expected
 

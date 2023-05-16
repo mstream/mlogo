@@ -10,7 +10,6 @@ import Control.Monad.State (get)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
 import Data.Number as Number
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
@@ -45,7 +44,7 @@ command =
 
 interpret ∷ ∀ m. Interpret m Number
 interpret steps = do
-  state ← unwrap <$> get
+  state ← get
 
   let
     radians = State.toRadians state.pointer.angle
@@ -53,3 +52,4 @@ interpret steps = do
       { x: steps * Number.sin radians, y: steps * Number.cos radians }
 
   SetXY.interpret target
+

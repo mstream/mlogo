@@ -10,12 +10,11 @@ import Control.Monad.RWS (modify_)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (over)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (Angle(..), ExecutionState(..))
+import MLogo.Interpretation.State (Angle(..))
 import MLogo.Interpretation.Types as Types
 
 commandsByAlias ∷ Map String Command
@@ -40,11 +39,6 @@ command =
       }
 
 interpret ∷ ∀ m. Interpret m Number
-interpret angle = pure Nothing <* do
-  modify_ $ over ExecutionState
-    ( \st → st
-        { pointer = st.pointer
-            { angle = Angle angle }
-        }
-    )
+interpret angle = pure Nothing <* modify_ \st → st
+  { pointer = st.pointer { angle = Angle angle } }
 

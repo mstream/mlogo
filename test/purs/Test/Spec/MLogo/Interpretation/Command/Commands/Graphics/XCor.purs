@@ -15,6 +15,7 @@ import MLogo.Interpretation.State
   , Position(..)
   , Value(..)
   )
+import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck (arbitrary, (===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
@@ -24,16 +25,12 @@ spec ∷ TestSpec
 spec = describe "XCor" do
   describe "interpret" do
     generativeTestCase "outputs pointer's x coordinate" do
-      (ExecutionState state) ← arbitrary
+      state ← StateGen.genExecutionState
+
       let
-        actual = Interpret.runInterpret
-          XCor.interpret
-          (wrap state)
-          unit
-
+        actual = Interpret.runInterpret XCor.interpret state unit
         (Position { x }) = state.pointer.position
-
-        expected = Right $ (Just $ FloatValue x) /\ (wrap state)
+        expected = Right $ (Just $ FloatValue x) /\ state
 
       pure $ actual === expected
 

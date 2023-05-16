@@ -11,12 +11,11 @@ import Data.List ((:))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (over)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (ExecutionState(..), Position(..))
+import MLogo.Interpretation.State (Position(..))
 import MLogo.Interpretation.Types as Types
 
 commandsByAlias ∷ Map String Command
@@ -45,16 +44,13 @@ command =
       }
 
 interpret ∷ ∀ m. Interpret m Position
-interpret target = pure Nothing <* do
-  modify_ $ over ExecutionState
-    ( \st → st
-        { pointer = st.pointer { position = target }
-        , screen =
-            if st.pointer.isDown then
-              { p1: st.pointer.position
-              , p2: target
-              } : st.screen
-            else st.screen
-        }
-    )
+interpret target = pure Nothing <* modify_ \st → st
+  { pointer = st.pointer { position = target }
+  , screen =
+      if st.pointer.isDown then
+        { p1: st.pointer.position
+        , p2: target
+        } : st.screen
+      else st.screen
+  }
 

@@ -10,6 +10,7 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Arithmetic.Difference as Difference
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (Value(..))
+import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck (arbitrary, (===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
@@ -19,7 +20,7 @@ spec ∷ TestSpec
 spec = describe "Difference" do
   describe "interpret" do
     generativeTestCase "subtracts numbers" do
-      executionState ← arbitrary
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           Difference.interpret

@@ -12,7 +12,8 @@ import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Arithmetic.EqualP as EqualP
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (Value(..))
-import Test.QuickCheck (arbitrary, (===))
+import MLogo.Interpretation.State.Gen as StateGen
+import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
@@ -22,7 +23,7 @@ spec = describe "EqualP" do
   describe "interpret" do
 
     generativeTestCase "checks values equality - zero arguments" do
-      executionState ← arbitrary
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           EqualP.interpret
@@ -33,7 +34,7 @@ spec = describe "EqualP" do
       pure $ actual === expected
 
     generativeTestCase "checks values equality - one argument" do
-      executionState ← arbitrary
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           EqualP.interpret
@@ -44,7 +45,7 @@ spec = describe "EqualP" do
       pure $ actual === expected
 
     generativeTestCase "checks values equality - two same arguments" do
-      executionState ← arbitrary
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           EqualP.interpret
@@ -57,7 +58,7 @@ spec = describe "EqualP" do
     generativeTestCase
       "checks values equality - two different arguments"
       do
-        executionState ← arbitrary
+        executionState ← StateGen.genExecutionState
         let
           actual = Interpret.runInterpret
             EqualP.interpret

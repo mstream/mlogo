@@ -8,6 +8,6 @@ import Test.Spec (describe)
 import Test.Types (TestSpec)
 
 spec ∷ TestSpec
-spec = describe "sin" do
+spec = describe "Sin" do
   describe "interpret" do
     pure unit

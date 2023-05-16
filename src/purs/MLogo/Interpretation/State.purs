@@ -1,7 +1,7 @@
 module MLogo.Interpretation.State
   ( Angle(..)
   , CallStackElement
-  , ExecutionState(..)
+  , ExecutionState
   , Line
   , PointerState
   , Position(..)
@@ -126,7 +126,7 @@ initialPointerState =
 
 type ScreenState = List Line
 
-newtype ExecutionState = ExecutionState
+type ExecutionState =
   { callStack ∷ List CallStackElement
   , globalVariables ∷ Variables
   , outputtedValue ∷ Maybe Value
@@ -136,52 +136,8 @@ newtype ExecutionState = ExecutionState
   , screen ∷ ScreenState
   }
 
-derive newtype instance Eq ExecutionState
-derive newtype instance Show ExecutionState
-
-derive instance Newtype ExecutionState _
-
-instance Arbitrary ExecutionState where
-  arbitrary = do
-    callStack ← List.fromFoldable
-      <$> Gen.arrayOf genCallStackElement
-
-    globalVariables ← genMap arbitrary arbitrary
-    outputtedValue ← arbitrary
-    pointer ← arbitrary
-    procedures ← genMap arbitrary genProcedure
-    repCount ← arbitrary
-    screen ← arbitrary
-    pure $ ExecutionState
-      { callStack
-      , globalVariables
-      , outputtedValue
-      , pointer
-      , procedures
-      , repCount
-      , screen
-      }
-    where
-    genMap ∷ ∀ k v. Ord k ⇒ Gen k → Gen v → Gen (Map k v)
-    genMap genKey genValue = do
-      keys ← Gen.arrayOf genKey
-      values ← Gen.arrayOf genValue
-      pure $ Map.fromFoldable $ Array.zip keys values
-
-    genCallStackElement ∷ Gen CallStackElement
-    genCallStackElement = do
-      localVariables ← genMap arbitrary arbitrary
-      name ← arbitrary
-      pure { localVariables, name }
-
 type Procedure =
   { body ∷ List Expression, parameterNames ∷ List ParameterName }
-
-genProcedure ∷ Gen Procedure
-genProcedure = do
-  body ← List.fromFoldable <$> Gen.arrayOf ExpressionGen.genExpression
-  parameterNames ← arbitrary
-  pure { body, parameterNames }
 
 type CallStackElement =
   { name ∷ String
@@ -195,15 +151,14 @@ type VisibleState =
 
 initialExecutionState ∷ ExecutionState
 initialExecutionState =
-  ExecutionState
-    { callStack: Nil
-    , globalVariables: Map.empty
-    , outputtedValue: Nothing
-    , pointer: initialPointerState
-    , procedures: Map.empty
-    , repCount: -1
-    , screen: Nil
-    }
+  { callStack: Nil
+  , globalVariables: Map.empty
+  , outputtedValue: Nothing
+  , pointer: initialPointerState
+  , procedures: Map.empty
+  , repCount: -1
+  , screen: Nil
+  }
 
 newtype Position = Position { x ∷ Number, y ∷ Number }
 

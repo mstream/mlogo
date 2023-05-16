@@ -6,12 +6,11 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.PenDown as PenDown
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State (ExecutionState(..))
-import Test.QuickCheck (arbitrary, (===))
+import MLogo.Interpretation.State.Gen as StateGen
+import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)
@@ -20,15 +19,13 @@ spec ∷ TestSpec
 spec = describe "PenDown" do
   describe "interpret" do
     generativeTestCase "puts the pen down" do
-      (ExecutionState state) ← arbitrary
+      state ← StateGen.genExecutionState
+
       let
-        actual = Interpret.runInterpret
-          PenDown.interpret
-          (wrap state)
-          unit
-        expected = Right $ Nothing /\
-          ( ExecutionState $ state
-              { pointer = state.pointer { isDown = true } }
-          )
+        actual = Interpret.runInterpret PenDown.interpret state unit
+
+        expected = Right $ Nothing /\ state
+          { pointer = state.pointer { isDown = true } }
+
       pure $ actual === expected
 
