@@ -1,5 +1,12 @@
 
 
+## [0.33.0](https://github.com/mstream/mlogo/compare/0.32.1...0.33.0) (2023-05-16)
+
+
+### Features
+
+* improve the look of the cursor ([12c5394](https://github.com/mstream/mlogo/commit/12c5394dc1b13b0724aa5d3eae09a8f4685d7ecc))
+
 ### [0.32.1](https://github.com/mstream/mlogo/compare/0.32.0...0.32.1) (2023-05-16)
 
 ## [0.32.0](https://github.com/mstream/mlogo/compare/0.31.1...0.32.0) (2023-05-15)
