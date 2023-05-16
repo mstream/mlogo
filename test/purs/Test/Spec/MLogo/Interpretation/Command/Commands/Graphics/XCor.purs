@@ -6,17 +6,12 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.XCor as XCor
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State
-  ( ExecutionState(..)
-  , Position(..)
-  , Value(..)
-  )
+import MLogo.Interpretation.State (Position(..), Value(..))
 import MLogo.Interpretation.State.Gen as StateGen
-import Test.QuickCheck (arbitrary, (===))
+import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)

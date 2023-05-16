@@ -11,7 +11,7 @@ import MLogo.Interpretation.Command.Commands.Arithmetic.Difference as Difference
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (Value(..))
 import MLogo.Interpretation.State.Gen as StateGen
-import Test.QuickCheck (arbitrary, (===))
+import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
 import Test.Utils (generativeTestCase)

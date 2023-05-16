@@ -7,11 +7,10 @@ import Prelude
 import Data.Either (Either(..))
 import Data.List ((:))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (modify, wrap)
+import Data.Newtype (modify)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State (ExecutionState(..))
 import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck (arbitrary, (===))
 import Test.Spec (describe)

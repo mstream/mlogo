@@ -29,6 +29,7 @@
     "@mdi/font": "^7",
     "@release-it/conventional-changelog": "^5",
     "bulma": "~0.9",
+    "c8": "^7",
     "http-server": "^14",
     "node-sass": "^8",
     "purgecss": "^5",

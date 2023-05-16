@@ -21,13 +21,11 @@ module MLogo.Interpretation.State
 import Prelude
 
 import Data.Argonaut.Encode (class EncodeJson)
-import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Int as Int
 import Data.List (List(..))
-import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -35,11 +33,8 @@ import Data.Newtype (class Newtype)
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
 import MLogo.Parsing.Expression (Expression, ParameterName)
-import MLogo.Parsing.Expression.Gen as ExpressionGen
-import Test.QuickCheck (class Arbitrary, arbitrary)
+import Test.QuickCheck (class Arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
-import Test.QuickCheck.Gen (Gen)
-import Test.QuickCheck.Gen as Gen
 
 type Variables = Map String Value
 
