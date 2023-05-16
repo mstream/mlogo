@@ -17,11 +17,7 @@ import Halogen.Hooks as Hooks
 import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
 import Halogen.Svg.Elements as SE
-import MLogo.Interpretation.State
-  ( Angle(..)
-  , Position(..)
-  , VisibleState
-  )
+import MLogo.Interpretation.State (Angle(..), VisibleState)
 import MLogo.WebApp.Parts as Parts
 import MLogo.WebApp.Utils (classes)
 
@@ -60,52 +56,65 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
     renderPointer { angle: Angle a, position } =
       let
         halfOfPointerSize = Int.toNumber pointerBaseSize / 2.0
-        (Position p1) = position + Position
-          { x: -halfOfPointerSize, y: -halfOfPointerSize }
-        (Position p2) = position + Position
-          { x: halfOfPointerSize, y: -halfOfPointerSize }
-        (Position p3) = position + Position
-          { x: zero, y: halfOfPointerSize }
-        (Position p) = position
+        pl =
+          { x: position.x - halfOfPointerSize
+          , y: position.y - halfOfPointerSize
+          }
+        pr =
+          { x: position.x + halfOfPointerSize
+          , y: position.y - halfOfPointerSize
+          }
+        pt =
+          { x: position.x
+          , y: position.y + halfOfPointerSize
+          }
         stroke = SA.stroke $ Named "green"
-        transform = SA.transform $ transforms <> [ Rotate (-a) p.x p.y ]
+        transform = SA.transform
+          $ transforms <> [ Rotate (-a) position.x position.y ]
       in
         [ SE.line
-            [ SA.x1 p1.x
-            , SA.y1 p1.y
-            , SA.x2 p2.x
-            , SA.y2 p2.y
+            [ SA.x1 pt.x
+            , SA.y1 pt.y
+            , SA.x2 pl.x
+            , SA.y2 pl.y
             , stroke
             , transform
             ]
         , SE.line
-            [ SA.x1 p2.x
-            , SA.y1 p2.y
-            , SA.x2 p3.x
-            , SA.y2 p3.y
+            [ SA.x1 pt.x
+            , SA.y1 pt.y
+            , SA.x2 pr.x
+            , SA.y2 pr.y
             , stroke
             , transform
             ]
         , SE.line
-            [ SA.x1 p3.x
-            , SA.y1 p3.y
-            , SA.x2 p1.x
-            , SA.y2 p1.y
+            [ SA.x1 position.x
+            , SA.y1 position.y
+            , SA.x2 pl.x
+            , SA.y2 pl.y
+            , stroke
+            , transform
+            ]
+        , SE.line
+            [ SA.x1 position.x
+            , SA.y1 position.y
+            , SA.x2 pr.x
+            , SA.y2 pr.y
             , stroke
             , transform
             ]
         ]
 
-    renderScreen = Array.fromFoldable <<< map
-      \{ p1: (Position start), p2: (Position end) } →
-        SE.line
-          [ SA.x1 start.x
-          , SA.y1 start.y
-          , SA.x2 end.x
-          , SA.y2 end.y
-          , SA.stroke $ Named "black"
-          , SA.transform transforms
-          ]
+    renderScreen = Array.fromFoldable <<< map \{ p1, p2 } →
+      SE.line
+        [ SA.x1 p1.x
+        , SA.y1 p1.y
+        , SA.x2 p2.x
+        , SA.y2 p2.y
+        , SA.stroke $ Named "black"
+        , SA.transform transforms
+        ]
 
     renderZoomPanel = HH.div
       [ classes

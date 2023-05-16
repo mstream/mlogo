@@ -7,7 +7,6 @@ import Prelude
 import Data.Either (Either(..))
 import Data.List ((:))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (modify)
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
 import MLogo.Interpretation.Interpret as Interpret
@@ -33,9 +32,7 @@ spec = describe "SetY" do
         expected = Right $ Nothing /\ state
           { pointer = state.pointer
               { isDown = false
-              , position = modify
-                  (_ { y = y })
-                  state.pointer.position
+              , position = state.pointer.position { y = y }
               }
           }
 
@@ -52,15 +49,11 @@ spec = describe "SetY" do
         expected = Right $ Nothing /\ state
           { pointer = state.pointer
               { isDown = true
-              , position = modify
-                  (_ { y = y })
-                  state.pointer.position
+              , position = state.pointer.position { y = y }
               }
           , screen =
               { p1: state.pointer.position
-              , p2: modify
-                  (_ { y = y })
-                  state.pointer.position
+              , p2: state.pointer.position { y = y }
               } :
                 state.screen
           }

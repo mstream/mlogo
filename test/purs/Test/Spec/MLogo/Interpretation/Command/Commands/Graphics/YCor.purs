@@ -9,7 +9,7 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import MLogo.Interpretation.Command.Commands.Graphics.YCor as YCor
 import MLogo.Interpretation.Interpret as Interpret
-import MLogo.Interpretation.State (Position(..), Value(..))
+import MLogo.Interpretation.State (Value(..))
 import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
@@ -24,8 +24,8 @@ spec = describe "YCor" do
 
       let
         actual = Interpret.runInterpret YCor.interpret state unit
-        (Position { y }) = state.pointer.position
-        expected = Right $ (Just $ FloatValue y) /\ state
+        expected = Right
+          $ (Just $ FloatValue $ state.pointer.position.y) /\ state
 
       pure $ actual === expected
 

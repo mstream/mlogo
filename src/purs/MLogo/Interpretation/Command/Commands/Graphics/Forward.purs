@@ -16,7 +16,6 @@ import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (Position(..))
 import MLogo.Interpretation.State as State
 import MLogo.Interpretation.Types as Types
 
@@ -48,8 +47,10 @@ interpret steps = do
 
   let
     radians = State.toRadians state.pointer.angle
-    target = state.pointer.position + Position
-      { x: steps * Number.sin radians, y: steps * Number.cos radians }
+    target =
+      { x: state.pointer.position.x + steps * Number.sin radians
+      , y: state.pointer.position.y + steps * Number.cos radians
+      }
 
   SetXY.interpret target
 

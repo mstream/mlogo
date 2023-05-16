@@ -4,7 +4,7 @@ module MLogo.Interpretation.State
   , ExecutionState
   , Line
   , PointerState
-  , Position(..)
+  , Position
   , Procedure
   , ScreenState
   , Value(..)
@@ -155,23 +155,7 @@ initialExecutionState =
   , screen: Nil
   }
 
-newtype Position = Position { x ∷ Number, y ∷ Number }
-
-derive instance Generic Position _
-derive newtype instance Eq Position
-derive newtype instance Show Position
-derive newtype instance EncodeJson Position
-derive newtype instance Arbitrary Position
-
-derive instance Newtype Position _
-
-instance Semiring Position where
-  add (Position p1) (Position p2) = Position
-    { x: p1.x + p2.x, y: p1.y + p2.y }
-  mul (Position p1) (Position p2) = Position
-    { x: p1.x * p2.x, y: p1.y * p2.y }
-  one = Position one
-  zero = Position zero
-
 type Line = { p1 ∷ Position, p2 ∷ Position }
+
+type Position = { x ∷ Number, y ∷ Number }
 

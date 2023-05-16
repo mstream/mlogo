@@ -14,7 +14,7 @@ import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (Position(..), Value(..))
+import MLogo.Interpretation.State (Value(..))
 import MLogo.Interpretation.Types (ValueType(..))
 import MLogo.Interpretation.Types as Types
 
@@ -40,7 +40,5 @@ command =
       }
 
 interpret ∷ ∀ m. Interpret m Unit
-interpret _ = do
-  (Position { y }) ← gets _.pointer.position
-  pure $ Just $ FloatValue y
+interpret _ = (Just <<< FloatValue) <$> gets _.pointer.position.y
 

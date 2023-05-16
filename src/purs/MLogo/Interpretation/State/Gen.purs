@@ -9,16 +9,7 @@ import Control.Monad.Gen.Common as GenCommon
 import Control.Monad.Rec.Class (class MonadRec)
 import Data.Map.Gen as MapGen
 import Data.String.Gen as StringGen
-import MLogo.Interpretation.State
-  ( Angle(..)
-  , CallStackElement
-  , ExecutionState
-  , PointerState
-  , Position(..)
-  , Procedure
-  , ScreenState
-  , Value(..)
-  )
+import MLogo.Interpretation.State (Angle(..), CallStackElement, ExecutionState, PointerState, Position, Procedure, ScreenState, Value(..))
 import MLogo.Parsing.Expression (Expression, ParameterName(..))
 import MLogo.Parsing.Expression.Gen as ExpressionGen
 
@@ -76,7 +67,7 @@ genPosition ∷ ∀ m. MonadGen m ⇒ m Position
 genPosition = do
   x ← Gen.chooseFloat (-10.0) 10.0
   y ← Gen.chooseFloat (-10.0) 10.0
-  pure $ Position { x, y }
+  pure { x, y }
 
 genScreenState ∷ ∀ m. MonadGen m ⇒ MonadRec m ⇒ m ScreenState
 genScreenState = Gen.unfoldable do

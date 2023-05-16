@@ -15,7 +15,7 @@ import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (Position(..))
+import MLogo.Interpretation.State (Position)
 import MLogo.Interpretation.Types as Types
 
 commandsByAlias ∷ Map String Command
@@ -30,7 +30,7 @@ command =
     inputParser = ado
       x ← Types.fixedNumberInputParser "x-coordinate"
       y ← Types.fixedNumberInputParser "y-coordinate"
-      in Position { x, y }
+      in { x, y }
   in
     Command
       { description:

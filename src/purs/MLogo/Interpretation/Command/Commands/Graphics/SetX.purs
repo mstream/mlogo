@@ -11,7 +11,6 @@ import Data.List ((:))
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Newtype (modify)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
@@ -41,12 +40,11 @@ command =
 
 interpret ∷ ∀ m. Interpret m Number
 interpret x = pure Nothing <* modify_ \st → st
-  { pointer = st.pointer
-      { position = modify (_ { x = x }) st.pointer.position }
+  { pointer = st.pointer { position = st.pointer.position { x = x } }
   , screen =
       if st.pointer.isDown then
         { p1: st.pointer.position
-        , p2: modify (_ { x = x }) st.pointer.position
+        , p2: st.pointer.position { x = x }
         } : st.screen
       else st.screen
   }
