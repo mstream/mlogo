@@ -1,5 +1,12 @@
 
 
+## [0.34.0](https://github.com/mstream/mlogo/compare/0.33.2...0.34.0) (2023-05-17)
+
+
+### Features
+
+* allow leading zero to be skipped in float smaller than 1 ([b9d4f54](https://github.com/mstream/mlogo/commit/b9d4f54c2506dec3170878cfd2235c8f8cfe09cd))
+
 ### [0.33.2](https://github.com/mstream/mlogo/compare/0.33.1...0.33.2) (2023-05-16)
 
 ### [0.33.1](https://github.com/mstream/mlogo/compare/0.33.0...0.33.1) (2023-05-16)
