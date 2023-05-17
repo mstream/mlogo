@@ -241,6 +241,25 @@ examplesByTitle =
         , source:
             "repeat 360 [setx 200 * (cos 2 * repcount) sety xcor * (cos repcount) home]"
         }
+    , "Five Rose or Starfish, by Paolo Passaro, Italy (and Julie Clune, Australia) - only 8 words!!":
+        Example
+          { ast:
+              [ RepeatBlock (IntegerLiteral 1800)
+                  ( List.fromFoldable
+                      [ ProcedureCall "fd"
+                          (List.fromFoldable [ IntegerLiteral 10 ])
+                      , ProcedureCall "rt"
+                          ( List.fromFoldable
+                              [ BinaryOperation Addition
+                                  (ProcedureCall "repcount" Nil)
+                                  (FloatLiteral 0.1)
+                              ]
+                          )
+                      ]
+                  )
+              ]
+          , source: "repeat 1800 [fd 10 rt repcount + .1]"
+          }
     , "Growing Scrolls variation 4, by M.H. Elhefni, Egypt (13 words)":
         Example
           { ast:

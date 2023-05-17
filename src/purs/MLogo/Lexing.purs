@@ -61,8 +61,8 @@ lexer = lexer'
 
   float ∷ ParserT String Identity Number
   float = do
-    f ← Maybe.fromMaybe identity <$> PC.optionMaybe sign
-    x ← lexer'.decimal >>= fractExponent
+    f ← PC.option identity sign
+    x ← PC.option 0 lexer'.decimal >>= fractExponent
     pure $ f x
 
   fractExponent ∷ Int → ParserT String Identity Number
