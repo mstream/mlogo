@@ -5,6 +5,7 @@ module MLogo.Interpretation.Types
   , ValueType(..)
   , VariableInputParser
   , fixedAnyInputParser
+  , fixedIntInputParser
   , fixedNoInputParser
   , fixedNumberInputParser
   , fixedWordInputParser
@@ -173,6 +174,9 @@ anyParameter name = { name, valueType: AnyType }
 wordParameter ∷ String → Parameter
 wordParameter name = { name, valueType: WordType }
 
+intParameter ∷ String → Parameter
+intParameter name = { name, valueType: IntegerType }
+
 numberParameter ∷ String → Parameter
 numberParameter name = { name, valueType: NumberType }
 
@@ -227,6 +231,10 @@ fixedAnyInputParser name =
 variableAnyInputParser ∷ String → VariableInputParser Value
 variableAnyInputParser name =
   VariableInputParser (anyParameter name) (pure <<< identity)
+
+fixedIntInputParser ∷ String → FixedInputParser Int
+fixedIntInputParser name =
+  ParameterParser (intParameter name) State.extractInt
 
 fixedNumberInputParser ∷ String → FixedInputParser Number
 fixedNumberInputParser name =

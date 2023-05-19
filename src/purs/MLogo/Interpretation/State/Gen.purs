@@ -1,4 +1,7 @@
-module MLogo.Interpretation.State.Gen (genExecutionState) where
+module MLogo.Interpretation.State.Gen
+  ( module Exports
+  , genExecutionState
+  ) where
 
 import Prelude
 
@@ -19,6 +22,8 @@ import MLogo.Interpretation.State
   , ScreenState
   , Value(..)
   )
+import MLogo.Interpretation.State.Color (genColor) as Exports
+import MLogo.Interpretation.State.Color as Color
 import MLogo.Parsing.Expression (Expression, ParameterName(..))
 import MLogo.Parsing.Expression.Gen as ExpressionGen
 
@@ -30,6 +35,7 @@ genExecutionState
   ⇒ m ExecutionState
 genExecutionState = do
   callStack ← Gen.unfoldable genCallStackElement
+  colorPalette ← MapGen.genMap (Gen.chooseInt 0 10) Color.genColor
   globalVariables ← MapGen.genMap StringGen.genAlphaString genValue
   outputtedValue ← GenCommon.genMaybe genValue
   pointer ← genPointerState
@@ -38,6 +44,7 @@ genExecutionState = do
   screen ← genScreenState
   pure
     { callStack
+    , colorPalette
     , globalVariables
     , outputtedValue
     , pointer
@@ -68,9 +75,10 @@ genParameterName = ParameterName <$> StringGen.genAlphaString
 genPointerState ∷ ∀ m. MonadGen m ⇒ m PointerState
 genPointerState = do
   angle ← genAngle
+  color ← Color.genColor
   isDown ← Gen.chooseBool
   position ← genPosition
-  pure { angle, isDown, position }
+  pure { angle, color, isDown, position }
 
 genPosition ∷ ∀ m. MonadGen m ⇒ m Position
 genPosition = do
@@ -82,7 +90,8 @@ genScreenState ∷ ∀ m. MonadGen m ⇒ MonadRec m ⇒ m ScreenState
 genScreenState = Gen.unfoldable do
   p1 ← genPosition
   p2 ← genPosition
-  pure { p1, p2 }
+  color ← Color.genColor
+  pure { color, p1, p2 }
 
 genValue ∷ ∀ m. MonadGen m ⇒ MonadRec m ⇒ m Value
 genValue = pure $ BooleanValue true

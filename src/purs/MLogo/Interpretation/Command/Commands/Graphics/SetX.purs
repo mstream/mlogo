@@ -43,7 +43,8 @@ interpret x = pure Nothing <* modify_ \st → st
   { pointer = st.pointer { position = st.pointer.position { x = x } }
   , screen =
       if st.pointer.isDown then
-        { p1: st.pointer.position
+        { color: st.pointer.color
+        , p1: st.pointer.position
         , p2: st.pointer.position { x = x }
         } : st.screen
       else st.screen

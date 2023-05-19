@@ -48,8 +48,12 @@ spec = describe "Home" do
           expected = Right $ Nothing /\ state
             { pointer = state.pointer
                 { isDown = true, position = (zero ∷ Position) }
-            , screen = { p1: state.pointer.position, p2: zero } :
-                state.screen
+            , screen =
+                { color: state.pointer.color
+                , p1: state.pointer.position
+                , p2: zero
+                } :
+                  state.screen
             }
 
         pure $ actual === expected

@@ -8,6 +8,7 @@ import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.ClearScreen as C
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.Home as Home
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.PenDown as PenDown
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.PenUp as PenUp
+import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetPenColor as SetPenColor
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetX as SetX
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
@@ -22,6 +23,7 @@ spec = describe "Graphics" do
   Home.spec
   PenDown.spec
   PenUp.spec
+  SetPenColor.spec
   SetX.spec
   SetXY.spec
   SetY.spec

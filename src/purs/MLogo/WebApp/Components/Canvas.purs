@@ -16,8 +16,10 @@ import Halogen.HTML.Properties as HP
 import Halogen.Hooks as Hooks
 import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
+import Halogen.Svg.Attributes.StrokeLineCap (StrokeLineCap(..))
 import Halogen.Svg.Elements as SE
 import MLogo.Interpretation.State (Angle(..), VisibleState)
+import MLogo.Interpretation.State as State
 import MLogo.WebApp.Parts as Parts
 import MLogo.WebApp.Utils (classes)
 
@@ -53,7 +55,7 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
       , HP.value $ show zoom
       ]
 
-    renderPointer { angle: Angle a, position } =
+    renderPointer { angle: Angle a, color, position } =
       let
         halfOfPointerSize = Int.toNumber pointerBaseSize / 2.0
         pl =
@@ -68,51 +70,51 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
           { x: position.x
           , y: position.y + halfOfPointerSize
           }
-        stroke = SA.stroke $ Named "green"
+        stroke = SA.stroke $ colorAttribute color
+        strokeLineCap = SA.strokeLineCap LineCapRound
+        strokeOpacity = SA.strokeOpacity 0.5
         transform = SA.transform
           $ transforms <> [ Rotate (-a) position.x position.y ]
+        defaultAttrs =
+          [ stroke, strokeLineCap, strokeOpacity, transform ]
       in
-        [ SE.line
-            [ SA.x1 pt.x
-            , SA.y1 pt.y
-            , SA.x2 pl.x
-            , SA.y2 pl.y
-            , stroke
-            , transform
-            ]
-        , SE.line
-            [ SA.x1 pt.x
-            , SA.y1 pt.y
-            , SA.x2 pr.x
-            , SA.y2 pr.y
-            , stroke
-            , transform
-            ]
-        , SE.line
-            [ SA.x1 position.x
-            , SA.y1 position.y
-            , SA.x2 pl.x
-            , SA.y2 pl.y
-            , stroke
-            , transform
-            ]
-        , SE.line
-            [ SA.x1 position.x
-            , SA.y1 position.y
-            , SA.x2 pr.x
-            , SA.y2 pr.y
-            , stroke
-            , transform
-            ]
+        [ SE.line $ defaultAttrs
+            <>
+              [ SA.x1 pt.x
+              , SA.y1 pt.y
+              , SA.x2 pl.x
+              , SA.y2 pl.y
+              ]
+        , SE.line $ defaultAttrs
+            <>
+              [ SA.x1 pt.x
+              , SA.y1 pt.y
+              , SA.x2 pr.x
+              , SA.y2 pr.y
+              ]
+        , SE.line $ defaultAttrs
+            <>
+              [ SA.x1 position.x
+              , SA.y1 position.y
+              , SA.x2 pl.x
+              , SA.y2 pl.y
+              ]
+        , SE.line $ defaultAttrs
+            <>
+              [ SA.x1 position.x
+              , SA.y1 position.y
+              , SA.x2 pr.x
+              , SA.y2 pr.y
+              ]
         ]
 
-    renderScreen = Array.fromFoldable <<< map \{ p1, p2 } →
+    renderScreen = Array.fromFoldable <<< map \{ color, p1, p2 } →
       SE.line
         [ SA.x1 p1.x
         , SA.y1 p1.y
         , SA.x2 p2.x
         , SA.y2 p2.y
-        , SA.stroke $ Named "black"
+        , SA.stroke $ colorAttribute color
         , SA.transform transforms
         ]
 
@@ -158,6 +160,14 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
           (renderScreen screen <> renderPointer pointer)
       , renderZoomPanel
       ]
+
+colorAttribute ∷ State.Color → Color
+colorAttribute color =
+  let
+    scale = Int.round <<< (_ * 2.55) <<< Int.toNumber
+    { blue, green, red } = State.toRGB color
+  in
+    RGB (scale red) (scale green) (scale blue)
 
 pointerBaseSize ∷ Int
 pointerBaseSize = 16

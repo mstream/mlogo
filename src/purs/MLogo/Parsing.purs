@@ -117,12 +117,22 @@ ifElseBlock context = Lazy.defer \_ → do
 
 literal ∷ Parser String Expression
 literal = PC.choice
-  [ FloatLiteral <$> PC.try Lexing.lexer.float
-  , IntegerLiteral <$> Lexing.lexer.integer
-  , BooleanLiteral true <$ Lexing.lexer.reserved Lexing.trueKeyword
-  , BooleanLiteral false <$ Lexing.lexer.reserved Lexing.falseKeyword
+  [ booleanLiteral
+  , numericLiteral
   , stringLiteral
   , P.fail "could not recognize a literal"
+  ]
+
+booleanLiteral ∷ Parser String Expression
+booleanLiteral = PC.choice
+  [ BooleanLiteral true <$ Lexing.lexer.reserved Lexing.trueKeyword
+  , BooleanLiteral false <$ Lexing.lexer.reserved Lexing.falseKeyword
+  ]
+
+numericLiteral ∷ Parser String Expression
+numericLiteral = PC.choice
+  [ FloatLiteral <$> PC.try Lexing.lexer.float
+  , IntegerLiteral <$> Lexing.lexer.integer
   ]
 
 stringLiteral ∷ Parser String Expression

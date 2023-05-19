@@ -16,6 +16,7 @@ import MLogo.Interpretation.Command.Commands.Graphics.PenDown as PenDown
 import MLogo.Interpretation.Command.Commands.Graphics.PenUp as PenUp
 import MLogo.Interpretation.Command.Commands.Graphics.Right as Right
 import MLogo.Interpretation.Command.Commands.Graphics.SetHeading as SetHeading
+import MLogo.Interpretation.Command.Commands.Graphics.SetPenColor as SetPenColor
 import MLogo.Interpretation.Command.Commands.Graphics.SetX as SetX
 import MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
@@ -36,6 +37,7 @@ commandsByAlias = foldl
   , PenUp.commandsByAlias
   , Right.commandsByAlias
   , SetHeading.commandsByAlias
+  , SetPenColor.commandsByAlias
   , SetX.commandsByAlias
   , SetXY.commandsByAlias
   , SetY.commandsByAlias

@@ -7,6 +7,7 @@ import Data.List (List, (:))
 import Data.List as List
 import Data.Number as Number
 import Data.Number.Format as NumberFormat
+import Data.String as String
 import MLogo.Lexing as Lexing
 import MLogo.Parsing.Expression
   ( Expression(..)
@@ -340,8 +341,11 @@ printFloatLiteral x _ = SingleLine
   $ floatToString x
 
 floatToString ∷ Number → String
-floatToString x = NumberFormat.toString x
-  <> if Number.trunc x == x then ".0" else ""
+floatToString x
+  | Number.trunc x == x = NumberFormat.toString x <> ".0"
+  | x > 0.0 && x < 1.0 = String.drop 1 (NumberFormat.toString x)
+  | x < 0.0 && x > -1.0 = "-" <> String.drop 2 (NumberFormat.toString x)
+  | otherwise = NumberFormat.toString x
 
 printIntegerLiteral ∷ Print Int
 printIntegerLiteral n _ = SingleLine

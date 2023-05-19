@@ -62,7 +62,15 @@ lexer = lexer'
   float ∷ ParserT String Identity Number
   float = do
     f ← PC.option identity sign
-    x ← PC.option 0 lexer'.decimal >>= fractExponent
+    mbDecimal ← PC.optionMaybe lexer'.decimal
+    mbPeriod ← PC.lookAhead $ PC.optionMaybe $ PS.string "."
+    x ← case mbDecimal, mbPeriod of
+      Just decimal, _ →
+        fractExponent decimal
+      Nothing, Just _ →
+        fractExponent 0
+      Nothing, Nothing →
+        P.fail "invalid float"
     pure $ f x
 
   fractExponent ∷ Int → ParserT String Identity Number

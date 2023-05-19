@@ -1,5 +1,6 @@
 module MLogo.Interpretation.State
-  ( Angle(..)
+  ( module Exports
+  , Angle(..)
   , CallStackElement
   , ExecutionState
   , Line
@@ -32,6 +33,10 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Number as Number
 import Data.Show.Generic (genericShow)
+import Data.Tuple.Nested ((/\))
+import MLogo.Interpretation.State.Color (Color)
+import MLogo.Interpretation.State.Color (Color, toRGB) as Exports
+import MLogo.Interpretation.State.Color as Color
 import MLogo.Parsing.Expression (Expression, ParameterName)
 import Test.QuickCheck (class Arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
@@ -42,7 +47,6 @@ data Value
   = BooleanValue Boolean
   | FloatValue Number
   | IntegerValue Int
-  {- TODO: implement  | ListValue (List Value) -}
   | WordValue String
 
 derive instance Generic Value _
@@ -108,6 +112,7 @@ derive newtype instance Ring Steps
 
 type PointerState =
   { angle ∷ Angle
+  , color ∷ Color
   , isDown ∷ Boolean
   , position ∷ Position
   }
@@ -115,6 +120,7 @@ type PointerState =
 initialPointerState ∷ PointerState
 initialPointerState =
   { angle: zero
+  , color: Color.red
   , isDown: true
   , position: zero
   }
@@ -123,6 +129,7 @@ type ScreenState = List Line
 
 type ExecutionState =
   { callStack ∷ List CallStackElement
+  , colorPalette ∷ Map Int Color
   , globalVariables ∷ Variables
   , outputtedValue ∷ Maybe Value
   , pointer ∷ PointerState
@@ -147,6 +154,7 @@ type VisibleState =
 initialExecutionState ∷ ExecutionState
 initialExecutionState =
   { callStack: Nil
+  , colorPalette: initialColorPalette
   , globalVariables: Map.empty
   , outputtedValue: Nothing
   , pointer: initialPointerState
@@ -155,7 +163,27 @@ initialExecutionState =
   , screen: Nil
   }
 
-type Line = { p1 ∷ Position, p2 ∷ Position }
+type Line = { color ∷ Color, p1 ∷ Position, p2 ∷ Position }
 
 type Position = { x ∷ Number, y ∷ Number }
+
+initialColorPalette ∷ Map Int Color
+initialColorPalette = Map.fromFoldable
+  [ 0 /\ Color.black
+  , 1 /\ Color.blue
+  , 2 /\ Color.green
+  , 3 /\ Color.cyan
+  , 4 /\ Color.red
+  , 5 /\ Color.magenta
+  , 6 /\ Color.yellow
+  , 7 /\ Color.white
+  , 8 /\ Color.brown
+  , 9 /\ Color.tan
+  , 10 /\ Color.forest
+  , 11 /\ Color.aqua
+  , 12 /\ Color.salmon
+  , 13 /\ Color.purple
+  , 14 /\ Color.orange
+  , 15 /\ Color.grey
+  ]
 

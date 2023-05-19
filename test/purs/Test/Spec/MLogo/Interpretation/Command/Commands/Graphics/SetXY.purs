@@ -53,7 +53,10 @@ spec = describe "SetXY" do
             { pointer = state.pointer
                 { isDown = true, position = targetPosition }
             , screen =
-                { p1: state.pointer.position, p2: targetPosition }
+                { color: state.pointer.color
+                , p1: state.pointer.position
+                , p2: targetPosition
+                }
                   :
                     state.screen
             }

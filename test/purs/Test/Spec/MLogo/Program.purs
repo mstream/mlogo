@@ -8,6 +8,7 @@ import Data.List (List(..))
 import Data.List as List
 import Data.String as String
 import MLogo.Interpretation.State (VisibleState)
+import MLogo.Interpretation.State.Color as Color
 import MLogo.Program as Program
 import Test.Spec (describe, it)
 import Test.Spec.Assertions (fail)
@@ -24,6 +25,7 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: zero
               }
@@ -40,11 +42,13 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 0.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 10.0 }
                 }
               ]
@@ -60,11 +64,13 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: -10.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 0.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: -10.0 }
                 }
               ]
@@ -84,11 +90,13 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 0.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 10.0 }
                 }
               ]
@@ -110,14 +118,17 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 5.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 5.0 }
                 , p2: { x: 0.0, y: 10.0 }
                 }
-              , { p1: { x: 0.0, y: 0.0 }
+              , { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 5.0 }
                 }
               ]
@@ -134,14 +145,17 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 5.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 5.0 }
                 , p2: { x: 0.0, y: 10.0 }
                 }
-              , { p1: { x: 0.0, y: 0.0 }
+              , { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 5.0 }
                 }
               ]
@@ -158,17 +172,21 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 6.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 3.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 3.0 }
                 , p2: { x: 0.0, y: 6.0 }
                 }
-              , { p1: { x: 0.0, y: 1.0 }
+              , { color: Color.black
+                , p1: { x: 0.0, y: 1.0 }
                 , p2: { x: 0.0, y: 3.0 }
                 }
-              , { p1: { x: 0.0, y: 0.0 }
+              , { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 1.0 }
                 }
               ]
@@ -184,11 +202,13 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 0.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 10.0 }
                 }
               ]
@@ -204,6 +224,7 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: zero
               }
@@ -220,17 +241,21 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 15.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 9.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 9.0 }
                 , p2: { x: 0.0, y: 15.0 }
                 }
-              , { p1: { x: 0.0, y: 4.0 }
+              , { color: Color.black
+                , p1: { x: 0.0, y: 4.0 }
                 , p2: { x: 0.0, y: 9.0 }
                 }
-              , { p1: { x: 0.0, y: 0.0 }
+              , { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 4.0 }
                 }
               ]
@@ -246,17 +271,21 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 9.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 4.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 4.0 }
                 , p2: { x: 0.0, y: 9.0 }
                 }
-              , { p1: { x: 0.0, y: 1.0 }
+              , { color: Color.black
+                , p1: { x: 0.0, y: 1.0 }
                 , p2: { x: 0.0, y: 4.0 }
                 }
-              , { p1: { x: 0.0, y: 0.0 }
+              , { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 1.0 }
                 }
               ]
@@ -273,11 +302,13 @@ spec = describe "Program" do
       ( Right $
           { pointer:
               { angle: zero
+              , color: Color.black
               , isDown: true
               , position: { x: 0.0, y: 6.0 }
               }
           , screen: List.fromFoldable
-              [ { p1: { x: 0.0, y: 0.0 }
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
                 , p2: { x: 0.0, y: 6.0 }
                 }
               ]

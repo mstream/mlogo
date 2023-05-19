@@ -6,7 +6,7 @@ import Data.Either (Either(..))
 import MLogo.Lexing as Lexing
 import Parsing as P
 import Test.Spec (describe, it)
-import Test.Spec.Assertions (shouldEqual)
+import Test.Spec.Assertions (fail, shouldEqual)
 import Test.Types (TestSpec)
 
 spec ∷ TestSpec
@@ -48,6 +48,29 @@ spec = describe "Lexing" do
         actual = P.runParser ".5" Lexing.lexer.float
         expected = Right 0.5
       actual `shouldEqual` expected
+
+    it "parses a positive float in a scientific notation" do
+      let
+        actual = P.runParser "1e3" Lexing.lexer.float
+        expected = Right 1000.0
+      actual `shouldEqual` expected
+
+    it "parses a negative float in a scientific notation" do
+      let
+        actual = P.runParser "-1e3" Lexing.lexer.float
+        expected = Right (-1000.0)
+      actual `shouldEqual` expected
+
+    it
+      "refuses to parse float in a scientific notation containing only an exponent"
+      do
+        let
+          actual = P.runParser "e3" Lexing.lexer.float
+        case actual of
+          Left _ →
+            pure unit
+          Right _ →
+            fail "should not parse"
 
     it "parses a string literal" do
       let

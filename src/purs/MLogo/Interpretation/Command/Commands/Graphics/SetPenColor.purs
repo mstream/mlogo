@@ -1,4 +1,4 @@
-module MLogo.Interpretation.Command.Commands.Graphics.SetXY
+module MLogo.Interpretation.Command.Commands.Graphics.SetPenColor
   ( command
   , commandsByAlias
   , interpret
@@ -6,7 +6,9 @@ module MLogo.Interpretation.Command.Commands.Graphics.SetXY
 
 import Prelude
 
-import Control.Monad.State (modify_)
+import Control.Monad.Error.Class (throwError)
+import Control.Monad.State (get, modify_)
+import Data.Either (Either(..))
 import Data.List ((:))
 import Data.Map (Map)
 import Data.Map as Map
@@ -15,43 +17,38 @@ import Heterogeneous.Folding as Heterogeneous
 import MLogo.Interpretation.Command (Command(..), ToMap(..))
 import MLogo.Interpretation.Command as Command
 import MLogo.Interpretation.Interpret (Interpret)
-import MLogo.Interpretation.State (Position)
 import MLogo.Interpretation.Types as Types
 
 commandsByAlias ∷ Map String Command
 commandsByAlias = Heterogeneous.hfoldlWithIndex
   ToMap
   (Map.empty ∷ Map String Command)
-  { setxy: command }
+  { setpc: command
+  , setpencolor: command
+  }
 
 command ∷ Command
 command =
   let
-    inputParser = ado
-      x ← Types.fixedNumberInputParser "x-coordinate"
-      y ← Types.fixedNumberInputParser "y-coordinate"
-      in { x, y }
+    inputParser = Types.fixedIntInputParser "color palette index"
   in
     Command
       { description:
-          "Moves the cursor to an absolute position in the graphics window. The two inputs are numbers, the X and Y coordinates."
+          "Sets pen's color to a palette color under a given index ."
       , interpret: Command.parseAndInterpretInput
           (Types.runFixedInputParser inputParser)
           interpret
-      , name: "setxy"
+      , name: "setpencolor"
       , outputValueType: Nothing
       , parameters: Types.parametersFromFixedInputParser inputParser
       }
 
-interpret ∷ ∀ m. Interpret m Position
-interpret target = pure Nothing <* modify_ \st → st
-  { pointer = st.pointer { position = target }
-  , screen =
-      if st.pointer.isDown then
-        { color: st.pointer.color
-        , p1: st.pointer.position
-        , p2: target
-        } : st.screen
-      else st.screen
-  }
+interpret ∷ ∀ m. Interpret m Int
+interpret n = do
+  { colorPalette } ← get
+  pure Nothing <* case Map.lookup n colorPalette of
+    Just color →
+      modify_ \st → st { pointer = st.pointer { color = color } }
+    Nothing →
+      throwError "selected color does not exist in the color palette"
 

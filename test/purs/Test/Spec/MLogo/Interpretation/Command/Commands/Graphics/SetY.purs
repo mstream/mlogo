@@ -52,7 +52,8 @@ spec = describe "SetY" do
               , position = state.pointer.position { y = y }
               }
           , screen =
-              { p1: state.pointer.position
+              { color: state.pointer.color
+              , p1: state.pointer.position
               , p2: state.pointer.position { y = y }
               } :
                 state.screen

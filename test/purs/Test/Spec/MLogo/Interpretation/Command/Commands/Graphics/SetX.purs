@@ -52,7 +52,8 @@ spec = describe "SetX" do
               , position = state.pointer.position { x = x }
               }
           , screen =
-              { p1: state.pointer.position
+              { color: state.pointer.color
+              , p1: state.pointer.position
               , p2: state.pointer.position { x = x }
               } :
                 state.screen
