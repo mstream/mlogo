@@ -1,4 +1,4 @@
-const cacheName = 'mlogo-0.39.0'
+const cacheName = 'mlogo-0.39.1'
 
 const urlsToCache = [
   '/',
