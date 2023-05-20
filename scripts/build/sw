@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+mkdir -p static/
+cp src/js/sw.js static/

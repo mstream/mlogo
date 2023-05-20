@@ -4,12 +4,25 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="main.css">
     <title>MLogo</title>
   </head>
 
   <body>
     <section id="halogen"></section>
+    <script type="module">
+      if ("serviceWorker" in navigator) {
+          navigator.serviceWorker
+              .register(new URL("./sw.js", import.meta.url), {
+                  type: "module",
+                  scope: "/",
+              })
+              .then(function () {
+                  console.log("[index.html] Service Worker Registered")
+              })
+      }
+    </script>
+    <script src="./webapp.js"></script>
   </body>
-  <script src="./webapp.js"></script>
 </html>

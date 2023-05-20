@@ -4,3 +4,4 @@ npm run build:production
 purs-backend-es bundle-app -m Main.WebApp --minify --no-build -p browser -t dist/webapp.js 
 cp dist/webapp.js static/
 npm run build:css
+npm run build:sw

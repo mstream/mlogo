@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+npm run bundle:webapp 
+npm run post-release-patches
+npm run serve
+

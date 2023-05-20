@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+set -e -E
+
+app_version=$(jq -r .version package.json)
+sed -i'.bak' "s/CACHE_NAME/'mlogo-${app_version}'/g" static/sw.js 
+rm static/sw.js.bak
+
