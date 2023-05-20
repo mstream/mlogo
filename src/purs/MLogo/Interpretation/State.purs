@@ -124,7 +124,7 @@ type PointerState =
 initialPointerState ∷ PointerState
 initialPointerState =
   { angle: zero
-  , color: Color.red
+  , color: Color.black
   , isDown: true
   , position: zero
   }
