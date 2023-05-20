@@ -1,5 +1,12 @@
 
 
+## [0.39.0](https://github.com/mstream/mlogo/compare/0.38.0...0.39.0) (2023-05-20)
+
+
+### Features
+
+* set up a service worker ([8d88325](https://github.com/mstream/mlogo/commit/8d883257f9de328c6f747f2a9bf6ed1963e334f2))
+
 ## [0.38.0](https://github.com/mstream/mlogo/compare/0.37.0...0.38.0) (2023-05-20)
 
 
