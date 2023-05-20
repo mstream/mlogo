@@ -1,5 +1,12 @@
 
 
+### [0.39.1](https://github.com/mstream/mlogo/compare/0.39.0...0.39.1) (2023-05-20)
+
+
+### Bug Fixes
+
+* correct paths for favicon and manifest ([e1becf4](https://github.com/mstream/mlogo/commit/e1becf41c7b6d8fd46055b0da0da753aab49f10d))
+
 ## [0.39.0](https://github.com/mstream/mlogo/compare/0.38.0...0.39.0) (2023-05-20)
 
 
