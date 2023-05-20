@@ -104,6 +104,32 @@ spec = describe "Program" do
       )
 
     testCase
+      "moving forward by 10 using a custom procedure to retrieve the number of steps"
+      ( String.joinWith
+          "\n"
+          [ "to steps"
+          , "output 10"
+          , "end"
+          , "fd steps"
+          ]
+      )
+      ( Right $
+          { pointer:
+              { angle: zero
+              , color: Color.black
+              , isDown: true
+              , position: { x: 0.0, y: 10.0 }
+              }
+          , screen: List.fromFoldable
+              [ { color: Color.black
+                , p1: { x: 0.0, y: 0.0 }
+                , p2: { x: 0.0, y: 10.0 }
+                }
+              ]
+          }
+      )
+
+    testCase
       "moving forward by 10 using variable assignments and conditionals"
       ( String.joinWith
           "\n"
