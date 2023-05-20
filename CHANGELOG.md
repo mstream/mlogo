@@ -1,5 +1,14 @@
 
 
+## [0.35.0](https://github.com/mstream/mlogo/compare/0.34.0...0.35.0) (2023-05-20)
+
+
+### Features
+
+* implement 'setpencolor' command ([d23262c](https://github.com/mstream/mlogo/commit/d23262cff7198c7819f33675e7285d4eef989a00))
+* implement "random" and "rerandom" commands ([03ba1fa](https://github.com/mstream/mlogo/commit/03ba1fa4f258e88dccd910453bfeceae13e7f36c))
+* make black the initial pen color ([1813670](https://github.com/mstream/mlogo/commit/181367025d37e9367ec099d7a7a7287b77b873d2))
+
 ## [0.34.0](https://github.com/mstream/mlogo/compare/0.33.2...0.34.0) (2023-05-17)
 
 
