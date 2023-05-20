@@ -1,5 +1,12 @@
 
 
+## [0.38.0](https://github.com/mstream/mlogo/compare/0.37.0...0.38.0) (2023-05-20)
+
+
+### Features
+
+* implement "output" command ([9a12a7f](https://github.com/mstream/mlogo/commit/9a12a7f071b90a3f255d837058b4d227338dd6ca))
+
 ## [0.37.0](https://github.com/mstream/mlogo/compare/0.36.0...0.37.0) (2023-05-20)
 
 
