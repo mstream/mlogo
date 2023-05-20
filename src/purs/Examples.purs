@@ -118,6 +118,54 @@ examplesByTitle =
         , source:
             "for [i 0 1002] [fd 8 seth (360 * (power :i 3) / 1002)]"
         }
+    , "Brownian Motion": Example
+        { ast:
+            [ RepeatBlock
+                (IntegerLiteral 10000)
+                ( List.fromFoldable
+                    [ ProcedureCall "setpencolor"
+                        ( List.fromFoldable
+                            [ ProcedureCall "random"
+                                ( List.fromFoldable
+                                    [ IntegerLiteral 15 ]
+                                )
+                            ]
+                        )
+                    , ProcedureCall "fd"
+                        ( List.fromFoldable
+                            [ BinaryOperation Multiplication
+                                (IntegerLiteral 3)
+                                ( BinaryOperation Addition
+                                    ( UnaryOperation
+                                        Negation
+                                        (IntegerLiteral 1)
+                                    )
+                                    ( ProcedureCall "random"
+                                        ( List.fromFoldable
+                                            [ IntegerLiteral 2 ]
+                                        )
+                                    )
+                                )
+                            ]
+                        )
+                    , ProcedureCall "rt"
+                        ( List.fromFoldable
+                            [ BinaryOperation
+                                Multiplication
+                                (IntegerLiteral 90)
+                                ( ProcedureCall "random"
+                                    ( List.fromFoldable
+                                        [ IntegerLiteral 4 ]
+                                    )
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ]
+        , source:
+            "repeat 10000 [setpencolor random 15 fd 3 * (-1 + random 2) rt 90 * random 4]"
+        }
     , "Butterfly, by Olga Tuzova, Russia (15 words)": Example
         { ast:
             [ RepeatBlock
@@ -198,6 +246,40 @@ examplesByTitle =
             ]
         , source:
             "repeat 8 [rt 45 repeat 6 [repeat 90 [fd 2 rt 2] rt 90]]"
+        }
+    , "Feathers 1": Example
+        { ast:
+            [ RepeatBlock
+                (IntegerLiteral 12)
+                ( List.fromFoldable
+                    [ ProcedureCall "setpencolor"
+                        ( List.fromFoldable
+                            [ ProcedureCall "repcount" Nil ]
+                        )
+                    , RepeatBlock
+                        ( ProcedureCall "random"
+                            (List.fromFoldable [ IntegerLiteral 50 ])
+                        )
+                        ( List.fromFoldable
+                            [ ProcedureCall "fd"
+                                ( List.fromFoldable
+                                    [ IntegerLiteral 100 ]
+                                )
+                            , ProcedureCall "bk"
+                                ( List.fromFoldable
+                                    [ IntegerLiteral 95 ]
+                                )
+                            , ProcedureCall "rt"
+                                (List.fromFoldable [ IntegerLiteral 2 ])
+                            ]
+                        )
+                    , ProcedureCall "rt"
+                        (List.fromFoldable [ IntegerLiteral 180 ])
+                    ]
+                )
+            ]
+        , source:
+            "repeat 12 [setpencolor repcount repeat random 50 [fd 100 bk 95 rt 2] rt 180]"
         }
     , "Fish, by Olga Tuzova, Russia (15 words)": Example
         { ast:

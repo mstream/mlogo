@@ -33,22 +33,22 @@ spec = describe "Product" do
       pure $ actual === expected
 
     generativeTestCase "multiplies factors - one argument" do
-      executionTestCase ← StateGen.genExecutionState
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           Product.interpret
-          executionTestCase
+          executionState
           (List.fromFoldable [ 2.0 ])
-        expected = Right $ (Just $ FloatValue 2.0) /\ executionTestCase
+        expected = Right $ (Just $ FloatValue 2.0) /\ executionState
       pure $ actual === expected
 
     generativeTestCase "multiplies factors - two arguments" do
-      executionTestCase ← StateGen.genExecutionState
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           Product.interpret
-          executionTestCase
+          executionState
           (List.fromFoldable [ 2.0, 3.0 ])
-        expected = Right $ (Just $ FloatValue 6.0) /\ executionTestCase
+        expected = Right $ (Just $ FloatValue 6.0) /\ executionState
       pure $ actual === expected
 

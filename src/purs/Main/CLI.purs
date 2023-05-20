@@ -9,6 +9,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
 import Effect.Class.Console as Console
+import Effect.Random (randomInt)
 import MLogo.Program as Program
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as FS
@@ -58,7 +59,8 @@ opts = info (configParser <**> helper)
 run ∷ Config → Effect Unit
 run (Config { filePath }) = do
   source ← FS.readTextFile UTF8 filePath
-  case Program.run source of
+  randomNumberSeed ← randomInt 0 top
+  case Program.run randomNumberSeed source of
     Left errorMessage → do
       Console.error errorMessage
     Right state →

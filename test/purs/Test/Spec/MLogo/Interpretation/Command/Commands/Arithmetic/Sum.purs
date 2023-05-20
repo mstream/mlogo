@@ -33,22 +33,22 @@ spec = describe "Sum" do
       pure $ actual === expected
 
     generativeTestCase "sums up addends - one argument" do
-      executionTestCase ← StateGen.genExecutionState
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           Sum.interpret
-          executionTestCase
+          executionState
           (List.fromFoldable [ 1.0 ])
-        expected = Right $ (Just $ FloatValue 1.0) /\ executionTestCase
+        expected = Right $ (Just $ FloatValue 1.0) /\ executionState
       pure $ actual === expected
 
     generativeTestCase "sums up addends - two arguments" do
-      executionTestCase ← StateGen.genExecutionState
+      executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
           Sum.interpret
-          executionTestCase
+          executionState
           (List.fromFoldable [ 1.0, 2.0 ])
-        expected = Right $ (Just $ FloatValue 3.0) /\ executionTestCase
+        expected = Right $ (Just $ FloatValue 3.0) /\ executionState
       pure $ actual === expected
 

@@ -102,13 +102,17 @@ extractString = case _ of
 toRadians ∷ Angle → Number
 toRadians (Angle x) = x * Number.pi / 180.0
 
-newtype Steps = Steps Int
-
-derive newtype instance Eq Steps
-derive newtype instance Show Steps
-
-derive newtype instance Semiring Steps
-derive newtype instance Ring Steps
+type ExecutionState =
+  { callStack ∷ List CallStackElement
+  , colorPalette ∷ Map Int Color
+  , globalVariables ∷ Variables
+  , outputtedValue ∷ Maybe Value
+  , pointer ∷ PointerState
+  , procedures ∷ Map String Procedure
+  , randomNumberSeed ∷ Int
+  , repCount ∷ Int
+  , screen ∷ ScreenState
+  }
 
 type PointerState =
   { angle ∷ Angle
@@ -127,17 +131,6 @@ initialPointerState =
 
 type ScreenState = List Line
 
-type ExecutionState =
-  { callStack ∷ List CallStackElement
-  , colorPalette ∷ Map Int Color
-  , globalVariables ∷ Variables
-  , outputtedValue ∷ Maybe Value
-  , pointer ∷ PointerState
-  , procedures ∷ Map String Procedure
-  , repCount ∷ Int
-  , screen ∷ ScreenState
-  }
-
 type Procedure =
   { body ∷ List Expression, parameterNames ∷ List ParameterName }
 
@@ -151,14 +144,15 @@ type VisibleState =
   , screen ∷ ScreenState
   }
 
-initialExecutionState ∷ ExecutionState
-initialExecutionState =
+initialExecutionState ∷ Int → ExecutionState
+initialExecutionState randomNumberSeed =
   { callStack: Nil
   , colorPalette: initialColorPalette
   , globalVariables: Map.empty
   , outputtedValue: Nothing
   , pointer: initialPointerState
   , procedures: Map.empty
+  , randomNumberSeed
   , repCount: -1
   , screen: Nil
   }

@@ -28,7 +28,9 @@ spec = describe "SetPenColor" do
           (state { colorPalette = Map.singleton 0 color })
           0
         expected = Right $ Nothing /\ state
-          { pointer = state.pointer { color = color } }
+          { colorPalette = Map.singleton 0 color
+          , pointer = state.pointer { color = color }
+          }
 
       pure $ actual === expected
 

@@ -36,6 +36,7 @@
   , "parsing"
   , "prelude"
   , "quickcheck"
+  , "random"
   , "routing-duplex"
   , "spec"
   , "strings"

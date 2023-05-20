@@ -34,8 +34,8 @@ import Web.HTML.History as History
 import Web.HTML.Location as Location
 import Web.HTML.Window as Window
 
-component ∷ ∀ i m o q. MonadAff m ⇒ Component q i o m
-component = Hooks.component \{ slotToken } _ → Hooks.do
+component ∷ ∀ m o q. MonadAff m ⇒ Component q Int o m
+component = Hooks.component \{ slotToken } randomNumberSeed → Hooks.do
   mbAst /\ putMbAst ← ExtraHooks.usePutState $ Just Nil
 
   let
@@ -81,25 +81,31 @@ component = Hooks.component \{ slotToken } _ → Hooks.do
           ]
       ]
 
-    renderDisplayColumn = HH.div
-      [ classes [ "column", "is-6" ] ]
-      [ case (note "Syntax Error" mbAst) >>= Program.interpretAst of
-          Left errorMessage →
-            HH.div
-              [ classes [ "error" ] ]
-              [ Parts.icon "mdi-close-box"
-              , HH.text $ "Runtime Error: " <> errorMessage
-              ]
-          Right visibleState →
-            HH.div
-              [ HP.id "canvas" ]
-              [ HH.slot_
-                  (Proxy ∷ Proxy "canvas")
-                  unit
-                  CanvasComponent.component
-                  visibleState
-              ]
-      ]
+    renderDisplayColumn =
+      let
+        interpretationResult = note "Syntax Error" mbAst
+          >>= Program.interpretAst randomNumberSeed
+
+      in
+        HH.div
+          [ classes [ "column", "is-6" ] ]
+          [ case interpretationResult of
+              Left errorMessage →
+                HH.div
+                  [ classes [ "error" ] ]
+                  [ Parts.icon "mdi-close-box"
+                  , HH.text $ "Runtime Error: " <> errorMessage
+                  ]
+              Right visibleState →
+                HH.div
+                  [ HP.id "canvas" ]
+                  [ HH.slot_
+                      (Proxy ∷ Proxy "canvas")
+                      unit
+                      CanvasComponent.component
+                      visibleState
+                  ]
+          ]
 
   Hooks.useLifecycleEffect do
     mbSource ← liftEffect $ getSourceFromUrl

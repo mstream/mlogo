@@ -319,7 +319,7 @@ testCase
   ∷ String → String → String \/ VisibleState → TestSpec
 testCase title source expected = it ("executes \"" <> title <> "\"") do
   let
-    actual = Program.run source
+    actual = Program.run 0 source
   if actual == expected then pure unit
   else fail $
     "--- error >>> ---\n"

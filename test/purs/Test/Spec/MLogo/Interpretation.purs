@@ -32,7 +32,7 @@ spec = describe "Interpretation" do
   describe "interpretExpression" do
     expressionTestCase
       "addition of two numeric literals"
-      State.initialExecutionState
+      (State.initialExecutionState 0)
       ( BinaryOperation
           Addition
           (FloatLiteral 1.0)
@@ -40,12 +40,12 @@ spec = describe "Interpretation" do
       )
       ( Right
           $ (Just $ FloatValue 3.0) /\
-              State.initialExecutionState
+              (State.initialExecutionState 0)
       )
 
     expressionTestCase
       "subtraction of two numeric literals"
-      State.initialExecutionState
+      (State.initialExecutionState 0)
       ( BinaryOperation
           Subtraction
           (FloatLiteral 3.0)
@@ -53,12 +53,12 @@ spec = describe "Interpretation" do
       )
       ( Right
           $ (Just $ FloatValue 1.0) /\
-              State.initialExecutionState
+              (State.initialExecutionState 0)
       )
 
     expressionTestCase
       "multiplication of two numeric literals"
-      State.initialExecutionState
+      (State.initialExecutionState 0)
       ( BinaryOperation
           Multiplication
           (FloatLiteral 3.0)
@@ -66,12 +66,12 @@ spec = describe "Interpretation" do
       )
       ( Right
           $ (Just $ FloatValue 6.0) /\
-              State.initialExecutionState
+              (State.initialExecutionState 0)
       )
 
     expressionTestCase
       "division of two numeric literals"
-      State.initialExecutionState
+      (State.initialExecutionState 0)
       ( BinaryOperation
           Division
           (FloatLiteral 6.0)
@@ -79,12 +79,12 @@ spec = describe "Interpretation" do
       )
       ( Right
           $ (Just $ FloatValue 2.0) /\
-              State.initialExecutionState
+              (State.initialExecutionState 0)
       )
 
     expressionTestCase
       "exponentiation of two numeric literals"
-      State.initialExecutionState
+      (State.initialExecutionState 0)
       ( BinaryOperation
           Exponentiation
           (FloatLiteral 2.0)
@@ -92,18 +92,18 @@ spec = describe "Interpretation" do
       )
       ( Right
           $ (Just $ FloatValue 8.0) /\
-              State.initialExecutionState
+              (State.initialExecutionState 0)
       )
 
     expressionTestCase
       "a very long repeat block"
-      State.initialExecutionState
+      (State.initialExecutionState 0)
       (RepeatBlock (IntegerLiteral 1000000) Nil)
-      (Right $ Nothing /\ State.initialExecutionState)
+      (Right $ Nothing /\ (State.initialExecutionState 0))
 
     expressionTestCase
       "a very long for block"
-      State.initialExecutionState
+      (State.initialExecutionState 0)
       ( ForBlock
           { binder: "i"
           , initialValue: 1
@@ -112,7 +112,7 @@ spec = describe "Interpretation" do
           }
           Nil
       )
-      (Right $ Nothing /\ State.initialExecutionState)
+      (Right $ Nothing /\ (State.initialExecutionState 0))
 
   describe "interpretExpressions" do
     traverseWithIndex_
@@ -159,7 +159,7 @@ expressionsTestCase title expressions = it
     let
       _ = Interpret.runInterpret
         Interpretation.interpretExpressions
-        State.initialExecutionState
+        (State.initialExecutionState 0)
         expressions
 
     pure unit

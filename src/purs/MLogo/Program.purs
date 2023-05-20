@@ -19,12 +19,12 @@ import MLogo.Parsing.Expression (Expression)
 import Parsing (ParseError)
 import Parsing as P
 
-run ∷ String → String \/ VisibleState
-run = parseExpressions >>> case _ of
+run ∷ Int → String → String \/ VisibleState
+run randomNumberSeed = parseExpressions >>> case _ of
   Left parseError →
     Left $ "Syntax error:\n" <> show parseError
   Right expressions →
-    interpretAst expressions
+    interpretAst randomNumberSeed expressions
 
 parseExpressions ∷ String → ParseError \/ List Expression
 parseExpressions source = do
@@ -38,12 +38,12 @@ parseExpressions source = do
 
   P.runParser source (Parsing.expressions parsingContext)
 
-interpretAst ∷ List Expression → String \/ VisibleState
-interpretAst ast = do
+interpretAst ∷ Int → List Expression → String \/ VisibleState
+interpretAst randomNumberSeed ast = do
   let
     result = Interpret.runInterpret
       Interpretation.interpretExpressions
-      State.initialExecutionState
+      (State.initialExecutionState randomNumberSeed)
       ast
 
   { callStack, pointer, screen } ← case result of

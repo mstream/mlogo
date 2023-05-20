@@ -13,6 +13,8 @@ import MLogo.Interpretation.Command.Commands.Arithmetic.Minus as Minus
 import MLogo.Interpretation.Command.Commands.Arithmetic.Power as Power
 import MLogo.Interpretation.Command.Commands.Arithmetic.Product as Product
 import MLogo.Interpretation.Command.Commands.Arithmetic.Quotient as Quotient
+import MLogo.Interpretation.Command.Commands.Arithmetic.Random as Random
+import MLogo.Interpretation.Command.Commands.Arithmetic.ReRandom as ReRandom
 import MLogo.Interpretation.Command.Commands.Arithmetic.Sin as Sin
 import MLogo.Interpretation.Command.Commands.Arithmetic.Sum as Sum
 
@@ -26,6 +28,8 @@ commandsByAlias = foldl
   , Minus.commandsByAlias
   , Power.commandsByAlias
   , Product.commandsByAlias
+  , Random.commandsByAlias
+  , ReRandom.commandsByAlias
   , Quotient.commandsByAlias
   , Sin.commandsByAlias
   , Sum.commandsByAlias

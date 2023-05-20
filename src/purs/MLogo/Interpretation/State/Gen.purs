@@ -40,6 +40,7 @@ genExecutionState = do
   outputtedValue ← GenCommon.genMaybe genValue
   pointer ← genPointerState
   procedures ← MapGen.genMap StringGen.genAlphaString genProcedure
+  randomNumberSeed ← Gen.chooseInt bottom top
   repCount ← Gen.chooseInt (-1) 10
   screen ← genScreenState
   pure
@@ -49,6 +50,7 @@ genExecutionState = do
     , outputtedValue
     , pointer
     , procedures
+    , randomNumberSeed
     , repCount
     , screen
     }

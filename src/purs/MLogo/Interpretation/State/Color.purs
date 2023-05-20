@@ -40,10 +40,10 @@ derive newtype instance Show Saturation
 
 toRGB ∷ Color → { blue ∷ Int, green ∷ Int, red ∷ Int }
 toRGB
-  { blue: Saturation blue
-  , green: Saturation green
-  , red: Saturation red
-  } = { blue, green, red }
+  { blue: Saturation b
+  , green: Saturation g
+  , red: Saturation r
+  } = { blue: b, green: g, red: r }
 
 saturationFromInt ∷ Int → String \/ Saturation
 saturationFromInt i
