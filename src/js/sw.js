@@ -2,8 +2,6 @@ const cacheName = CACHE_NAME
 
 const urlsToCache = [
   '/',
-  '/main.css',
-  '/webapp.js',
 ]
 
 self.addEventListener('install', event => {

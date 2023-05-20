@@ -3,6 +3,7 @@
 /dist
 /node_modules/
 /static/main.css
+/static/sw.js
 /static/webapp.js
 /.pulp-cache/
 /output/
