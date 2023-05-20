@@ -1,5 +1,12 @@
 
 
+## [0.37.0](https://github.com/mstream/mlogo/compare/0.36.0...0.37.0) (2023-05-20)
+
+
+### Features
+
+* implement "cos" command ([6c25488](https://github.com/mstream/mlogo/commit/6c2548826a5ee692b13a7e17956d9e152bd68889))
+
 ## [0.36.0](https://github.com/mstream/mlogo/compare/0.35.0...0.36.0) (2023-05-20)
 
 
