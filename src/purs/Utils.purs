@@ -2,6 +2,7 @@ module Utils
   ( UriEncodedString
   , decodeFromString
   , decodeFromUriComponent
+  , degreesToRadians
   , encodeToUriComponent
   , genMap
   , uriEncodedStringToString
@@ -16,6 +17,7 @@ import Data.Array as Array
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Number as Number
 import Data.String as String
 
 foreign import _compressToEncodedURIComponent ∷ String → String
@@ -48,3 +50,5 @@ genMap genKey genValue = do
   values ← Gen.unfoldable genValue
   pure $ Map.fromFoldable $ Array.zip keys values
 
+degreesToRadians ∷ Number → Number
+degreesToRadians x = x * Number.pi / 180.0

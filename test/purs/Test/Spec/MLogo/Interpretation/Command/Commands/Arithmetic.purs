@@ -4,6 +4,7 @@ import Prelude
 
 import Test.Spec (describe)
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Abs as Abs
+import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Cos as Cos
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Difference as Difference
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.EqualP as EqualP
 import Test.Spec.MLogo.Interpretation.Command.Commands.Arithmetic.Minus as Minus
@@ -19,6 +20,7 @@ import Test.Types (TestSpec)
 spec ∷ TestSpec
 spec = describe "Arithmetic" do
   Abs.spec
+  Cos.spec
   Difference.spec
   EqualP.spec
   Minus.spec

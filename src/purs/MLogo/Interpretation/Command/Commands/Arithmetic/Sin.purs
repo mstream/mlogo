@@ -17,6 +17,7 @@ import MLogo.Interpretation.Interpret (Interpret)
 import MLogo.Interpretation.State (Value(..))
 import MLogo.Interpretation.Types (ValueType(..))
 import MLogo.Interpretation.Types as Types
+import Utils as Utils
 
 commandsByAlias ∷ Map String Command
 commandsByAlias = Heterogeneous.hfoldlWithIndex
@@ -45,7 +46,5 @@ interpret = pure
   <<< Just
   <<< FloatValue
   <<< Number.sin
-  <<< degreesToRadians
+  <<< Utils.degreesToRadians
 
-degreesToRadians ∷ Number → Number
-degreesToRadians x = x * Number.pi / 180.0

@@ -159,8 +159,11 @@ genInteger = Gen.chooseInt 0 99
 
 {- TODO make generate more types of strings -}
 genString ∷ ∀ m. MonadGen m ⇒ MonadRec m ⇒ m String
-genString = do
-  firstCharacter ← GenChar.genAlpha
-  suffix ← StringGen.genAlphaString
-  pure $ (String.singleton $ String.codePointFromChar firstCharacter)
-    <> suffix
+genString = gen `Gen.suchThat` \s →
+  not (s `Set.member` Lexing.reservedNames)
+  where
+  gen = do
+    firstCharacter ← GenChar.genAlpha
+    suffix ← StringGen.genAlphaString
+    pure $ (String.singleton $ String.codePointFromChar firstCharacter)
+      <> suffix
