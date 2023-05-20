@@ -1,5 +1,12 @@
 
 
+## [0.36.0](https://github.com/mstream/mlogo/compare/0.35.0...0.36.0) (2023-05-20)
+
+
+### Features
+
+* implement "abs" command ([a96b42a](https://github.com/mstream/mlogo/commit/a96b42ab3949bd3327e208c5fbbed6d5549564dd))
+
 ## [0.35.0](https://github.com/mstream/mlogo/compare/0.34.0...0.35.0) (2023-05-20)
 
 
