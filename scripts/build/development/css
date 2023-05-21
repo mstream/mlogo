@@ -1,7 +1,11 @@
 #!/usr/bin/env sh
 
+set -E -e
+
 rm -f dist/main.css static/main.css
+
 node-sass --omit-source-map-url --output dist/ src/scss/main.scss 
-purgecss --config purgecss.config.cjs
 mkdir -p static/
 cp -r node_modules/@mdi/font/fonts static/
+cp dist/main.css static/
+

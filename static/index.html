@@ -15,18 +15,7 @@
 
   <body>
     <section id="halogen"></section>
-    <script type="module">
-      if ("serviceWorker" in navigator) {
-          navigator.serviceWorker
-              .register(new URL("./sw.js", import.meta.url), {
-                  type: "module",
-                  scope: "/",
-              })
-              .then(function () {
-                  console.log("[index.html] Service Worker Registered")
-              })
-      }
-    </script>
+    <script src="./register_sw.js"></script>
     <script src="./webapp.js"></script>
   </body>
 </html>
