@@ -28,7 +28,7 @@ jobs:
       - name: "Run linters"
         run: "nix develop -c npm run lint"
       - name: "Bundle web application"
-        run: "nix develop -c npm run bundle:webapp"
+        run: "nix develop -c npm run bundle:production:webapp"
       - name: "Create a GitHub release"
         run: "nix develop -c npm run release -- --ci"
         env:
