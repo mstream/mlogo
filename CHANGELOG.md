@@ -1,5 +1,12 @@
 
 
+### [0.40.3](https://github.com/mstream/mlogo/compare/0.40.2...0.40.3) (2023-05-21)
+
+
+### Bug Fixes
+
+* address logo-related issues ([d34f33d](https://github.com/mstream/mlogo/commit/d34f33df070c28eba6082971266c33108a9625f9))
+
 ### [0.40.2](https://github.com/mstream/mlogo/compare/0.40.1...0.40.2) (2023-05-21)
 
 
