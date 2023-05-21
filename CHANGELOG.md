@@ -1,5 +1,12 @@
 
 
+## [0.40.0](https://github.com/mstream/mlogo/compare/0.39.1...0.40.0) (2023-05-21)
+
+
+### Features
+
+* add various user experience improvements ([3ca41a3](https://github.com/mstream/mlogo/commit/3ca41a39a3c532b73867afca56161b71ec44087b))
+
 ### [0.39.1](https://github.com/mstream/mlogo/compare/0.39.0...0.39.1) (2023-05-20)
 
 
