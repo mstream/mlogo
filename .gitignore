@@ -3,6 +3,7 @@
 /dist
 /node_modules/
 /static/main.css
+/static/manifest.json
 /static/register_sw.js
 /static/sw.js
 /static/webapp.js

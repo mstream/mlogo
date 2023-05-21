@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+set -E -e
+
+mkdir -p static/
+
+dhall-to-json --compact --file src/dhall/production-manifest.dhall --omit-empty --output static/manifest.json
+

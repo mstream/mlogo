@@ -7,3 +7,4 @@ spago bundle-app -m Main.WebApp --minify --no-build -p browser -t dist/webapp.js
 cp dist/webapp.js static/
 npm run build:development:css
 npm run build:development:js
+npm run build:development:manifest

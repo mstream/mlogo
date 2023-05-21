@@ -10,6 +10,8 @@
     "build:production:css": "scripty",
     "build:development:js": "scripty",
     "build:production:js": "scripty",
+    "build:development:manifest": "scripty",
+    "build:production:manifest": "scripty",
     "build:development:purs": "scripty",
     "build:production:purs": "scripty",
     "bundle:development": "scripty",
