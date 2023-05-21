@@ -13,6 +13,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (InputType(..))
 import Halogen.HTML.Properties as HP
+import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks as Hooks
 import Halogen.Svg.Attributes (Color(..), Transform(..))
 import Halogen.Svg.Attributes as SA
@@ -53,6 +54,7 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
       , HP.step $ Step $ Int.toNumber zoomStep
       , HP.type_ InputRange
       , HP.value $ show zoom
+      , HPA.label "zoom scale"
       ]
 
     renderPointer { angle: Angle a, color, position } =
@@ -126,13 +128,14 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
           ]
       , HP.id "zoom-panel"
       ]
-      [ renderZoomButton "mdi-minus" handleZoomOut
+      [ renderZoomButton "zoom out" "mdi-minus" handleZoomOut
       , renderZoomScale
-      , renderZoomButton "mdi-plus" handleZoomIn
+      , renderZoomButton "zoom in" "mdi-plus" handleZoomIn
       ]
 
-    renderZoomButton iconName clickHandler = HH.button
+    renderZoomButton buttonName iconName clickHandler = HH.button
       [ HE.onClick \_ → clickHandler
+      , HPA.label buttonName
       , classes [ "button", "square" ]
       ]
       [ Parts.icon iconName ]

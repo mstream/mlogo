@@ -9,6 +9,7 @@ import Halogen (Component)
 import Halogen.HTML (HTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
@@ -82,7 +83,10 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
           [ HE.onClick \_ → handleTabClick tab
           , classes if isActive then [ "is-active" ] else []
           ]
-          [ HH.a_
+          [ HH.a
+              [ HE.onClick $ const $ pure unit
+              , HP.href "#"
+              ]
               [ Parts.icon iconName
               , HH.span
                   [ classes [ "ml-1" ] ]
