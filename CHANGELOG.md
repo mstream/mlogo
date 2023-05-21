@@ -1,5 +1,12 @@
 
 
+### [0.40.2](https://github.com/mstream/mlogo/compare/0.40.1...0.40.2) (2023-05-21)
+
+
+### Bug Fixes
+
+* change service working script type to module ([21003b9](https://github.com/mstream/mlogo/commit/21003b91037cf7b39c85a3fb6eb6c7441d72f4ee))
+
 ### [0.40.1](https://github.com/mstream/mlogo/compare/0.40.0...0.40.1) (2023-05-21)
 
 ## [0.40.0](https://github.com/mstream/mlogo/compare/0.39.1...0.40.0) (2023-05-21)
