@@ -16,8 +16,6 @@
     "build:production:html": "scripty",
     "build:development:images": "scripty",
     "build:production:images": "scripty",
-    "build:development:js": "scripty",
-    "build:production:js": "scripty",
     "build:development:purs": "scripty",
     "build:production:purs": "scripty",
     "bundle:development": "scripty",

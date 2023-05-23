@@ -1,9 +1,0 @@
-#!/usr/bin/env sh
-
-set -E -e
-
-mkdir -p build
-
-cp -r src/js build/
-
-
