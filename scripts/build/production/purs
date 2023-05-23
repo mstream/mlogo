@@ -2,5 +2,15 @@
 
 set -E -e
 
-rm -rf .spago dist output*
+rm -rf .spago output*
+mkdir -p build
+
 spago -x spago.production.dhall build
+
+purs-backend-es bundle-app \
+  -m Main.WebApp \
+  --minify \
+  --no-build \
+  -p browser \
+  -t build/js/webapp.js 
+

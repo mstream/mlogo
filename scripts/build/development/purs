@@ -2,5 +2,14 @@
 
 set -E -e
 
-rm -rf .spago dist output*
+rm -rf .spago output*
+mkdir -p build
+
 spago build
+
+spago bundle-app \
+  -m Main.WebApp \
+  --minify \
+  -p browser \
+  -t build/js/webapp.js 
+

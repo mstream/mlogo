@@ -1,3 +1,5 @@
 #!/usr/bin/env sh
 
-http-server static
+set -E -e
+
+vite preview

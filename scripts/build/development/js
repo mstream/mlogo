@@ -2,13 +2,8 @@
 
 set -E -e
 
-app_path="/"
+mkdir -p build
 
-mkdir -p static/
+cp -r src/js build/
 
-cp src/js/register_sw.js static/
-sed -i'.bak' "s#APP_PATH#'${app_path}'#g" static/register_sw.js 
-rm static/register_sw.js.bak
-
-cp src/js/sw.js static/
 

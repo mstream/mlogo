@@ -2,9 +2,5 @@
 
 set -E -e
 
-npm run build:production:purs
-purs-backend-es bundle-app -m Main.WebApp --minify --no-build -p browser -t dist/webapp.js 
-cp dist/webapp.js static/
-npm run build:production:css
-npm run build:production:js
-npm run build:production:manifest
+npm run build:production
+vite build --mode production

@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+set -E -e
+
+mkdir -p build/html/public
+
+cp src/assets/images/* build/html/public/
+

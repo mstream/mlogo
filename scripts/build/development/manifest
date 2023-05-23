@@ -1,7 +1,0 @@
-#!/usr/bin/env sh
-
-set -E -e
-
-mkdir -p static/
-
-dhall-to-json --file src/dhall/development-manifest.dhall --output static/manifest.json

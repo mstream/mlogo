@@ -2,10 +2,7 @@
 
 set -E -e
 
-rm -f dist/main.css static/main.css
+mkdir -p build
 
-node-sass --omit-source-map-url --output dist/ src/scss/main.scss 
-mkdir -p static/
-cp -r node_modules/@mdi/font/fonts static/
-cp dist/main.css static/
+cp -r src/scss build/
 

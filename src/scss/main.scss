@@ -1,6 +1,6 @@
 @charset "utf-8";
 
-$mdi-font-path: fonts;
+$mdi-font-path: "../fonts";
 
 @import "../../node_modules/@mdi/font/scss/materialdesignicons.scss";
 @import "../../node_modules/bulma/bulma.sass";

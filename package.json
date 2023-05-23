@@ -6,12 +6,18 @@
     "url": "git+https://github.com/mstream/mlogo"
   },
   "scripts": {
+    "build:development": "scripty",
+    "build:production": "scripty",
     "build:development:css": "scripty",
     "build:production:css": "scripty",
+    "build:development:fonts": "scripty",
+    "build:production:fonts": "scripty",
+    "build:development:html": "scripty",
+    "build:production:html": "scripty",
+    "build:development:images": "scripty",
+    "build:production:images": "scripty",
     "build:development:js": "scripty",
     "build:production:js": "scripty",
-    "build:development:manifest": "scripty",
-    "build:production:manifest": "scripty",
     "build:development:purs": "scripty",
     "build:production:purs": "scripty",
     "bundle:development": "scripty",
@@ -35,15 +41,17 @@
   },
   "type": "module",
   "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^5",
     "@mdi/font": "^7",
     "@release-it/conventional-changelog": "^5",
     "bulma": "~0.9",
     "c8": "^7",
-    "http-server": "^14",
-    "node-sass": "^8",
-    "purgecss": "^5",
     "release-it": "^15",
-    "scripty": "^2"
+    "sass": "^1",
+    "scripty": "^2",
+    "simplyimport": "^4",
+    "vite": "^4",
+    "vite-plugin-pwa": "~0.15"
   },
   "dependencies": {
     "ace-builds": "^1",
