@@ -30,6 +30,7 @@ const pwaIcons = [
 ]
 
 export default defineConfig({
+  base: inProduction ? '/' : '/mlogo/',
   build: {
     emptyOutDir: true,
     outDir: '../../dist',
@@ -38,8 +39,8 @@ export default defineConfig({
     VitePWA({
       manifest: {
         name: 'MLogo',
-        scope: inProduction ? '/mlogo' : '/',
-        start_url: inProduction ? '/mlogo' : '/',
+        scope: inProduction ? '/mlogo/' : '/',
+        start_url: inProduction ? '/mlogo/' : '/',
         theme_color: '#ffffff',
         icons: pwaIcons,
       },
