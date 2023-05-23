@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import inProduction from './in-production.js'
 
+const basePath = inProduction ? '/mlogo/' : '/'
+
 const pwaIcons = [
   {
     purpose: 'any',
@@ -29,25 +31,26 @@ const pwaIcons = [
   },
 ]
 
+const pwaPlugin = VitePWA({
+  manifest: {
+    name: 'MLogo',
+    scope: basePath,
+    start_url: basePath,
+    theme_color: '#ffffff',
+    icons: pwaIcons,
+  },
+  registerType: 'autoUpdate',
+  srcDir: 'build/images'
+})
+
+
 export default defineConfig({
-  base: inProduction ? '/' : '/mlogo/',
+  base: basePath,
   build: {
     emptyOutDir: true,
     outDir: '../../dist',
   },
-  plugins: [
-    VitePWA({
-      manifest: {
-        name: 'MLogo',
-        scope: inProduction ? '/mlogo/' : '/',
-        start_url: inProduction ? '/mlogo/' : '/',
-        theme_color: '#ffffff',
-        icons: pwaIcons,
-      },
-      registerType: 'autoUpdate',
-      srcDir: 'build/images'
-    })
-  ],
+  plugins: [pwaPlugin],
   root: 'build/html',
 })
 
