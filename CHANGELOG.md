@@ -1,5 +1,7 @@
 
 
+### [0.40.5](https://github.com/mstream/mlogo/compare/0.40.4...0.40.5) (2023-05-23)
+
 ### [0.40.4](https://github.com/mstream/mlogo/compare/0.40.3...0.40.4) (2023-05-21)
 
 ### [0.40.3](https://github.com/mstream/mlogo/compare/0.40.2...0.40.3) (2023-05-21)
