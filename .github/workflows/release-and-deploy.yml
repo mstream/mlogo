@@ -33,11 +33,9 @@ jobs:
         run: "nix develop -c npm run release -- --ci"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      - name: "Run post-release patches"
-        run: "npm run post-release-patches"
       - name: "Deploy to GitHub Pages"
         uses: "peaceiris/actions-gh-pages@v3"
         with:
           github_token: "${{ secrets.GITHUB_TOKEN }}"
-          publish_dir: "./static"
+          publish_dir: "./dist"
 

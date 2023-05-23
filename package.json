@@ -26,7 +26,6 @@
     "bundle:production:webapp": "scripty",
     "clean": "scripty",
     "lint": "scripty",
-    "post-release-patches": "scripty",
     "release": "scripty",
     "serve": "scripty",
     "start": "scripty",
@@ -47,7 +46,6 @@
     "release-it": "^15",
     "sass": "^1",
     "scripty": "^2",
-    "simplyimport": "^4",
     "vite": "^4",
     "vite-plugin-pwa": "~0.15"
   },
