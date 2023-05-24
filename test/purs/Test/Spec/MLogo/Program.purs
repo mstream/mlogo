@@ -27,6 +27,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: zero
               }
           , screen: Nil
@@ -44,6 +45,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
@@ -66,6 +68,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: -10.0 }
               }
           , screen: List.fromFoldable
@@ -92,6 +95,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
@@ -118,6 +122,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
@@ -146,6 +151,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
@@ -173,6 +179,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
@@ -200,6 +207,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 6.0 }
               }
           , screen: List.fromFoldable
@@ -230,6 +238,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 10.0 }
               }
           , screen: List.fromFoldable
@@ -252,6 +261,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: zero
               }
           , screen: Nil
@@ -269,6 +279,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 15.0 }
               }
           , screen: List.fromFoldable
@@ -299,6 +310,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 9.0 }
               }
           , screen: List.fromFoldable
@@ -330,6 +342,7 @@ spec = describe "Program" do
               { angle: zero
               , color: Color.black
               , isDown: true
+              , isVisible: true
               , position: { x: 0.0, y: 6.0 }
               }
           , screen: List.fromFoldable

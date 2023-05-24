@@ -10,6 +10,7 @@ import MLogo.Interpretation.Command.Commands.Graphics.Back as Back
 import MLogo.Interpretation.Command.Commands.Graphics.Clean as Clean
 import MLogo.Interpretation.Command.Commands.Graphics.ClearScreen as ClearScreen
 import MLogo.Interpretation.Command.Commands.Graphics.Forward as Forward
+import MLogo.Interpretation.Command.Commands.Graphics.HideTurtle as HideTurtle
 import MLogo.Interpretation.Command.Commands.Graphics.Home as Home
 import MLogo.Interpretation.Command.Commands.Graphics.Left as Left
 import MLogo.Interpretation.Command.Commands.Graphics.PenDown as PenDown
@@ -20,6 +21,7 @@ import MLogo.Interpretation.Command.Commands.Graphics.SetPenColor as SetPenColor
 import MLogo.Interpretation.Command.Commands.Graphics.SetX as SetX
 import MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
+import MLogo.Interpretation.Command.Commands.Graphics.ShowTurtle as ShowTurtle
 import MLogo.Interpretation.Command.Commands.Graphics.XCor as XCor
 import MLogo.Interpretation.Command.Commands.Graphics.YCor as YCor
 
@@ -31,6 +33,7 @@ commandsByAlias = foldl
   , Clean.commandsByAlias
   , ClearScreen.commandsByAlias
   , Forward.commandsByAlias
+  , HideTurtle.commandsByAlias
   , Home.commandsByAlias
   , Left.commandsByAlias
   , PenDown.commandsByAlias
@@ -41,6 +44,7 @@ commandsByAlias = foldl
   , SetX.commandsByAlias
   , SetXY.commandsByAlias
   , SetY.commandsByAlias
+  , ShowTurtle.commandsByAlias
   , XCor.commandsByAlias
   , YCor.commandsByAlias
   ]

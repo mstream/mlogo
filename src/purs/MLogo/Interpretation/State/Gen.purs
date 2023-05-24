@@ -79,8 +79,9 @@ genPointerState = do
   angle ← genAngle
   color ← Color.genColor
   isDown ← Gen.chooseBool
+  isVisible ← Gen.chooseBool
   position ← genPosition
-  pure { angle, color, isDown, position }
+  pure { angle, color, isDown, isVisible, position }
 
 genPosition ∷ ∀ m. MonadGen m ⇒ m Position
 genPosition = do

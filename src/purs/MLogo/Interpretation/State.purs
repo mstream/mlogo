@@ -118,6 +118,7 @@ type PointerState =
   { angle ∷ Angle
   , color ∷ Color
   , isDown ∷ Boolean
+  , isVisible ∷ Boolean
   , position ∷ Position
   }
 
@@ -126,6 +127,7 @@ initialPointerState =
   { angle: zero
   , color: Color.black
   , isDown: true
+  , isVisible: true
   , position: zero
   }
 

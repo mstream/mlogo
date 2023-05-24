@@ -5,6 +5,7 @@ import Prelude
 import Test.Spec (describe)
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.Clean as Clean
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.ClearScreen as ClearScreen
+import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.HideTurtle as HideTurtle
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.Home as Home
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.PenDown as PenDown
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.PenUp as PenUp
@@ -12,6 +13,7 @@ import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetPenColor as S
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetX as SetX
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetXY as SetXY
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.SetY as SetY
+import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.ShowTurtle as ShowTurtle
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.XCor as XCor
 import Test.Spec.MLogo.Interpretation.Command.Commands.Graphics.YCor as YCor
 import Test.Types (TestSpec)
@@ -20,6 +22,7 @@ spec ∷ TestSpec
 spec = describe "Graphics" do
   Clean.spec
   ClearScreen.spec
+  HideTurtle.spec
   Home.spec
   PenDown.spec
   PenUp.spec
@@ -27,5 +30,6 @@ spec = describe "Graphics" do
   SetX.spec
   SetXY.spec
   SetY.spec
+  ShowTurtle.spec
   XCor.spec
   YCor.spec
