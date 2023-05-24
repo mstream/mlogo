@@ -16,12 +16,12 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "Sum" do
   describe "interpret" do
-    generativeTestCase "sums up addends - zero arguments" do
+    generativeTestCase Short "sums up addends - zero arguments" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
@@ -32,7 +32,7 @@ spec = describe "Sum" do
 
       pure $ actual === expected
 
-    generativeTestCase "sums up addends - one argument" do
+    generativeTestCase Short "sums up addends - one argument" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
@@ -42,7 +42,7 @@ spec = describe "Sum" do
         expected = Right $ (Just $ FloatValue 1.0) /\ executionState
       pure $ actual === expected
 
-    generativeTestCase "sums up addends - two arguments" do
+    generativeTestCase Short "sums up addends - two arguments" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret

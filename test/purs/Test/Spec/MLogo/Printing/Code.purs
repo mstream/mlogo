@@ -10,7 +10,7 @@ import Test.QuickCheck (Result(..))
 import Test.Spec (describe, it)
 import Test.Spec.Assertions (fail)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 import Test.Utils as Utils
 
 spec ∷ TestSpec
@@ -72,7 +72,7 @@ spec = describe "Code" do
       )
       15
 
-    generativeTestCase "indentation increases code width by 2" do
+    generativeTestCase Long "indentation increases code width by 2" do
       code ← CodeGen.genCode
 
       let

@@ -13,12 +13,12 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "HideTurtle" do
   describe "interpret" do
-    generativeTestCase "lift the pen up" do
+    generativeTestCase Short "lift the pen up" do
       state ← StateGen.genExecutionState
 
       let

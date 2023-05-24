@@ -15,12 +15,13 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "Home" do
   describe "interpret" do
     generativeTestCase
+      Short
       "moves the pointer back to the origin - with pen up"
       do
         state ← StateGen.genExecutionState
@@ -37,6 +38,7 @@ spec = describe "Home" do
         pure $ actual === expected
 
     generativeTestCase
+      Short
       "moves the pointer back to the origin - with pen down"
       do
         state ← StateGen.genExecutionState

@@ -14,12 +14,12 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "Power" do
   describe "interpret" do
-    generativeTestCase "raises numbers to exponents" do
+    generativeTestCase Short "raises numbers to exponents" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret

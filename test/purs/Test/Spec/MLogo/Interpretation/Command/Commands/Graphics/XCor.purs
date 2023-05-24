@@ -14,12 +14,12 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "XCor" do
   describe "interpret" do
-    generativeTestCase "outputs pointer's x coordinate" do
+    generativeTestCase Short "outputs pointer's x coordinate" do
       state ← StateGen.genExecutionState
 
       let

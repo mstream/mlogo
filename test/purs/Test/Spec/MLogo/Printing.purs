@@ -36,7 +36,7 @@ import Test.Spec.Assertions (fail)
 import Test.Spec.MLogo.Printing.BinaryOperation as BinaryOperation
 import Test.Spec.MLogo.Printing.Code (spec) as Code
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 import Test.Utils as Utils
 
 spec ∷ TestSpec
@@ -688,52 +688,56 @@ spec = describe "Printing" do
       \title (Example { ast, source }) →
         sourceBasedPrintTestCase title source ast
 
-    generativeTestCase "parses back a printed source of a random AST" do
-      ast ← Gen.arrayOf $ ExpressionGen.genExpression
+    generativeTestCase
+      Long
+      "parses back a printed source of a random AST"
+      do
+        ast ← Gen.arrayOf $ ExpressionGen.genExpression
 
-      let
-        printedSource ∷ String
-        printedSource = Code.codeToString
-          $ Printing.printExpressions
-              ast
-              { pageWidth: maxLineLength
-              , simplifyBinaryOperations: false
-              }
+        let
+          printedSource ∷ String
+          printedSource = Code.codeToString
+            $ Printing.printExpressions
+                ast
+                { pageWidth: maxLineLength
+                , simplifyBinaryOperations: false
+                }
 
-        parsingResult ∷ ParseError \/ List Expression
-        parsingResult = P.runParser
-          printedSource
-          (Parsing.expressions Commands.parsingContext)
+          parsingResult ∷ ParseError \/ List Expression
+          parsingResult = P.runParser
+            printedSource
+            (Parsing.expressions Commands.parsingContext)
 
-      pure case parsingResult of
-        Left parseError →
-          Failed $ "--- error >>> ---\n"
-            <> show parseError
-            <> "\n--- AST >>> ---\n"
-            <> A.stringify (AE.encodeJson ast)
-            <> "\n--- <<< AST ---"
-            <> "\n--- printed source >>> ---\n"
-            <> Utils.emphasizeWhitespaces printedSource
-            <> "\n--- <<< printed source ---"
-            <> "\n--- <<< error ---"
-        Right actual →
-          let
-            expected ∷ List Expression
-            expected = List.fromFoldable ast
+        pure case parsingResult of
+          Left parseError →
+            Failed $ "--- error >>> ---\n"
+              <> show parseError
+              <> "\n--- AST >>> ---\n"
+              <> A.stringify (AE.encodeJson ast)
+              <> "\n--- <<< AST ---"
+              <> "\n--- printed source >>> ---\n"
+              <> Utils.emphasizeWhitespaces printedSource
+              <> "\n--- <<< printed source ---"
+              <> "\n--- <<< error ---"
+          Right actual →
+            let
+              expected ∷ List Expression
+              expected = List.fromFoldable ast
 
-          in
-            if actual == expected then Success
-            else
-              Failed $ "--- error >>> ---\n"
-                <> (A.stringify $ AE.encodeJson actual)
-                <> "\nis not equal to\n"
-                <> (A.stringify $ AE.encodeJson expected)
-                <> "\n--- printed source >>> ---\n"
-                <> Utils.emphasizeWhitespaces printedSource
-                <> "\n--- <<< printed source ---"
-                <> "\n--- <<< error ---"
+            in
+              if actual == expected then Success
+              else
+                Failed $ "--- error >>> ---\n"
+                  <> (A.stringify $ AE.encodeJson actual)
+                  <> "\nis not equal to\n"
+                  <> (A.stringify $ AE.encodeJson expected)
+                  <> "\n--- printed source >>> ---\n"
+                  <> Utils.emphasizeWhitespaces printedSource
+                  <> "\n--- <<< printed source ---"
+                  <> "\n--- <<< error ---"
 
     generativeTestCase
+      Long
       ( "does not produce source code lines wider than "
           <> show maxLineLength
           <> " characters"

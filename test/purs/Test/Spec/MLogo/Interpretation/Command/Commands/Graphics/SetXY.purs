@@ -14,12 +14,13 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck (arbitrary, (===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "SetXY" do
   describe "interpret" do
     generativeTestCase
+      Short
       "sets pointer's x and y coordinates - with pen up"
       do
         state ← StateGen.genExecutionState
@@ -40,6 +41,7 @@ spec = describe "SetXY" do
         pure $ actual === expected
 
     generativeTestCase
+      Short
       "sets pointer's x and y coordinates - with pen down"
       do
         state ← StateGen.genExecutionState

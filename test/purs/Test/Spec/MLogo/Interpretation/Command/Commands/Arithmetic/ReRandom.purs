@@ -14,13 +14,13 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "ReRandom" do
   describe "interpret" do
 
-    generativeTestCase "sets random number seed" do
+    generativeTestCase Short "sets random number seed" do
       executionState ← StateGen.genExecutionState
       seed ← Gen.chooseInt bottom top
 

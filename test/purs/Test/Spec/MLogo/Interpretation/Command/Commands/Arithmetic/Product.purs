@@ -16,12 +16,12 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "Product" do
   describe "interpret" do
-    generativeTestCase "multiplies factors - zero arguments" do
+    generativeTestCase Short "multiplies factors - zero arguments" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
@@ -32,7 +32,7 @@ spec = describe "Product" do
 
       pure $ actual === expected
 
-    generativeTestCase "multiplies factors - one argument" do
+    generativeTestCase Short "multiplies factors - one argument" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
@@ -42,7 +42,7 @@ spec = describe "Product" do
         expected = Right $ (Just $ FloatValue 2.0) /\ executionState
       pure $ actual === expected
 
-    generativeTestCase "multiplies factors - two arguments" do
+    generativeTestCase Short "multiplies factors - two arguments" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret

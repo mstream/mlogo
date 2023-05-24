@@ -16,7 +16,7 @@ import Test.QuickCheck (Result(..), (===), (>=?))
 import Test.QuickCheck.Gen (Gen)
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "Abs" do
@@ -40,7 +40,7 @@ testCase
   → ({ input ∷ Number, output ∷ Number } → Result)
   → TestSpec
 testCase title genInput inputModifier assertion =
-  generativeTestCase title do
+  generativeTestCase Long title do
     executionState ← StateGen.genExecutionState
     input ← genInput
 

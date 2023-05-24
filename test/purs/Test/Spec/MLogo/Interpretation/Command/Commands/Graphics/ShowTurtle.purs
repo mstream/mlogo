@@ -13,12 +13,12 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "ShowTurtle" do
   describe "interpret" do
-    generativeTestCase "makes the pointer visible" do
+    generativeTestCase Short "makes the pointer visible" do
       state ← StateGen.genExecutionState
 
       let

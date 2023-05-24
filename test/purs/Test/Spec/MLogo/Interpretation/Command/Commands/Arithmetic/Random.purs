@@ -22,7 +22,7 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck (Result(..), (<?), (>=?))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "Random" do
@@ -35,7 +35,7 @@ spec = describe "Random" do
       "random number is always smaller than the upper limit"
       (\{ number, upperLimit } → number <? upperLimit)
 
-    generativeTestCase "same state produces same numbers" do
+    generativeTestCase Short "same state produces same numbers" do
       executionState ← StateGen.genExecutionState
 
       let
@@ -61,44 +61,48 @@ spec = describe "Random" do
             else Failed $ "not all random values are same: " <> show
               values
 
-    generativeTestCase "updated state produces different numbers" do
-      executionState ← StateGen.genExecutionState
+    generativeTestCase
+      Short
+      "updated state produces different numbers"
+      do
+        executionState ← StateGen.genExecutionState
 
-      let
-        go
-          ∷ Int
-          → ExecutionState
-          → List (Maybe Value)
-          → String \/ NonEmptyList (Maybe Value)
-        go times previousState acc = do
-          mbValue /\ newExecutionState ← Interpret.runInterpret
-            Random.interpret
-            previousState
-            top
+        let
+          go
+            ∷ Int
+            → ExecutionState
+            → List (Maybe Value)
+            → String \/ NonEmptyList (Maybe Value)
+          go times previousState acc = do
+            mbValue /\ newExecutionState ← Interpret.runInterpret
+              Random.interpret
+              previousState
+              top
 
-          if times > 0 then go (times - 1) newExecutionState
-            (mbValue : acc)
-          else Right $ ListNonEmpty.cons' mbValue acc
+            if times > 0 then go (times - 1) newExecutionState
+              (mbValue : acc)
+            else Right $ ListNonEmpty.cons' mbValue acc
 
-        valuesResult ∷ String \/ NonEmptyList (Maybe Value)
-        valuesResult = go 100 executionState Nil
+          valuesResult ∷ String \/ NonEmptyList (Maybe Value)
+          valuesResult = go 100 executionState Nil
 
-      pure case valuesResult of
-        Left errorMessage →
-          Failed $ "execution of commands has failed: " <> errorMessage
-        Right values →
-          let
-            isSameAsFirstValue ∷ Maybe Value → Boolean
-            isSameAsFirstValue = eq (ListNonEmpty.head values)
-          in
-            if all isSameAsFirstValue (ListNonEmpty.tail values) then
-              Failed $ "all random values are same: " <> show values
-            else
-              Success
+        pure case valuesResult of
+          Left errorMessage →
+            Failed $ "execution of commands has failed: " <>
+              errorMessage
+          Right values →
+            let
+              isSameAsFirstValue ∷ Maybe Value → Boolean
+              isSameAsFirstValue = eq (ListNonEmpty.head values)
+            in
+              if all isSameAsFirstValue (ListNonEmpty.tail values) then
+                Failed $ "all random values are same: " <> show values
+              else
+                Success
 
 testCase
   ∷ String → ({ number ∷ Int, upperLimit ∷ Int } → Result) → TestSpec
-testCase title assertion = generativeTestCase title do
+testCase title assertion = generativeTestCase Long title do
   executionState ← StateGen.genExecutionState
   upperLimit ← Gen.chooseInt 1 top
   let

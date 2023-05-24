@@ -14,50 +14,56 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck (arbitrary, (===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "SetX" do
   describe "interpret" do
-    generativeTestCase "sets pointer's x coordinate - with pen up" do
-      state ← StateGen.genExecutionState
-      x ← arbitrary
-      let
-        actual = Interpret.runInterpret
-          SetX.interpret
-          ( state
-              { pointer = state.pointer { isDown = false } }
-          )
-          x
-        expected = Right $ Nothing /\ state
-          { pointer = state.pointer
-              { isDown = false
-              , position = state.pointer.position { x = x }
-              }
-          }
+    generativeTestCase
+      Short
+      "sets pointer's x coordinate - with pen up"
+      do
+        state ← StateGen.genExecutionState
+        x ← arbitrary
+        let
+          actual = Interpret.runInterpret
+            SetX.interpret
+            ( state
+                { pointer = state.pointer { isDown = false } }
+            )
+            x
+          expected = Right $ Nothing /\ state
+            { pointer = state.pointer
+                { isDown = false
+                , position = state.pointer.position { x = x }
+                }
+            }
 
-      pure $ actual === expected
+        pure $ actual === expected
 
-    generativeTestCase "sets pointer's x coordinate - with pen down" do
-      state ← StateGen.genExecutionState
-      x ← arbitrary
-      let
-        actual = Interpret.runInterpret
-          SetX.interpret
-          (state { pointer = state.pointer { isDown = true } })
-          x
-        expected = Right $ Nothing /\ state
-          { pointer = state.pointer
-              { isDown = true
-              , position = state.pointer.position { x = x }
-              }
-          , screen =
-              { color: state.pointer.color
-              , p1: state.pointer.position
-              , p2: state.pointer.position { x = x }
-              } :
-                state.screen
-          }
+    generativeTestCase
+      Short
+      "sets pointer's x coordinate - with pen down"
+      do
+        state ← StateGen.genExecutionState
+        x ← arbitrary
+        let
+          actual = Interpret.runInterpret
+            SetX.interpret
+            (state { pointer = state.pointer { isDown = true } })
+            x
+          expected = Right $ Nothing /\ state
+            { pointer = state.pointer
+                { isDown = true
+                , position = state.pointer.position { x = x }
+                }
+            , screen =
+                { color: state.pointer.color
+                , p1: state.pointer.position
+                , p2: state.pointer.position { x = x }
+                } :
+                  state.screen
+            }
 
-      pure $ actual === expected
+        pure $ actual === expected
 

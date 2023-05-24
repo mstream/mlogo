@@ -9,7 +9,7 @@ import Test.QuickCheck (Result(..))
 import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "Operator" do
@@ -45,7 +45,7 @@ spec = describe "Operator" do
 
         actual `shouldEqual` expected
 
-    generativeTestCase "maintains the transitivity" do
+    generativeTestCase Long "maintains the transitivity" do
       firstOperationType ← ExpressionGen.genBinaryOperationType
       secondOperationType ← ExpressionGen.genBinaryOperationType
 

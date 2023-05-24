@@ -14,12 +14,12 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "Quotient" do
   describe "interpret" do
-    generativeTestCase "divides numbers" do
+    generativeTestCase Short "divides numbers" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret
@@ -30,7 +30,7 @@ spec = describe "Quotient" do
 
       pure $ actual === expected
 
-    generativeTestCase "divides numbers - division by zero" do
+    generativeTestCase Short "divides numbers - division by zero" do
       executionState ← StateGen.genExecutionState
       let
         actual = Interpret.runInterpret

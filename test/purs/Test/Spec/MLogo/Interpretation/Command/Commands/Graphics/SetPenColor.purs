@@ -14,12 +14,12 @@ import MLogo.Interpretation.State.Gen as StateGen
 import Test.QuickCheck ((===))
 import Test.Spec (describe)
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 
 spec ∷ TestSpec
 spec = describe "SetPenColor" do
   describe "interpret" do
-    generativeTestCase "sets pointer's color - existing color" do
+    generativeTestCase Short "sets pointer's color - existing color" do
       state ← StateGen.genExecutionState
       color ← StateGen.genColor
       let
@@ -35,6 +35,7 @@ spec = describe "SetPenColor" do
       pure $ actual === expected
 
     generativeTestCase
+      Short
       "sets pointer's x coordinate - non-existing color"
       do
         state ← StateGen.genExecutionState

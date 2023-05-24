@@ -43,7 +43,7 @@ import Test.Spec (describe, it)
 import Test.Spec.Assertions (fail)
 import Test.Spec.MLogo.Parsing.Operator as Operator
 import Test.Types (TestSpec)
-import Test.Utils (generativeTestCase)
+import Test.Utils (TestLength(..), generativeTestCase)
 import Test.Utils as Utils
 
 spec ∷ TestSpec
@@ -992,7 +992,7 @@ expressionTestCase
     )
   → TestSpec
 expressionTestCase title partGenerators makeExpected =
-  generativeTestCase title do
+  generativeTestCase Short title do
     parts ← sequence partGenerators
     source ← Utils.addRedundantSpaces parts
 
@@ -1099,7 +1099,7 @@ procedureSignatureTestCase
   → (Array String → String \/ ProcedureSignature)
   → TestSpec
 procedureSignatureTestCase title partGenerators makeExpected =
-  generativeTestCase title do
+  generativeTestCase Short title do
     parts ← sequence partGenerators
     source ← Utils.addRedundantSpaces parts
 
