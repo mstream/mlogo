@@ -5,13 +5,12 @@ import Prelude hiding ((/))
 import Control.Alt (class Alt)
 import Control.Alternative ((<|>))
 import Control.Monad.Gen (class MonadGen)
-import Control.Monad.Gen as Gen
 import Control.Monad.Gen.Common as GenCommon
 import Control.Monad.Rec.Class (class MonadRec)
 import Data.Either (Either(..), note)
 import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
 import Data.String.Gen as StringGen
 import Routing.Duplex (RouteDuplex')

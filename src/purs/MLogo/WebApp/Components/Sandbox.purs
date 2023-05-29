@@ -10,7 +10,6 @@ import Effect.Aff.Class (class MonadAff)
 import Halogen (Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
