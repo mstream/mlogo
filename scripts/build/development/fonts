@@ -4,5 +4,5 @@ set -E -e
 
 mkdir -p build
 
-cp -r node_modules/@mdi/font/fonts build/
+cp -r node_modules/@fortawesome/fontawesome-free/webfonts build/
 

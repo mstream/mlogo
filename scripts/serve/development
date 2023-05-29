@@ -4,5 +4,4 @@ set -E -e
 
 export NODE_ENV=development
 
-npm run build:development
-vite build --mode development
+vite preview

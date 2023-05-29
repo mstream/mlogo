@@ -8,15 +8,16 @@ import Effect.Aff (launchAff_)
 import Effect.Random (randomInt)
 import Halogen.Aff (selectElement)
 import Halogen.VDom.Driver (runUI)
-import MLogo.WebApp.Components.App as App
+import MLogo.WebApp.Components.Router as RouterComponent
 import Web.DOM.ParentNode (QuerySelector(..))
 
 main ∷ Effect Unit
 main = do
   randomNumberSeed ← randomInt 0 top
   launchAff_ do
-    mbHalogenElement ← selectElement halogenElementSelector
-    for_ mbHalogenElement (runUI App.component randomNumberSeed)
+    mbRootElement ← selectElement rootElementSelector
+    for_ mbRootElement
+      (runUI RouterComponent.component { randomNumberSeed })
 
-halogenElementSelector ∷ QuerySelector
-halogenElementSelector = QuerySelector "#halogen"
+rootElementSelector ∷ QuerySelector
+rootElementSelector = QuerySelector "#root"

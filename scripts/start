@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
+set -E -e
+
 npm run bundle:development:webapp 
-npm run post-release-patches
-npm run serve
+npm run serve:development
 

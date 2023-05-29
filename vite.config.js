@@ -1,8 +1,14 @@
 import { defineConfig } from 'vite'
+import { resolve } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import inProduction from './in-production.js'
+import * as url from 'url'
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 
 const basePath = inProduction ? '/mlogo/' : '/'
+
+const root = 'build/html'
 
 const pwaIcons = [
   {
@@ -49,8 +55,14 @@ export default defineConfig({
   build: {
     emptyOutDir: true,
     outDir: '../../dist',
+    rollupOptions: {
+      input: {
+        home: resolve(__dirname, root, 'index.html'),
+        sandbox: resolve(__dirname, root, 'sandbox.html'),
+      }
+    },
   },
   plugins: [pwaPlugin],
-  root: 'build/html',
+  root,
 })
 

@@ -18,6 +18,7 @@ import Halogen.Hooks as Hooks
 import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
 import MLogo.Printing.Code as Code
+import MLogo.WebApp.Parts (IconSize(..))
 import MLogo.WebApp.Parts as Parts
 import MLogo.WebApp.Utils (classes)
 
@@ -50,7 +51,7 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
                       handleTryButtonClick $ List.fromFoldable ast
                   , classes [ "button" ]
                   ]
-                  [ Parts.icon "mdi-play-circle"
+                  [ Parts.icon "fas" "fa-play-circle" Small
                   , HH.span
                       [ classes [ "mr-1" ] ]
                       [ HH.text "try" ]

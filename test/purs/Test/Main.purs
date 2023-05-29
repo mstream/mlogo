@@ -14,6 +14,7 @@ import Test.Spec.MLogo.Lexing as Lexing
 import Test.Spec.MLogo.Parsing as Parsing
 import Test.Spec.MLogo.Printing as Printing
 import Test.Spec.MLogo.Program as Program
+import Test.Spec.MLogo.WebApp as WebApp
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (defaultConfig, runSpecT)
 import Test.Types (TestSpec)
@@ -40,6 +41,8 @@ main = do
           pure [ Printing.spec ]
         "Program" →
           pure [ Program.spec ]
+        "WebApp" →
+          pure [ WebApp.spec ]
         _ →
           throw $ "Unknown module name \"" <> moduleName <> "\""
 
@@ -49,6 +52,7 @@ main = do
     , Parsing.spec
     , Printing.spec
     , Program.spec
+    , WebApp.spec
     ]
 
 runTestSpecs ∷ ∀ f. Foldable f ⇒ f TestSpec → Aff Unit

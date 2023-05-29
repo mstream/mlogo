@@ -26,6 +26,7 @@ import MLogo.Parsing.Expression (Expression)
 import MLogo.Printing as Printing
 import MLogo.Printing.Code as Code
 import MLogo.Program as Program
+import MLogo.WebApp.Parts (IconSize(..))
 import MLogo.WebApp.Parts as Parts
 import MLogo.WebApp.Utils (classes)
 import Parsing (ParseError(..), Position(..))
@@ -188,7 +189,7 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
               Nothing →
                 false
           ]
-          [ Parts.icon "mdi-format-align-left"
+          [ Parts.icon "fas" "fa-align-left" Small
           , HH.span
               [ classes [ "ml-1" ] ]
               [ HH.text "format" ]
@@ -213,16 +214,12 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
   Hooks.pure do
     HH.div
       [ classes
-          [ "is-flex"
-          , "is-flex-direction-column"
-          , "is-full-height"
-          , "is-full-width"
-          ]
+          [ "is-flex", "is-flex-direction-column", "is-full-height" ]
       ]
       [ renderToolPanel
       , HH.div
           [ HP.ref aceRefLabel
-          , classes [ "is-full-height", "is-full-width" ]
+          , classes [ "is-full-height" ]
           ]
           []
       ]

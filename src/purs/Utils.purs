@@ -1,6 +1,6 @@
 module Utils
   ( UriEncodedString
-  , decodeFromString
+  , decodeUriComponentFromString
   , decodeFromUriComponent
   , degreesToRadians
   , encodeToUriComponent
@@ -28,8 +28,9 @@ newtype UriEncodedString = UriEncodedString String
 uriEncodedStringToString ∷ UriEncodedString → String
 uriEncodedStringToString (UriEncodedString s) = s
 
-decodeFromString ∷ String → Maybe String
-decodeFromString = Just <<< _decompressFromEncodedURIComponent
+decodeUriComponentFromString ∷ String → Maybe String
+decodeUriComponentFromString = Just
+  <<< _decompressFromEncodedURIComponent
 
 decodeFromUriComponent ∷ UriEncodedString → String
 decodeFromUriComponent (UriEncodedString s) =

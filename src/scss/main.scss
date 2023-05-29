@@ -1,51 +1,32 @@
 @charset "utf-8";
 
-$mdi-font-path: "../fonts";
+$fa-font-path: "../webfonts";
 
-@import "../../node_modules/@mdi/font/scss/materialdesignicons.scss";
+@import "../../node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@import "../../node_modules/@fortawesome/fontawesome-free/scss/brands.scss";
+@import "../../node_modules/@fortawesome/fontawesome-free/scss/regular.scss";
+@import "../../node_modules/@fortawesome/fontawesome-free/scss/solid.scss";
 @import "../../node_modules/bulma/bulma.sass";
 
 #container {
   box-sizing: border-box;
-  height: 100vh;
+  height: 100svh;
 }
 
 #canvas {
-  @include mobile {
-    height: 60vh;
-  }
-  @include tablet {
-    height: 100vh;
-  }
+  height: 50%;
 }
 
-#editor {
-  box-sizing: border-box;
-  @include mobile {
-    height: 30vh;
-  }
-  @include tablet {
-    height: 50vh;
-  }
+#router-content {
+  overflow: auto;
 }
 
-#side-bar {
-  box-sizing: border-box;
-  @include mobile {
-    height: 30vh;
-  }
-  @include tablet {
-    height: 50vh;
-  }
+.navbar-item.logo {
+  height: $icon-dimensions-large;
+  margin: auto;
 }
 
-#side-bar .navigation {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-#side-bar > *:first-child {
+#side-bar-content {
   overflow-y: scroll;
 }
 

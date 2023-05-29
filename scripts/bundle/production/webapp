@@ -2,5 +2,7 @@
 
 set -E -e
 
+export NODE_ENV=production
+
 npm run build:production
 vite build --mode production

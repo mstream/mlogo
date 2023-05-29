@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+c8 --include 'output/MLogo.WebApp*/**/*.js' spago test --exec-args WebApp

@@ -2,4 +2,6 @@
 
 set -E -e
 
+export NODE_ENV=production
+
 vite preview

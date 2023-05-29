@@ -9,7 +9,6 @@ spago build
 
 spago bundle-app \
   -m Main.WebApp \
-  --minify \
   -p browser \
   -t build/js/webapp.js 
 

@@ -17,6 +17,7 @@ import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.WebApp.Components.About as AboutComponent
 import MLogo.WebApp.Components.Examples as ExamplesComponent
 import MLogo.WebApp.Components.Reference as ReferenceComponent
+import MLogo.WebApp.Parts (IconSize(..))
 import MLogo.WebApp.Parts as Parts
 import MLogo.WebApp.Utils (classes)
 import Type.Proxy (Proxy(..))
@@ -61,13 +62,13 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
     renderTab ∷ ∀ w. Tab → HTML w (HookM m Unit)
     renderTab tab =
       let
-        iconName = case tab of
+        iconStyle /\ iconName = case tab of
           AboutTab →
-            "mdi-help-box"
+            "fas" /\ "fa-question-circle"
           ExamplesTab →
-            "mdi-book-play"
+            "fas" /\ "fa-atlas"
           ReferenceTab →
-            "mdi-book-alphabet"
+            "fas" /\ "fa-book"
 
         isActive = currentTab == tab
 
@@ -87,7 +88,7 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
               [ HE.onClick $ const $ pure unit
               , HP.href "#"
               ]
-              [ Parts.icon iconName
+              [ Parts.icon iconStyle iconName Small
               , HH.span
                   [ classes [ "ml-1" ] ]
                   [ HH.text label ]
@@ -97,8 +98,9 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
   Hooks.pure do
     HH.div
       [ classes
-          [ "is-full-height"
-          , "is-full-width"
+          [ "is-flex"
+          , "is-flex-direction-column"
+          , "is-full-height"
           ]
       ]
       [ HH.nav
@@ -117,7 +119,8 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
               ]
           ]
       , HH.div
-          [ classes
+          [ HP.id "side-bar-content"
+          , classes
               [ "has-background-white-bis"
               , "is-full-height"
               , "p-1"

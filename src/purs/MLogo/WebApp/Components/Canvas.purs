@@ -5,6 +5,7 @@ import Prelude
 import DOM.HTML.Indexed.StepValue (StepValue(..))
 import Data.Array as Array
 import Data.Int as Int
+import Data.Maybe (Maybe(..))
 import Data.Number as Number
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
@@ -15,12 +16,18 @@ import Halogen.HTML.Properties (InputType(..))
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks as Hooks
-import Halogen.Svg.Attributes (Color(..), Transform(..))
+import Halogen.Svg.Attributes
+  ( Align(..)
+  , Color(..)
+  , MeetOrSlice(..)
+  , Transform(..)
+  )
 import Halogen.Svg.Attributes as SA
 import Halogen.Svg.Attributes.StrokeLineCap (StrokeLineCap(..))
 import Halogen.Svg.Elements as SE
 import MLogo.Interpretation.State (Angle(..), VisibleState)
 import MLogo.Interpretation.State as State
+import MLogo.WebApp.Parts (IconSize(..))
 import MLogo.WebApp.Parts as Parts
 import MLogo.WebApp.Utils (classes)
 
@@ -128,17 +135,18 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
           ]
       , HP.id "zoom-panel"
       ]
-      [ renderZoomButton "zoom out" "mdi-minus" handleZoomOut
+      [ renderZoomButton "zoom out" "fas" "fa-minus" handleZoomOut
       , renderZoomScale
-      , renderZoomButton "zoom in" "mdi-plus" handleZoomIn
+      , renderZoomButton "zoom in" "fas" "fa-plus" handleZoomIn
       ]
 
-    renderZoomButton buttonName iconName clickHandler = HH.button
-      [ HE.onClick \_ → clickHandler
-      , HPA.label buttonName
-      , classes [ "button", "square" ]
-      ]
-      [ Parts.icon iconName ]
+    renderZoomButton buttonName iconStyle iconName clickHandler =
+      HH.button
+        [ HE.onClick \_ → clickHandler
+        , HPA.label buttonName
+        , classes [ "button", "square" ]
+        ]
+        [ Parts.icon iconStyle iconName Small ]
 
   Hooks.pure do
     HH.div
@@ -148,15 +156,15 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
           , "is-justify-content-center"
           , "is-flex"
           , "is-full-height"
-          , "is-full-width"
           , "is-relative"
           ]
       ]
       [ SE.svg
-          [ SA.viewBox zero zero canvasSize canvasSize
+          [ SA.preserveAspectRatio (Just { x_: Mid, y_: Mid }) Meet
+          , SA.viewBox zero zero canvasSize canvasSize
           , SA.classes
               [ ClassName "has-background-white"
-              , ClassName "is-full-width"
+              , ClassName "is-full-height"
               , ClassName "is-square"
               ]
           ]
