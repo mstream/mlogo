@@ -70,11 +70,6 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ classes
-          [ "is-background-white"
-          , "is-flex"
-          , "is-flex-direction-column"
-          ]
-      ]
+      [ classes [ "is-flex", "is-flex-direction-column" ] ]
       (renderExample <$> Map.toUnfoldable examplesByTitle)
 

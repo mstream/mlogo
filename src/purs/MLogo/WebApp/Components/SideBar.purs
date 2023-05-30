@@ -107,7 +107,8 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
           [ classes
               [ "is-boxed"
               , "is-centered"
-              , "has-background-white-bis"
+              , "is-flex-grow-0"
+              , "is-flex-shrink-0"
               , "navigation"
               , "tabs"
               ]
@@ -121,7 +122,8 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
       , HH.div
           [ HP.id "side-bar-content"
           , classes
-              [ "has-background-white-bis"
+              [ "is-flex-grow-1"
+              , "is-flex-shrink-1"
               , "is-full-height"
               , "p-1"
               ]

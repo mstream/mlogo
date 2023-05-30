@@ -70,14 +70,14 @@ component = Hooks.component
               [ case interpretationResult of
                   Left errorMessage →
                     HH.div
-                      [ classes [ "error" ] ]
+                      [ classes [ "block", "error" ] ]
                       [ Parts.icon "fas" "fa-times-circle" Small
                       , HH.text $ "Runtime Error: " <> errorMessage
                       ]
                   Right visibleState →
                     HH.div
                       [ HP.id "canvas"
-                      , classes []
+                      , classes [ "block", "has-bezels" ]
                       ]
                       [ HH.slot_
                           (Proxy ∷ Proxy "canvas")
@@ -87,7 +87,7 @@ component = Hooks.component
                       ]
               , HH.div
                   [ HP.id "editor"
-                  , classes [ "is-full-height" ]
+                  , classes [ "block", "has-bezels", "is-full-height" ]
                   ]
                   [ HH.slot
                       (Proxy ∷ Proxy "editor")
@@ -127,8 +127,8 @@ component = Hooks.component
           [ classes
               [ "columns"
               , "is-full-height"
-              , "is-gapless"
               , "is-tablet"
+              , "p-1"
               ]
           ]
           [ renderPrimaryColumn

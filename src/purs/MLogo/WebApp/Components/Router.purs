@@ -95,7 +95,7 @@ component = Hooks.component \_ { randomNumberSeed } →
                 [ HH.div
                     [ classes
                         [ "is-fullwidth"
-                        , "is-large"
+                        , "is-small"
                         , "is-toggle"
                         , "tabs"
                         ]
@@ -140,7 +140,8 @@ component = Hooks.component \_ { randomNumberSeed } →
     Hooks.pure do
       HH.div
         [ HP.id "container"
-        , classes [ "is-flex", "is-flex-direction-column" ]
+        , classes
+            [ "is-flex", "is-flex-direction-column" ]
         ]
         [ renderNavigationBar
         , HH.div

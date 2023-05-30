@@ -151,7 +151,7 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
   Hooks.pure do
     HH.div
       [ classes
-          [ "has-background-grey-lighter"
+          [ "has-background-light"
           , "is-align-items-center"
           , "is-justify-content-center"
           , "is-flex"

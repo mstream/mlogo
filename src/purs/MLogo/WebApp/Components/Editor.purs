@@ -177,7 +177,7 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
           liftEffect $ throw "ace element not found"
 
     renderToolPanel = HH.div
-      [ classes [ "is-flex", "is-flex-direction-row" ] ]
+      [ classes [ "is-flex", "is-flex-direction-row", "pb-1" ] ]
       [ HH.button
           [ HE.onClick \_ → handleFormatButtonClick
           , classes [ "button" ]

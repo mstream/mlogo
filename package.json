@@ -44,6 +44,7 @@
     "@fullhuman/postcss-purgecss": "^5",
     "@release-it/conventional-changelog": "^5",
     "bulma": "~0.9",
+    "bulma-dark-variant": "~0.1",
     "c8": "^7",
     "release-it": "^15",
     "sass": "^1",

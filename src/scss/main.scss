@@ -7,6 +7,11 @@ $fa-font-path: "../webfonts";
 @import "../../node_modules/@fortawesome/fontawesome-free/scss/regular.scss";
 @import "../../node_modules/@fortawesome/fontawesome-free/scss/solid.scss";
 @import "../../node_modules/bulma/bulma.sass";
+@import "../../node_modules/bulma-dark-variant/bulma-prefers-dark.sass";
+
+.ace_editor {
+  min-height: 10rem;
+}
 
 #container {
   box-sizing: border-box;
@@ -15,6 +20,10 @@ $fa-font-path: "../webfonts";
 
 #canvas {
   height: 50%;
+}
+
+#editor {
+  background: $background
 }
 
 #router-content {
@@ -49,5 +58,12 @@ $fa-font-path: "../webfonts";
 
 .is-square {
   aspect-ratio: 1;
+}
+
+.has-bezels {
+  border-style: solid;
+  border-width: thick;
+  border-radius: 5px;
+  border-color: $background;
 }
 

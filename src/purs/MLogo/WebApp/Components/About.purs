@@ -22,12 +22,7 @@ component = Hooks.component \_ _ → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ classes
-          [ "is-background-white"
-          , "is-flex"
-          , "is-flex-direction-column"
-          ]
-      ]
+      [ classes [ "is-flex", "is-flex-direction-column" ] ]
       [ renderLink
           "https://github.com/mstream/mlogo"
           "fab"
