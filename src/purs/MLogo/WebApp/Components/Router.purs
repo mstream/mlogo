@@ -72,58 +72,76 @@ component = Hooks.component \_ { randomNumberSeed } →
             { initialSource: fromMaybe "" mbSource, randomNumberSeed }
             handleSandboxOutput
 
-      renderNavigationBar = HH.nav
-        [ HPA.label "main navigation"
-        , HPA.role "navigation"
-        , classes [ "is-flex-grow-0", "is-flex-shrink-0", "navbar" ]
-        ]
-        [ HH.div
-            [ classes [ "navbar-brand" ]
+      renderNavigationBar =
+        let
+          logoImage = HH.img
+            [ HP.src "/pwa.svg"
+            , classes [ "logo", "navbar-item" ]
             ]
-            [ HH.a
-                [ HP.href $ Route.print Home ]
-                [ HH.img
-                    [ HP.src "/pwa.svg"
-                    , classes [ "logo", "navbar-item" ]
+        in
+          HH.nav
+            [ HPA.label "main navigation"
+            , HPA.role "navigation"
+            , classes [ "is-flex-grow-0", "is-flex-shrink-0", "navbar" ]
+            ]
+            [ HH.div
+                [ classes [ "navbar-brand" ]
+                ]
+                [ case mbRoute of
+                    Just Home →
+                      logoImage
+
+                    _ → HH.a
+                      [ HP.href $ Route.print Home ]
+                      [ logoImage ]
+                ]
+            , renderNavigationMenu
+            ]
+
+      renderNavigationMenu = HH.div
+        [ classes [ "navbar-menu" ] ]
+        [ HH.div
+            [ classes [ "navbar-start" ] ]
+            [ HH.div
+                [ classes
+                    [ "is-fullwidth"
+                    , "is-small"
+                    , "is-toggle"
+                    , "tabs"
                     ]
                 ]
-            ]
-        , HH.div
-            [ classes [ "navbar-menu" ] ]
-            [ HH.div
-                [ classes [ "navbar-start" ] ]
-                [ HH.div
-                    [ classes
-                        [ "is-fullwidth"
-                        , "is-small"
-                        , "is-toggle"
-                        , "tabs"
+                [ HH.ul_
+                    [ HH.li
+                        [ classes case mbRoute of
+                            Just (Sandbox _) →
+                              [ "is-active" ]
+
+                            _ →
+                              []
                         ]
-                    ]
-                    [ HH.ul_
                         [ HH.a
                             [ HP.href
                                 $ Route.print
                                 $ Sandbox { s: Nothing }
                             ]
-                            [ HH.li
-                                [ classes [ "is-active" ] ]
-                                [ Parts.icon "fa-solid" "fa-bucket"
-                                    Medium
-                                , HH.span
-                                    [ classes [ "ml-1" ] ]
-                                    [ HH.text "Sandbox" ]
-                                ]
+                            [ Parts.icon
+                                "fa-solid"
+                                "fa-bucket"
+                                Medium
+                            , HH.span
+                                [ classes [ "ml-1" ] ]
+                                [ HH.text "Sandbox" ]
                             ]
                         ]
+
                     ]
                 ]
-            , HH.div
-                [ classes [ "navbar-end" ] ]
-                [ HH.a
-                    [ HP.href "https://github.com/mstream/mlogo" ]
-                    [ Parts.icon "fab" "fa-github-square" Large ]
-                ]
+            ]
+        , HH.div
+            [ classes [ "navbar-end" ] ]
+            [ HH.a
+                [ HP.href "https://github.com/mstream/mlogo" ]
+                [ Parts.icon "fab" "fa-github-square" Large ]
             ]
         ]
 
