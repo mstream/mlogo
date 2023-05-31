@@ -37,13 +37,24 @@ const pwaIcons = [
   },
 ]
 
+const pwaShortcuts = [
+  {
+    "name": "Open Sandbox",
+    "short_name": "Sandbox",
+    "description": "Evaluate your Logo code",
+    "url": "/sandbox.html",
+    "icons": [{ "src": "bucket.png", "sizes": "192x192" }]
+  }
+]
+
 const pwaPlugin = VitePWA({
   manifest: {
+    icons: pwaIcons,
     name: 'MLogo',
     scope: basePath,
+    shortcuts: pwaShortcuts,
     start_url: basePath,
     theme_color: '#ffffff',
-    icons: pwaIcons,
   },
   registerType: 'autoUpdate',
   srcDir: 'build/images'

@@ -42,7 +42,7 @@
         checks = { inherit format-check; };
         devShell = pkgs.mkShell {
           inherit name;
-          buildInputs = with pkgs; [ esbuild git nodejs ]
+          buildInputs = with pkgs; [ esbuild git imagemagick nodejs ]
             ++ (with easy-ps; [ psa purs purs-backend-es purs-tidy spago ]);
 
           shellHook = ''

@@ -6,3 +6,17 @@ mkdir -p build/html/public
 
 cp src/assets/images/* build/html/public/
 
+convert \
+  -background none \
+  -resize 192x192 \
+  node_modules/@fortawesome/fontawesome-free/svgs/solid/bucket.svg \
+  build/html/public/bucket.png
+
+convert \
+  -background none \
+  -extent 192x192 \
+  -gravity center \
+  build/html/public/bucket.png \
+  build/html/public/bucket.png
+
+
