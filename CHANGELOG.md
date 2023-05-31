@@ -1,5 +1,15 @@
 
 
+## [0.41.0](https://github.com/mstream/mlogo/compare/0.40.8...0.41.0) (2023-05-31)
+
+
+### Features
+
+* fill in the home page with a mock-up content ([9381384](https://github.com/mstream/mlogo/commit/93813848605b00ad7e547331f8a398fbf15fc3a2))
+* implement "hideturtle" and "showturtle" commands ([451ffc4](https://github.com/mstream/mlogo/commit/451ffc4f6e4c0c2ec5f060643f5d7f0e71c9e46a))
+* make the webapp consist of multiple pages ([f71e899](https://github.com/mstream/mlogo/commit/f71e8992281835ed97853b7ac98b97f7d79a94b4))
+* **webapp:** add dark mode support ([6d7ffc1](https://github.com/mstream/mlogo/commit/6d7ffc19d3af28096c791d95aa1a07534e104c81))
+
 ### [0.40.8](https://github.com/mstream/mlogo/compare/0.40.7...0.40.8) (2023-05-23)
 
 ### [0.40.7](https://github.com/mstream/mlogo/compare/0.40.6...0.40.7) (2023-05-23)
