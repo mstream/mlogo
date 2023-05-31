@@ -1,5 +1,12 @@
 
 
+## [0.42.0](https://github.com/mstream/mlogo/compare/0.41.0...0.42.0) (2023-05-31)
+
+
+### Features
+
+* add PWA shortcut for the sandbox ([1b4e874](https://github.com/mstream/mlogo/commit/1b4e874c1d0bdcd36bb018ab65b65916d46a5498))
+
 ## [0.41.0](https://github.com/mstream/mlogo/compare/0.40.8...0.41.0) (2023-05-31)
 
 
