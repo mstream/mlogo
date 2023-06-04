@@ -7,7 +7,7 @@ mkdir -p build
 
 spago -x spago.production.dhall build
 
-purs-backend-es bundle-app \
+purs-backend-es bundle-module \
   -m Main.WebApp \
   --minify \
   --no-build \

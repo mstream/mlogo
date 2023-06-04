@@ -4,4 +4,4 @@ set -E -e
 
 export NODE_ENV=production
 
-vite preview
+vite preview --mode production

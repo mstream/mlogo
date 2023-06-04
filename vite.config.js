@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
+import { join, resolve } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import inProduction from './in-production.js'
 import * as url from 'url'
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 
-const basePath = inProduction ? '/mlogo/' : '/'
+const base = inProduction ? '/mlogo/' : '/'
 
 const root = 'build/html'
 
@@ -39,11 +39,11 @@ const pwaIcons = [
 
 const pwaShortcuts = [
   {
-    "name": "Open Sandbox",
-    "short_name": "Sandbox",
-    "description": "Evaluate your Logo code",
-    "url": "/sandbox.html",
-    "icons": [{ "src": "bucket.png", "sizes": "192x192" }]
+    name: "Open Sandbox",
+    short_name: "Sandbox",
+    description: "Evaluate your Logo code",
+    url: "/sandbox",
+    icons: [{ src: "bucket.png", sizes: "192x192" }]
   }
 ]
 
@@ -51,9 +51,9 @@ const pwaPlugin = VitePWA({
   manifest: {
     icons: pwaIcons,
     name: 'MLogo',
-    scope: basePath,
+    scope: base,
     shortcuts: pwaShortcuts,
-    start_url: basePath,
+    start_url: base,
     theme_color: '#ffffff',
   },
   registerType: 'autoUpdate',
@@ -62,18 +62,23 @@ const pwaPlugin = VitePWA({
 
 
 export default defineConfig({
-  base: basePath,
+  base,
   build: {
+    cssMinify: inProduction,
     emptyOutDir: true,
+    minify: inProduction ? 'esbuild' : false,
     outDir: '../../dist',
     rollupOptions: {
       input: {
         home: resolve(__dirname, root, 'index.html'),
-        sandbox: resolve(__dirname, root, 'sandbox.html'),
+        sandbox: resolve(__dirname, root, 'sandbox', 'index.html'),
       }
     },
+    sourcemap: !inProduction,
   },
-  plugins: [pwaPlugin],
+  plugins: [
+    pwaPlugin
+  ],
   root,
 })
 

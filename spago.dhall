@@ -14,6 +14,7 @@
   , "exceptions"
   , "exists"
   , "foldable-traversable"
+  , "foreign"
   , "gen"
   , "halogen"
   , "halogen-hooks"

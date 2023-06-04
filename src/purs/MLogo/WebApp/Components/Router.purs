@@ -28,15 +28,18 @@ import Web.HTML.History as History
 import Web.HTML.Location as Location
 import Web.HTML.Window as Window
 
-type Input = { randomNumberSeed ∷ Int }
+type Input = { basePath ∷ String, randomNumberSeed ∷ Int }
 
 component
   ∷ ∀ m o q. MonadAff m ⇒ Component q Input o m
-component = Hooks.component \_ { randomNumberSeed } →
+component = Hooks.component \_ { basePath, randomNumberSeed } →
   Hooks.do
     mbRoute /\ putMbRoute ← ExtraHooks.usePutState Nothing
 
     let
+      printRoute ∷ Route → String
+      printRoute = Route.print basePath
+
       handleSandboxOutput ∷ SandboxComponent.Output → HookM m Unit
       handleSandboxOutput = case _ of
         SandboxComponent.SourceChanged source →
@@ -50,8 +53,8 @@ component = Hooks.component \_ { randomNumberSeed } →
             History.replaceState
               historyState
               (DocumentTitle "MLogo")
-              ( URL $ origin <>
-                  (Route.print $ Sandbox { s: Just source })
+              ( URL $ origin
+                  <> (Route.print basePath (Sandbox { s: Just source }))
               )
               history
 
@@ -75,7 +78,7 @@ component = Hooks.component \_ { randomNumberSeed } →
       renderNavigationBar =
         let
           logoImage = HH.img
-            [ HP.src "/pwa.svg"
+            [ HP.src $ basePath <> "pwa.svg"
             , classes [ "logo", "navbar-item" ]
             ]
         in
@@ -92,7 +95,7 @@ component = Hooks.component \_ { randomNumberSeed } →
                       logoImage
 
                     _ → HH.a
-                      [ HP.href $ Route.print Home ]
+                      [ HP.href $ printRoute Home ]
                       [ logoImage ]
                 ]
             , renderNavigationMenu
@@ -120,9 +123,8 @@ component = Hooks.component \_ { randomNumberSeed } →
                               []
                         ]
                         [ HH.a
-                            [ HP.href
-                                $ Route.print
-                                $ Sandbox { s: Nothing }
+                            [ HP.href $ printRoute
+                                (Sandbox { s: Nothing })
                             ]
                             [ Parts.icon
                                 "fa-solid"
@@ -152,7 +154,7 @@ component = Hooks.component \_ { randomNumberSeed } →
         search ← Location.search location
         pure $ path <> search
 
-      putMbRoute $ hush $ Route.parse s
+      putMbRoute $ hush $ Route.parse basePath s
       pure Nothing
 
     Hooks.pure do

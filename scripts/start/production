@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+set -E -e
+
+npm run bundle:production:webapp 
+npm run serve:production
+

@@ -7,7 +7,7 @@ mkdir -p build
 
 spago build
 
-spago bundle-app \
+spago bundle-module \
   -m Main.WebApp \
   -p browser \
   -t build/js/webapp.js 

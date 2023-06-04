@@ -9,16 +9,18 @@ import Control.Monad.Gen.Common as GenCommon
 import Control.Monad.Rec.Class (class MonadRec)
 import Data.Either (Either(..), note)
 import Data.Either.Nested (type (\/))
-import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep (class Generic, NoArguments)
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
+import Data.String (Pattern(..))
+import Data.String as String
 import Data.String.Gen as StringGen
+import MLogo.WebApp.Utils as Utils
 import Routing.Duplex (RouteDuplex')
 import Routing.Duplex as Duplex
-import Routing.Duplex.Generic (noArgs, sum)
+import Routing.Duplex.Generic as DuplexGeneric
 import Routing.Duplex.Generic.Syntax ((?))
-import Routing.Duplex.Parser (RouteError)
-import Utils as Utils
+import Routing.Duplex.Parser (RouteError(..))
 
 data Route = Home | Sandbox { s ∷ Maybe String }
 
@@ -31,10 +33,16 @@ instance Show Route where
 type Source = String
 
 route ∷ RouteDuplex' Route
-route = Duplex.root $ sum
-  { "Home": noArgs
-  , "Sandbox": "sandbox.html" ? { s: Duplex.optional <<< source }
+route = DuplexGeneric.sum
+  { "Home": homeRoute
+  , "Sandbox": sandboxRoute
   }
+
+homeRoute ∷ RouteDuplex' NoArguments
+homeRoute = DuplexGeneric.noArgs
+
+sandboxRoute ∷ RouteDuplex' { s ∷ Maybe String }
+sandboxRoute = "sandbox" ? { s: Duplex.optional <<< source }
 
 source ∷ RouteDuplex' String → RouteDuplex' Source
 source = Duplex.as toString fromString
@@ -50,15 +58,15 @@ source = Duplex.as toString fromString
     Just uriEncodedString →
       Utils.uriEncodedStringToString uriEncodedString
 
-parse ∷ String → RouteError \/ Route
-parse = case _ of
-  "" →
-    Right Home
-  s →
+parse ∷ String → String → RouteError \/ Route
+parse basePath = String.stripPrefix (Pattern basePath) >>> case _ of
+  Nothing →
+    Left $ Expected "base path" basePath
+  Just s →
     Duplex.parse route s
 
-print ∷ Route → String
-print = Duplex.print route
+print ∷ String → Route → String
+print basePath = (basePath <> _) <<< Duplex.print route
 
 genRoute ∷ ∀ m. Alt m ⇒ MonadGen m ⇒ MonadRec m ⇒ m Route
 genRoute = genHome <|> genSandbox
