@@ -1,5 +1,12 @@
 
 
+### [0.42.1](https://github.com/mstream/mlogo/compare/0.42.0...0.42.1) (2023-06-04)
+
+
+### Bug Fixes
+
+* correct the base path handling ([4f7c65c](https://github.com/mstream/mlogo/commit/4f7c65c974968187ca4a657ea26685dc7e0e51f6))
+
 ## [0.42.0](https://github.com/mstream/mlogo/compare/0.41.0...0.42.0) (2023-05-31)
 
 
