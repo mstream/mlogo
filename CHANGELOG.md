@@ -1,5 +1,12 @@
 
 
+## [0.43.0](https://github.com/mstream/mlogo/compare/0.42.2...0.43.0) (2023-06-10)
+
+
+### Features
+
+* add a sandbox screenshot to the home page ([b77ff26](https://github.com/mstream/mlogo/commit/b77ff261c0f2dbb8f58c2e481bc834a25e3c4caa))
+
 ### [0.42.2](https://github.com/mstream/mlogo/compare/0.42.1...0.42.2) (2023-06-04)
 
 ### [0.42.1](https://github.com/mstream/mlogo/compare/0.42.0...0.42.1) (2023-06-04)
