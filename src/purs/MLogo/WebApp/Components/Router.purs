@@ -14,6 +14,7 @@ import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
+import MLogo.WebApp.BaseUrl (BaseUrl)
 import MLogo.WebApp.Components.Home as HomeComponent
 import MLogo.WebApp.Components.Sandbox as SandboxComponent
 import MLogo.WebApp.Parts (IconSize(..))
@@ -28,7 +29,7 @@ import Web.HTML.History as History
 import Web.HTML.Location as Location
 import Web.HTML.Window as Window
 
-type Input = { basePath ∷ String, randomNumberSeed ∷ Int }
+type Input = { basePath ∷ BaseUrl, randomNumberSeed ∷ Int }
 
 component
   ∷ ∀ m o q. MonadAff m ⇒ Component q Input o m
@@ -59,14 +60,12 @@ component = Hooks.component \_ { basePath, randomNumberSeed } →
               history
 
       renderCurrentComponent = case mbRoute of
-        Nothing →
-          HH.text "Page Not Found"
         Just Home →
           HH.slot_
             (Proxy ∷ Proxy "home")
             unit
             HomeComponent.component
-            unit
+            { basePath }
         Just (Sandbox { s: mbSource }) →
           HH.slot
             (Proxy ∷ Proxy "sandbox")
@@ -74,11 +73,13 @@ component = Hooks.component \_ { basePath, randomNumberSeed } →
             SandboxComponent.component
             { initialSource: fromMaybe "" mbSource, randomNumberSeed }
             handleSandboxOutput
+        _ →
+          HH.text "Page Not Found"
 
       renderNavigationBar =
         let
           logoImage = HH.img
-            [ HP.src $ basePath <> "pwa.svg"
+            [ HP.src $ printRoute $ StaticAsset "pwa.svg"
             , classes [ "logo", "navbar-item" ]
             ]
         in

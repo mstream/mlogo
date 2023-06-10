@@ -1,10 +1,10 @@
 module MLogo.WebApp.Utils
   ( UriEncodedString
-  , baseUrl
   , classes
   , decodeUriComponentFromString
   , decodeFromUriComponent
   , encodeToUriComponent
+  , loadBaseUrl
   , uriEncodedStringToString
   ) where
 
@@ -14,10 +14,15 @@ import Control.Monad.Except (runExcept)
 import Data.Array as Array
 import Data.Either (Either(..), hush)
 import Data.Either.Nested (type (\/))
-import Data.Foldable (class Foldable)
+import Data.Foldable (class Foldable, foldl)
+import Data.List (List(..), (:))
+import Data.List as List
 import Data.List.NonEmpty (NonEmptyList)
 import Data.Maybe (Maybe(..))
+import Data.String (Pattern(..))
 import Data.String as String
+import Data.String.NonEmpty (NonEmptyString)
+import Data.String.NonEmpty as StringNonEmpty
 import Effect (Effect)
 import Effect.Exception (throw)
 import Foreign (Foreign, ForeignError)
@@ -25,6 +30,8 @@ import Foreign as F
 import Halogen (ClassName(..))
 import Halogen.HTML (IProp)
 import Halogen.HTML.Properties as HP
+import MLogo.WebApp.BaseUrl (BaseUrl)
+import MLogo.WebApp.BaseUrl as BaseUrl
 
 classes
   ∷ ∀ f i r
@@ -34,14 +41,24 @@ classes
   → IProp (class ∷ String | r) i
 classes = HP.classes <<< Array.fromFoldable <<< map ClassName
 
-baseUrl ∷ Effect String
-baseUrl = do
+loadBaseUrl ∷ Effect BaseUrl
+loadBaseUrl = do
   v ← _baseUrl
   case stringFromForeign "_baseUrl" v of
     Left errorMessage →
       throw errorMessage
     Right s →
-      pure s
+      pure
+        $ BaseUrl.fromSegments
+        $ List.reverse
+        $ foldl f Nil (String.split (Pattern "/") s)
+  where
+  f ∷ List NonEmptyString → String → List NonEmptyString
+  f acc = StringNonEmpty.fromString >>> case _ of
+    Just nes →
+      nes : acc
+    Nothing →
+      acc
 
 newtype UriEncodedString = UriEncodedString String
 

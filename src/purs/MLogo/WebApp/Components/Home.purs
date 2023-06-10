@@ -1,14 +1,23 @@
 module MLogo.WebApp.Components.Home (component) where
 
+import Prelude
+
 import Effect.Aff.Class (class MonadAff)
 import Halogen (Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Hooks as Hooks
+import MLogo.WebApp.BaseUrl (BaseUrl)
+import MLogo.WebApp.Route (Route(..))
+import MLogo.WebApp.Route as Route
 import MLogo.WebApp.Utils (classes)
 
-component ∷ ∀ i m o q. MonadAff m ⇒ Component q i o m
-component = Hooks.component \_ _ → Hooks.do
+component ∷ ∀ m o q. MonadAff m ⇒ Component q { basePath ∷ BaseUrl } o m
+component = Hooks.component \_ { basePath } → Hooks.do
+  let
+    printRoute ∷ Route → String
+    printRoute = Route.print basePath
+
   Hooks.pure do
     HH.div
       [ classes
@@ -26,12 +35,30 @@ component = Hooks.component \_ _ → Hooks.do
                   [ HH.text "subtitle" ]
               ]
           ]
-      , HH.div
-          [ classes [ "content", "ml-2" ] ]
-          [ HH.p_ [ HH.text "content line 1" ]
-          , HH.p_ [ HH.text "content line 2" ]
-          , HH.p_ [ HH.text "content line 3" ]
-          , HH.p_ [ HH.text "content line 4" ]
+      , HH.section
+          [ classes [ "section" ] ]
+          [ HH.h1
+              [ classes [ "title" ] ]
+              [ HH.text "title" ]
+          , HH.div
+              [ classes [ "columns" ] ]
+              [ HH.div
+                  [ classes [ "column" ] ]
+                  [ HH.text "blablabla" ]
+              , HH.div
+                  [ classes [ "column" ] ]
+                  [ HH.img
+                      [ HP.src
+                          $ printRoute
+                          $ StaticAsset "example-canvas.svg"
+                      , classes
+                          [ "has-background-light"
+                          , "image"
+                          , "is-full-width"
+                          ]
+                      ]
+                  ]
+              ]
           ]
       , HH.footer
           [ classes [ "footer", "mt-auto" ] ]

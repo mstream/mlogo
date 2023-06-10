@@ -1,4 +1,9 @@
-module MLogo.WebApp.Route (Route(..), genRoute, parse, print) where
+module MLogo.WebApp.Route
+  ( Route(..)
+  , genRoute
+  , parse
+  , print
+  ) where
 
 import Prelude hiding ((/))
 
@@ -15,14 +20,19 @@ import Data.Show.Generic (genericShow)
 import Data.String (Pattern(..))
 import Data.String as String
 import Data.String.Gen as StringGen
+import MLogo.WebApp.BaseUrl (BaseUrl)
+import MLogo.WebApp.BaseUrl as BaseUrl
 import MLogo.WebApp.Utils as Utils
 import Routing.Duplex (RouteDuplex')
-import Routing.Duplex as Duplex
-import Routing.Duplex.Generic as DuplexGeneric
+import Routing.Duplex as D
+import Routing.Duplex.Generic as DG
 import Routing.Duplex.Generic.Syntax ((?))
-import Routing.Duplex.Parser (RouteError(..))
+import Routing.Duplex.Parser (RouteError)
 
-data Route = Home | Sandbox { s ∷ Maybe String }
+data Route
+  = Home
+  | Sandbox { s ∷ Maybe String }
+  | StaticAsset String
 
 derive instance Generic Route _
 derive instance Eq Route
@@ -32,20 +42,28 @@ instance Show Route where
 
 type Source = String
 
-route ∷ RouteDuplex' Route
-route = DuplexGeneric.sum
-  { "Home": homeRoute
-  , "Sandbox": sandboxRoute
-  }
+routeWithBaseOf ∷ BaseUrl → RouteDuplex' Route
+routeWithBaseOf = BaseUrl.segments >>> case _ of
+  [] →
+    D.root route
+  baseSegments →
+    D.root $ D.path (String.joinWith "/" baseSegments) route
+  where
+  route ∷ RouteDuplex' Route
+  route = DG.sum
+    { "Home": homeRoute
+    , "Sandbox": sandboxRoute
+    , "StaticAsset": D.string D.segment
+    }
 
 homeRoute ∷ RouteDuplex' NoArguments
-homeRoute = DuplexGeneric.noArgs
+homeRoute = DG.noArgs
 
 sandboxRoute ∷ RouteDuplex' { s ∷ Maybe String }
-sandboxRoute = "sandbox" ? { s: Duplex.optional <<< source }
+sandboxRoute = "sandbox" ? { s: D.optional <<< source }
 
 source ∷ RouteDuplex' String → RouteDuplex' Source
-source = Duplex.as toString fromString
+source = D.as toString fromString
   where
   fromString ∷ String → String \/ Source
   fromString = note "non-decodable"
@@ -58,15 +76,24 @@ source = Duplex.as toString fromString
     Just uriEncodedString →
       Utils.uriEncodedStringToString uriEncodedString
 
-parse ∷ String → String → RouteError \/ Route
-parse basePath = String.stripPrefix (Pattern basePath) >>> case _ of
-  Nothing →
-    Left $ Expected "base path" basePath
-  Just s →
-    Duplex.parse route s
+parse ∷ BaseUrl → String → RouteError \/ Route
+parse baseUrl s = case String.stripPrefix (Pattern baseUrlPrefix) s of
+  Just "" →
+    Right Home
+  _ →
+    case String.stripSuffix (Pattern "/") s of
+      Just "" →
+        Right Home
+      Just s' →
+        D.parse (routeWithBaseOf baseUrl) s'
+      Nothing →
+        D.parse (routeWithBaseOf baseUrl) s
+  where
+  baseUrlPrefix ∷ String
+  baseUrlPrefix = String.joinWith "/" (BaseUrl.segments baseUrl)
 
-print ∷ String → Route → String
-print basePath = (basePath <> _) <<< Duplex.print route
+print ∷ BaseUrl → Route → String
+print = D.print <<< routeWithBaseOf
 
 genRoute ∷ ∀ m. Alt m ⇒ MonadGen m ⇒ MonadRec m ⇒ m Route
 genRoute = genHome <|> genSandbox
@@ -78,3 +105,4 @@ genSandbox ∷ ∀ m. MonadGen m ⇒ MonadRec m ⇒ m Route
 genSandbox = do
   s ← GenCommon.genMaybe StringGen.genAlphaString
   pure $ Sandbox { s }
+

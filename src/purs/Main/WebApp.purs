@@ -16,7 +16,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 main ∷ Effect Unit
 main = launchAff_ do
   randomNumberSeed ← liftEffect $ randomInt 0 top
-  baseUrl ← liftEffect Utils.baseUrl
+  baseUrl ← liftEffect Utils.loadBaseUrl
   mbRootElement ← selectElement rootElementSelector
 
   for_ mbRootElement
