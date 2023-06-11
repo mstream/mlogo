@@ -2,7 +2,7 @@
   description = "Logo language interpreter";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     easy-purescript-nix = {
       url = "github:justinwoo/easy-purescript-nix";
       flake = false;
