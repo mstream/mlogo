@@ -9,6 +9,7 @@ import Effect.Aff.Class (class MonadAff)
 import Effect.Class (liftEffect)
 import Halogen (Component)
 import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks (HookM)
@@ -37,7 +38,13 @@ component = Hooks.component \_ { basePath, randomNumberSeed } →
   Hooks.do
     mbRoute /\ putMbRoute ← ExtraHooks.usePutState Nothing
 
+    isBurgerMenuOpen /\ modifyIsBurgerMenuOpen ←
+      ExtraHooks.useModifyState_ false
+
     let
+      toggleBurgerMenuOpen ∷ HookM m Unit
+      toggleBurgerMenuOpen = modifyIsBurgerMenuOpen not
+
       printRoute ∷ Route → String
       printRoute = Route.print basePath
 
@@ -93,17 +100,37 @@ component = Hooks.component \_ { basePath, randomNumberSeed } →
                 ]
                 [ case mbRoute of
                     Just Home →
-                      logoImage
+                      HH.i
+                        [ classes [ "navbar-item" ] ]
+                        [ logoImage ]
 
-                    _ → HH.a
-                      [ HP.href $ printRoute Home ]
-                      [ logoImage ]
+                    _ →
+                      HH.a
+                        [ HP.href $ printRoute Home
+                        , classes [ "navbar-item" ]
+                        ]
+                        [ logoImage ]
+                , HH.a
+                    [ HPA.label "menu"
+                    , HPA.role "button"
+                    , HE.onClick \_ → toggleBurgerMenuOpen
+                    , classes $ [ "navbar-burger" ]
+                        <>
+                          if isBurgerMenuOpen then [ "is-active" ]
+                          else []
+                    ]
+                    [ HH.span [ HPA.hidden "true" ] []
+                    , HH.span [ HPA.hidden "true" ] []
+                    , HH.span [ HPA.hidden "true" ] []
+                    ]
                 ]
             , renderNavigationMenu
             ]
 
       renderNavigationMenu = HH.div
-        [ classes [ "navbar-menu" ] ]
+        [ classes $ [ "navbar-menu" ]
+            <> if isBurgerMenuOpen then [ "is-active" ] else []
+        ]
         [ HH.div
             [ classes [ "navbar-start" ] ]
             [ HH.div
