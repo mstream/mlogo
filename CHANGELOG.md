@@ -1,5 +1,12 @@
 
 
+### [0.43.1](https://github.com/mstream/mlogo/compare/0.43.0...0.43.1) (2023-06-11)
+
+
+### Bug Fixes
+
+* make the navigation menu accessible on mobile devices ([5c67478](https://github.com/mstream/mlogo/commit/5c67478e3ed4ac961cff29c690babce3e693e229))
+
 ## [0.43.0](https://github.com/mstream/mlogo/compare/0.42.2...0.43.0) (2023-06-10)
 
 
