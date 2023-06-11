@@ -12,3 +12,6 @@
 /.purs*
 /.psa*
 /.spago
+/test-results/
+/playwright-report/
+/playwright/.cache/

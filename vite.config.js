@@ -6,7 +6,7 @@ import * as url from 'url'
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 
-const base = inProduction ? '/mlogo/' : '/'
+export const base = inProduction ? '/mlogo/' : '/'
 
 const root = 'build/html'
 

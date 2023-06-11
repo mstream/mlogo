@@ -7,6 +7,7 @@ on:
 jobs:
   release-and-deploy: 
     runs-on: "ubuntu-22.04"
+    timeout-minutes: 15
     steps: 
       - name: "Checkout code"
         uses: "actions/checkout@v3"
@@ -27,8 +28,18 @@ jobs:
         run: "nix develop -c npm ci"
       - name: "Run linters"
         run: "nix develop -c npm run lint"
+      - name: "Run unit tests"
+        run: "nix develop -c npm run test:purs"
       - name: "Bundle web application"
         run: "nix develop -c npm run bundle:production:webapp"
+      - name: "Run UI tests"
+        run: "nix develop -c npm run test:ui:production"
+      - name: "Save Playwright reports" 
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
       - name: "Create a GitHub release"
         run: "nix develop -c npm run release -- --ci"
         env:
