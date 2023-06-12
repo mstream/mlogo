@@ -2,9 +2,9 @@
   description = "Logo language interpreter";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
-    easy-purescript-nix.url = "github:justinwoo/easy-purescript-nix?rev=a90bd941297497c83205f0a64f30c5188a2a4fda";
+    easy-purescript-nix.url = "github:justinwoo/easy-purescript-nix";
     flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
   };
 
   outputs = { self, easy-purescript-nix, flake-utils, nixpkgs, ... }:
@@ -19,15 +19,8 @@
     in
     flake-utils.lib.eachSystem supportedSystems (system:
       let
-        nixpkgsConfig = {
-          permittedInsecurePackages = [
-            "nodejs-14.21.3"
-            "openssl-1.1.1u"
-          ];
-        };
-
         pkgs = import nixpkgs {
-          inherit system; config = nixpkgsConfig;
+          inherit system;
         };
 
         easy-ps = import easy-purescript-nix { inherit pkgs; };
