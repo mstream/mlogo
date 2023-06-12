@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+set -E -e
+
+npx eslint test/ts/

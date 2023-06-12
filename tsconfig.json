@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "exclude": [
+    "build",
+    "dist",
+    "node_modules",
+  ]
+}
+

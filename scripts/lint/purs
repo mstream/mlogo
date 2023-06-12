@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
 
+set -E -e
+
 npm run clean 
 spago build --purs-args '--censor-lib --strict'

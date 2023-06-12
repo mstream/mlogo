@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -E -e
+
 export NODE_ENV=development
 
 npx playwright install --with-deps
