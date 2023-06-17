@@ -15,14 +15,23 @@ export default defineConfig({
   reporter: 'html',
   use: {
     baseURL,
-    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    trace: {
+      mode: 'retain-on-failure',
+      screenshots: true,
+      snapshots: true,
+      sources: true,
+    },
   },
 
   projects: [
     {
-      name: 'Chromium',
+      name: 'Desktop/Chromium',
       use: {
         browserName: 'chromium',
+        hasTouch: false,
+        isMobile: false,
+        viewport: {height: 1200, width: 1920}, 
       },
     },
   ],

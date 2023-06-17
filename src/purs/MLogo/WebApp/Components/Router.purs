@@ -87,6 +87,7 @@ component = Hooks.component \_ { basePath, randomNumberSeed } →
         let
           logoImage = HH.img
             [ HP.src $ printRoute $ StaticAsset "pwa.svg"
+            , HPA.role "presentation"
             , classes [ "logo", "navbar-item" ]
             ]
         in
@@ -170,7 +171,9 @@ component = Hooks.component \_ { basePath, randomNumberSeed } →
         , HH.div
             [ classes [ "navbar-end" ] ]
             [ HH.a
-                [ HP.href "https://github.com/mstream/mlogo" ]
+                [ HP.href "https://github.com/mstream/mlogo"
+                , HPA.label "go to MLogo GitHub repository page"
+                ]
                 [ Parts.icon "fab" "fa-github-square" Large ]
             ]
         ]
@@ -194,6 +197,7 @@ component = Hooks.component \_ { basePath, randomNumberSeed } →
         [ renderNavigationBar
         , HH.div
             [ HP.id "router-content"
+            , HPA.role "main"
             , classes [ "is-flex-grow-1", "is-flex-shrink-1" ]
             ]
             [ renderCurrentComponent ]

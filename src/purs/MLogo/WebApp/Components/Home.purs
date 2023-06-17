@@ -6,6 +6,7 @@ import Effect.Aff.Class (class MonadAff)
 import Halogen (Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks as Hooks
 import MLogo.WebApp.BaseUrl (BaseUrl)
 import MLogo.WebApp.Route (Route(..))
@@ -48,7 +49,8 @@ component = Hooks.component \_ { basePath } → Hooks.do
               , HH.div
                   [ classes [ "column" ] ]
                   [ HH.img
-                      [ HP.src
+                      [ HP.alt "a screenshot of an example canvas"
+                      , HP.src
                           $ printRoute
                           $ StaticAsset "example-canvas.svg"
                       , classes
@@ -68,7 +70,9 @@ component = Hooks.component \_ { basePath } → Hooks.do
                   [ HH.strong_ [ HH.text "MLogo" ]
                   , HH.text " by "
                   , HH.a
-                      [ HP.href "https://github.com/mstream" ]
+                      [ HP.href "https://github.com/mstream"
+                      , HPA.label "go to author's GitHub profile page"
+                      ]
                       [ HH.text "Maciej Laciak" ]
                   ]
               ]
