@@ -43,12 +43,17 @@ const mobileChromiumProject: PlaywrightTestProject = {
 }
 
 export default defineConfig({
-  testDir: './test/ts',
+  expect: {
+    timeout: 5 * 1000,
+  },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  globalTimeout: 20 * 60 * 1000,
   reporter: 'html',
+  retries: process.env.CI ? 2 : 0,
+  testDir: './test/ts',
+  timeout: 20 * 1000,
+  workers: process.env.CI ? 1 : undefined,
   use: {
     baseURL,
     screenshot: 'only-on-failure',
@@ -73,8 +78,9 @@ export default defineConfig({
   ),
 
   webServer: {
-   command: `npm run serve:${serveMode}`,
-   reuseExistingServer: !process.env.CI,
-   url: baseURL,
+    command: `npm run serve:${serveMode}`,
+    reuseExistingServer: !process.env.CI,
+    timeout: 30 * 1000,
+    url: baseURL,
   },
 })
