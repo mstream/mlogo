@@ -1,10 +1,36 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, PlaywrightTestProject } from '@playwright/test';
 
 import {base} from './vite.config.js'
 import inProduction from './in-production.js'
 
 const baseURL = `http://localhost:4173${base}`
 const serveMode = inProduction ? 'production' : 'development'
+
+function inDarkMode(project: PlaywrightTestProject): PlaywrightTestProject { 
+  return {
+    ...project,
+    name: `${project.name} (Dark Mode)`,
+    use: {...project.use, colorScheme: 'dark'},
+  }
+}
+
+function inLightMode(project: PlaywrightTestProject): PlaywrightTestProject { 
+  return {
+    ...project, 
+    name: `${project.name} (Light Mode)`,
+    use: {...project.use, colorScheme: 'light'},
+  }
+}
+
+const desktopChromiumProject: PlaywrightTestProject = {
+  name: 'Desktop/Chromium',
+  use: {
+    browserName: 'chromium',
+    hasTouch: false,
+    isMobile: false,
+    viewport: {height: 1200, width: 1920}, 
+  },
+}
 
 export default defineConfig({
   testDir: './test/ts',
@@ -25,20 +51,13 @@ export default defineConfig({
   },
 
   projects: [
-    {
-      name: 'Desktop/Chromium',
-      use: {
-        browserName: 'chromium',
-        hasTouch: false,
-        isMobile: false,
-        viewport: {height: 1200, width: 1920}, 
-      },
-    },
+    inDarkMode(desktopChromiumProject),
+    inLightMode(desktopChromiumProject),
   ],
 
-   webServer: {
-     command: `npm run serve:${serveMode}`,
-     reuseExistingServer: !process.env.CI,
-     url: baseURL,
-   },
+  webServer: {
+   command: `npm run serve:${serveMode}`,
+   reuseExistingServer: !process.env.CI,
+   url: baseURL,
+  },
 })
