@@ -32,6 +32,16 @@ const desktopChromiumProject: PlaywrightTestProject = {
   },
 }
 
+const mobileChromiumProject: PlaywrightTestProject = {
+  name: 'Mobile/Chromium',
+  use: {
+    browserName: 'chromium',
+    hasTouch: true,
+    isMobile: true,
+    viewport: {height: 1280, width: 720}, 
+  },
+}
+
 export default defineConfig({
   testDir: './test/ts',
   fullyParallel: true,
@@ -51,9 +61,16 @@ export default defineConfig({
   },
 
   projects: [
-    inDarkMode(desktopChromiumProject),
-    inLightMode(desktopChromiumProject),
-  ],
+    desktopChromiumProject, 
+    mobileChromiumProject,
+  ].reduce(
+    (acc: Array<PlaywrightTestProject>, project: PlaywrightTestProject) => [
+      ...acc, 
+      inDarkMode(project), 
+      inLightMode(project),
+    ], 
+    [],
+  ),
 
   webServer: {
    command: `npm run serve:${serveMode}`,
