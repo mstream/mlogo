@@ -46,10 +46,14 @@ export default defineConfig({
   expect: {
     timeout: 5 * 1000,
   },
-  fullyParallel: true,
+  fullyParallel: !process.env.CI, 
   forbidOnly: !!process.env.CI,
-  globalTimeout: 15 * 60 * 1000,
+  globalTimeout: 10 * 60 * 1000,
   reporter: 'html',
+  reportSlowTests: {
+    max: 0,
+    threshold: 10 * 1000,
+  },
   retries: process.env.CI ? 2 : 0,
   testDir: './test/ts',
   timeout: 20 * 1000,
