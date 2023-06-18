@@ -42,6 +42,16 @@ const mobileChromiumProject: PlaywrightTestProject = {
   },
 }
 
+const tabletChromiumProject: PlaywrightTestProject = {
+  name: 'Tablet/Chromium',
+  use: {
+    browserName: 'chromium',
+    hasTouch: true,
+    isMobile: true,
+    viewport: {height: 1600, width: 900}, 
+  },
+}
+
 export default defineConfig({
   expect: {
     timeout: 5 * 1000,
@@ -57,8 +67,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   testDir: './test/ts',
   timeout: 20 * 1000,
-  // Value of 1 makes the test suit timeout both locally and on GitHub CI.
-  // workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : undefined,
   use: {
     baseURL,
     screenshot: 'only-on-failure',
@@ -73,6 +82,7 @@ export default defineConfig({
   projects: [
     desktopChromiumProject, 
     mobileChromiumProject,
+    tabletChromiumProject,
   ].reduce(
     (acc: Array<PlaywrightTestProject>, project: PlaywrightTestProject) => [
       ...acc, 

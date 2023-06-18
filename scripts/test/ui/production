@@ -2,7 +2,6 @@
 
 set -E -e
 
-export CI=true
 export NODE_ENV=production
 
 npx playwright test

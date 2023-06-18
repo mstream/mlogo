@@ -127,6 +127,7 @@ component = Hooks.component
           [ classes
               [ "columns"
               , "is-full-height"
+              , "is-full-width"
               , "is-tablet"
               , "p-1"
               ]
