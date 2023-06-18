@@ -48,12 +48,13 @@ export default defineConfig({
   },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  globalTimeout: 20 * 60 * 1000,
+  globalTimeout: 15 * 60 * 1000,
   reporter: 'html',
   retries: process.env.CI ? 2 : 0,
   testDir: './test/ts',
   timeout: 20 * 1000,
-  workers: process.env.CI ? 1 : undefined,
+  // Value of 1 makes the test suit timeout both locally and on GitHub CI.
+  // workers: process.env.CI ? 1 : undefined,
   use: {
     baseURL,
     screenshot: 'only-on-failure',
