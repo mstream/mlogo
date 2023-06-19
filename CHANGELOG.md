@@ -1,5 +1,12 @@
 
 
+## [0.44.0](https://github.com/mstream/mlogo/compare/0.43.6...0.44.0) (2023-06-19)
+
+
+### Features
+
+* make the mobile side-menu sticky ([62576fe](https://github.com/mstream/mlogo/commit/62576fee5141990e8dac32e3dbef311dee4e19c0))
+
 ### [0.43.6](https://github.com/mstream/mlogo/compare/0.43.5...0.43.6) (2023-06-19)
 
 
