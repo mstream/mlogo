@@ -10,6 +10,7 @@ import Effect.Aff.Class (class MonadAff)
 import Halogen (Component)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
@@ -70,13 +71,16 @@ component = Hooks.component
               [ case interpretationResult of
                   Left errorMessage →
                     HH.div
-                      [ classes [ "block", "error" ] ]
+                      [ HPA.label "error message"
+                      , classes [ "block", "error" ]
+                      ]
                       [ Parts.icon "fas" "fa-times-circle" Small
                       , HH.text $ "Runtime Error: " <> errorMessage
                       ]
                   Right visibleState →
                     HH.div
                       [ HP.id "canvas"
+                      , HPA.label "canvas"
                       , classes [ "block", "has-bezels" ]
                       ]
                       [ HH.slot_
@@ -87,6 +91,7 @@ component = Hooks.component
                       ]
               , HH.div
                   [ HP.id "editor"
+                  , HPA.label "editor"
                   , classes [ "block", "has-bezels", "is-full-height" ]
                   ]
                   [ HH.slot
@@ -102,6 +107,7 @@ component = Hooks.component
           [ classes [ "column", "is-5-desktop" ] ]
           [ HH.div
               [ HP.id "side-bar"
+              , HPA.label "help"
               , classes [ "is-full-height" ]
               ]
               [ HH.slot
@@ -128,6 +134,8 @@ component = Hooks.component
               [ "is-flex"
               , "is-flex-direction-row"
               , "is-full-height"
+              , "is-justify-content-space-between"
+              , "is-overflow-y-scroll"
               ]
           ]
           [ HH.div
@@ -142,15 +150,27 @@ component = Hooks.component
               , renderSecondaryColumn
               ]
           , HH.aside
-              [ classes [ "is-hidden-desktop", "menu" ] ]
+              [ classes [ "is-hidden-desktop", "is-sticky", "menu" ] ]
               [ HH.p
                   [ classes [ "menu-label" ] ]
                   [ HH.text "Sandbox" ]
               , HH.ul
                   [ classes [ "menu-list" ] ]
-                  [ HH.li_ [ HH.a_ [ HH.text "Canvas" ] ]
-                  , HH.li_ [ HH.a_ [ HH.text "Editor" ] ]
-                  , HH.li_ [ HH.a_ [ HH.text "Help" ] ]
+                  [ HH.li_
+                      [ HH.a
+                          [ HP.href "#canvas" ]
+                          [ HH.text "Canvas" ]
+                      ]
+                  , HH.li_
+                      [ HH.a
+                          [ HP.href "#editor" ]
+                          [ HH.text "Editor" ]
+                      ]
+                  , HH.li_
+                      [ HH.a
+                          [ HP.href "#side-bar" ]
+                          [ HH.text "Help" ]
+                      ]
                   ]
               ]
           ]

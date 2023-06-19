@@ -120,12 +120,12 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
               ]
           ]
       , HH.div
-          [ HP.id "side-bar-content"
-          , HP.tabIndex 0
+          [ HP.tabIndex 0
           , classes
               [ "is-flex-grow-1"
               , "is-flex-shrink-1"
               , "is-full-height"
+              , "is-overflow-y-scroll"
               , "p-1"
               ]
           ]

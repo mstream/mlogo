@@ -15,7 +15,7 @@ test.describe('Sandbox Page', () => {
     const viewportHeight = page.viewportSize()?.height || 0
     const codeInputTextbox = page.getByRole('textbox', {name: 'code input'})
     const codeInputHeight = (await codeInputTextbox.boundingBox())?.height || 0
-    expect(codeInputHeight / viewportHeight).toBeGreaterThanOrEqual(0.2)
+    expect(codeInputHeight / viewportHeight).toBeGreaterThanOrEqual(0.4)
   })
 
   test.fixme('has no accessibility issues', async ({ page }) => {
