@@ -1,5 +1,12 @@
 
 
+### [0.43.6](https://github.com/mstream/mlogo/compare/0.43.5...0.43.6) (2023-06-19)
+
+
+### Bug Fixes
+
+* make code input sufficiently tall on mobile devices ([225ea8c](https://github.com/mstream/mlogo/commit/225ea8c494be612090dc63436d072d430b51a0fc))
+
 ### [0.43.5](https://github.com/mstream/mlogo/compare/0.43.4...0.43.5) (2023-06-18)
 
 ### [0.43.4](https://github.com/mstream/mlogo/compare/0.43.3...0.43.4) (2023-06-18)
