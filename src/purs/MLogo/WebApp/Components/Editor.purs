@@ -18,6 +18,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
@@ -218,8 +219,11 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
       ]
       [ renderToolPanel
       , HH.div
-          [ HP.ref aceRefLabel
-          , classes [ "is-full-height" ]
+          [ HP.id "code-input"
+          , HP.ref aceRefLabel
+          , HPA.label "code input"
+          , HPA.multiLine "true"
+          , HPA.role "textbox"
           ]
           []
       ]

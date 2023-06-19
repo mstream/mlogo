@@ -62,7 +62,7 @@ component = Hooks.component
             HH.div
               [ classes
                   [ "column"
-                  , "is-7"
+                  , "is-7-desktop"
                   , "is-flex"
                   , "is-flex-direction-column"
                   ]
@@ -99,7 +99,7 @@ component = Hooks.component
               ]
 
         renderSecondaryColumn = HH.div
-          [ classes [ "column", "is-5" ] ]
+          [ classes [ "column", "is-5-desktop" ] ]
           [ HH.div
               [ HP.id "side-bar"
               , classes [ "is-full-height" ]
@@ -125,14 +125,33 @@ component = Hooks.component
       Hooks.pure do
         HH.div
           [ classes
-              [ "columns"
+              [ "is-flex"
+              , "is-flex-direction-row"
               , "is-full-height"
-              , "is-full-width"
-              , "is-tablet"
-              , "p-1"
               ]
           ]
-          [ renderPrimaryColumn
-          , renderSecondaryColumn
+          [ HH.div
+              [ classes
+                  [ "columns"
+                  , "is-desktop"
+                  , "is-full-width"
+                  , "p-1"
+                  ]
+              ]
+              [ renderPrimaryColumn
+              , renderSecondaryColumn
+              ]
+          , HH.aside
+              [ classes [ "is-hidden-desktop", "menu" ] ]
+              [ HH.p
+                  [ classes [ "menu-label" ] ]
+                  [ HH.text "Sandbox" ]
+              , HH.ul
+                  [ classes [ "menu-list" ] ]
+                  [ HH.li_ [ HH.a_ [ HH.text "Canvas" ] ]
+                  , HH.li_ [ HH.a_ [ HH.text "Editor" ] ]
+                  , HH.li_ [ HH.a_ [ HH.text "Help" ] ]
+                  ]
+              ]
           ]
 

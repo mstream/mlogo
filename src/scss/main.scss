@@ -27,7 +27,16 @@ $link-dark: $cyan;
 }
 
 #editor {
-  background: $background
+  background: $background;
+  min-height: 25svh;
+}
+
+#editor > * {
+  min-height: inherit;
+}
+
+#code-input {
+  flex: 1;
 }
 
 #router-content {
