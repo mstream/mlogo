@@ -1,5 +1,12 @@
 
 
+## [0.45.0](https://github.com/mstream/mlogo/compare/0.44.0...0.45.0) (2023-06-21)
+
+
+### Features
+
+* make the website usable on displays down to 350px of width ([2bbcc04](https://github.com/mstream/mlogo/commit/2bbcc045bee3c3867de6df9028ed17a8b65eedb4))
+
 ## [0.44.0](https://github.com/mstream/mlogo/compare/0.43.6...0.44.0) (2023-06-19)
 
 
