@@ -64,8 +64,6 @@ component = Hooks.component
               [ classes
                   [ "column"
                   , "is-7-desktop"
-                  , "is-flex"
-                  , "is-flex-direction-column"
                   ]
               ]
               [ case interpretationResult of
@@ -131,26 +129,33 @@ component = Hooks.component
       Hooks.pure do
         HH.div
           [ classes
-              [ "is-flex"
-              , "is-flex-direction-row"
+              [ "columns"
+              , "is-1"
               , "is-full-height"
-              , "is-justify-content-space-between"
+              , "is-mobile"
               , "is-overflow-y-scroll"
+              , "p-1"
               ]
           ]
           [ HH.div
               [ classes
-                  [ "columns"
+                  [ "column"
+                  , "columns"
                   , "is-desktop"
-                  , "is-full-width"
-                  , "p-1"
                   ]
               ]
               [ renderPrimaryColumn
               , renderSecondaryColumn
               ]
           , HH.aside
-              [ classes [ "is-hidden-desktop", "is-sticky", "menu" ] ]
+              [ classes
+                  [ "column"
+                  , "is-hidden-desktop"
+                  , "is-narrow"
+                  , "is-sticky"
+                  , "menu"
+                  ]
+              ]
               [ HH.p
                   [ classes [ "menu-label" ] ]
                   [ HH.text "Sandbox" ]

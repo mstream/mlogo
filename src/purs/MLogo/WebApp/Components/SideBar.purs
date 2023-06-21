@@ -26,6 +26,15 @@ data Tab = AboutTab | ExamplesTab | ReferenceTab
 
 derive instance Eq Tab
 
+tabLabel ∷ Tab → String
+tabLabel = case _ of
+  AboutTab →
+    "About"
+  ExamplesTab →
+    "Examples"
+  ReferenceTab →
+    "Reference"
+
 component
   ∷ ∀ i m q. MonadAff m ⇒ Component q i ExamplesComponent.Output m
 component = Hooks.component \{ outputToken } _ → Hooks.do
@@ -71,14 +80,6 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
             "fas" /\ "fa-book"
 
         isActive = currentTab == tab
-
-        label = case tab of
-          AboutTab →
-            "About"
-          ExamplesTab →
-            "Examples"
-          ReferenceTab →
-            "Reference"
       in
         HH.li
           [ HE.onClick \_ → handleTabClick tab
@@ -90,18 +91,15 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
               ]
               [ Parts.icon iconStyle iconName Small
               , HH.span
-                  [ classes [ "ml-1" ] ]
-                  [ HH.text label ]
+                  [ classes [ "is-hidden-mobile", "ml-1" ] ]
+                  [ HH.text $ tabLabel tab ]
               ]
           ]
 
   Hooks.pure do
     HH.div
       [ classes
-          [ "is-flex"
-          , "is-flex-direction-column"
-          , "is-full-height"
-          ]
+          [ "is-full-height" ]
       ]
       [ HH.nav
           [ classes
@@ -129,6 +127,10 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
               , "p-1"
               ]
           ]
-          [ currentComponent ]
+          [ HH.h2
+              [ classes [ "is-2 is-hidden-tablet title" ] ]
+              [ HH.text $ tabLabel currentTab ]
+          , currentComponent
+          ]
       ]
 

@@ -134,8 +134,7 @@ component = Hooks.component \_ commandsByAliasByCategory → Hooks.do
         "\"" <> s
 
   Hooks.pure do
-    HH.div
-      [ classes [ "is-full-width" ] ]
+    HH.div_
       (renderCategory <$> Map.toUnfoldable entriesByAliasByCategory)
 
 generateEntries

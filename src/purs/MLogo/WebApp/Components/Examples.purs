@@ -13,6 +13,7 @@ import Halogen (Component)
 import Halogen.HTML (HTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import MLogo.Parsing.Expression (Expression)
@@ -70,6 +71,8 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ classes [ "is-flex", "is-flex-direction-column" ] ]
+      [ HP.id "examples"
+      , classes [ "is-flex", "is-flex-direction-column" ]
+      ]
       (renderExample <$> Map.toUnfoldable examplesByTitle)
 

@@ -35,6 +35,10 @@ $link-dark: $cyan;
   min-height: inherit;
 }
 
+#examples {
+  max-width: 40rem;
+}
+
 #code-input {
   flex: 1;
 }
