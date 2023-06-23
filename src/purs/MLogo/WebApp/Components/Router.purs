@@ -190,12 +190,14 @@ component = Hooks.component \_ { basePath, randomNumberSeed } →
 
     Hooks.pure do
       HH.div
-        [ HP.id "container" ]
+        [ HP.id "container"
+        , classes [ "is-flex", "is-flex-direction-column" ]
+        ]
         [ renderNavigationBar
         , HH.div
             [ HP.id "router-content"
             , HPA.role "main"
-            , classes [ "is-flex-grow-1", "is-flex-shrink-1" ]
+            , classes [ "is-flex-grow-1", "is-flex-shrink-1", "p-4" ]
             ]
             [ renderCurrentComponent ]
         ]

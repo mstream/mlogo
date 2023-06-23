@@ -64,6 +64,8 @@ component = Hooks.component
               [ classes
                   [ "column"
                   , "is-7-desktop"
+                  , "is-flex"
+                  , "is-flex-direction-column"
                   ]
               ]
               [ case interpretationResult of
@@ -134,7 +136,7 @@ component = Hooks.component
               , "is-full-height"
               , "is-mobile"
               , "is-overflow-y-scroll"
-              , "p-1"
+              , "p-4"
               ]
           ]
           [ HH.div

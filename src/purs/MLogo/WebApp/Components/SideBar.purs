@@ -99,7 +99,7 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
   Hooks.pure do
     HH.div
       [ classes
-          [ "is-full-height" ]
+          [ "is-flex", "is-flex-direction-column", "is-full-height" ]
       ]
       [ HH.nav
           [ classes

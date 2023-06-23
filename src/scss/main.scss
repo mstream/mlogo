@@ -19,7 +19,12 @@ $link-dark: $cyan;
 
 #container {
   box-sizing: border-box;
-  height: 100svh;
+}
+
+@include desktop {
+  #container {
+    height: 100svh;
+  }
 }
 
 #canvas {
@@ -28,7 +33,7 @@ $link-dark: $cyan;
 
 #editor {
   background: $background;
-  min-height: 50svh;
+  min-height: 50%;
 }
 
 #editor > * {
