@@ -1,5 +1,13 @@
 
 
+### [0.45.1](https://github.com/mstream/mlogo/compare/0.45.0...0.45.1) (2023-06-23)
+
+
+### Bug Fixes
+
+* eliminate unnecessary horizontal scroll bars ([6a0c468](https://github.com/mstream/mlogo/commit/6a0c468014f23e327ad83dc3a5c31c880d72f128))
+* prevent the sandbox editor from shrinking too much ([6ed363a](https://github.com/mstream/mlogo/commit/6ed363a64cac01cce1071c82595968e3eb635ee3))
+
 ## [0.45.0](https://github.com/mstream/mlogo/compare/0.44.0...0.45.0) (2023-06-21)
 
 
