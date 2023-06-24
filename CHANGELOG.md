@@ -1,5 +1,17 @@
 
 
+## [0.46.0](https://github.com/mstream/mlogo/compare/0.45.1...0.46.0) (2023-06-24)
+
+
+### Features
+
+* make container fit the viewport ([806d985](https://github.com/mstream/mlogo/commit/806d985cde02492356183ddeaae4c888eef5e6df))
+
+
+### Bug Fixes
+
+* prevent the sandbox canvas from shrinking too much ([6383465](https://github.com/mstream/mlogo/commit/6383465371e5b40c9dfe6c22add930a7c88bcca7))
+
 ### [0.45.1](https://github.com/mstream/mlogo/compare/0.45.0...0.45.1) (2023-06-23)
 
 
