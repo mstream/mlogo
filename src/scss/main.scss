@@ -19,12 +19,7 @@ $link-dark: $cyan;
 
 #container {
   box-sizing: border-box;
-}
-
-@include desktop {
-  #container {
-    height: 100svh;
-  }
+  height: 100svh;
 }
 
 #canvas {
