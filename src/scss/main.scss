@@ -28,12 +28,12 @@ $link-dark: $cyan;
 }
 
 #canvas {
-  height: 50%;
+  min-height: 40svh;
 }
 
 #editor {
   background: $background;
-  min-height: 50svh;
+  min-height: 40svh;
 }
 
 #editor > * {

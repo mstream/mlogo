@@ -10,7 +10,14 @@ test.describe('Sandbox Page', () => {
     await expect(page).toHaveTitle(/MLogo/)
     await expect(page).toHaveTitle(/Sandbox/)
   })
-  
+   
+  test('the canvas is tall enough', async ({ page }) => {
+    const viewportHeight = page.viewportSize()?.height || 0
+    const canvasImage = page.getByRole('img', {name: 'canvas'})
+    const canvasHeight = (await canvasImage.boundingBox())?.height || 0
+    expect(canvasHeight / viewportHeight).toBeGreaterThanOrEqual(1/3)
+  })
+ 
   test('the editor is tall enough', async ({ page }) => {
     const viewportHeight = page.viewportSize()?.height || 0
     const codeInputTextbox = page.getByRole('textbox', {name: 'code input'})

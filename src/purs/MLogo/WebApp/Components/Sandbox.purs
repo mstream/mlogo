@@ -80,7 +80,6 @@ component = Hooks.component
                   Right visibleState →
                     HH.div
                       [ HP.id "canvas"
-                      , HPA.label "canvas"
                       , classes [ "block", "has-bezels" ]
                       ]
                       [ HH.slot_

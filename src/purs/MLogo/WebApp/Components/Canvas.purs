@@ -150,7 +150,9 @@ component = Hooks.component \_ { pointer, screen } → Hooks.do
 
   Hooks.pure do
     HH.div
-      [ classes
+      [ HPA.label "canvas"
+      , HPA.role "img"
+      , classes
           [ "has-background-light"
           , "is-align-items-center"
           , "is-justify-content-center"
