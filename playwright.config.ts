@@ -1,11 +1,15 @@
 import { defineConfig, PlaywrightTestProject } from '@playwright/test';
 
 import {base} from './vite.config.js'
+import inCI from './in-ci.js'
 import inProduction from './in-production.js'
 
 type BrowserName = 'chromium' | 'firefox' | 'webkit'
 
-const supportedBrowsers: Array<BrowserName> = ['chromium', 'webkit'] 
+const supportedBrowsers: Array<BrowserName> = inCI ? 
+  /* Nix support issues for browsers other than Chromium on x86_64-linux system */
+  ['chromium'] : 
+  ['chromium', 'firefox', 'webkit'] 
 
 const baseURL = `http://localhost:4173${base}`
 const serveMode = inProduction ? 'production' : 'development'
@@ -66,18 +70,18 @@ export default defineConfig({
   expect: {
     timeout: 5 * 1000,
   },
-  fullyParallel: !process.env.CI, 
-  forbidOnly: !!process.env.CI,
+  fullyParallel: !inCI, 
+  forbidOnly: inCI,
   globalTimeout: 10 * 60 * 1000,
   reporter: 'html',
   reportSlowTests: {
     max: 0,
     threshold: 10 * 1000,
   },
-  retries: process.env.CI ? 2 : 0,
+  retries: inCI ? 2 : 0,
   testDir: './test/ts',
   timeout: 20 * 1000,
-  workers: process.env.CI ? 1 : undefined,
+  workers: inCI ? 1 : undefined,
   use: {
     baseURL,
     screenshot: 'only-on-failure',
@@ -93,9 +97,17 @@ export default defineConfig({
     .reduce(
       (acc: Array<PlaywrightTestProject>, browserName) => [
         ...acc,
-        desktopDevice(browserName),
-        mobileDevice(browserName),
-        tabletDevice(browserName),
+        ...( 
+          browserName === 'firefox' ? 
+            [
+              desktopDevice(browserName),
+            ] :
+            [
+              desktopDevice(browserName),
+              mobileDevice(browserName),
+              tabletDevice(browserName),
+            ]
+        )
       ], 
       [],
     )
@@ -110,7 +122,7 @@ export default defineConfig({
 
   webServer: {
     command: `npm run serve:${serveMode}`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !inCI,
     timeout: 30 * 1000,
     url: baseURL,
   },
