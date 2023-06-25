@@ -3,6 +3,10 @@ import { defineConfig, PlaywrightTestProject } from '@playwright/test';
 import {base} from './vite.config.js'
 import inProduction from './in-production.js'
 
+type BrowserName = 'chromium' | 'firefox' | 'webkit'
+
+const supportedBrowsers: Array<BrowserName> = ['chromium', 'webkit'] 
+
 const baseURL = `http://localhost:4173${base}`
 const serveMode = inProduction ? 'production' : 'development'
 
@@ -22,34 +26,40 @@ function inLightMode(project: PlaywrightTestProject): PlaywrightTestProject {
   }
 }
 
-const desktopChromiumProject: PlaywrightTestProject = {
-  name: 'Desktop/Chromium',
-  use: {
-    browserName: 'chromium',
-    hasTouch: false,
-    isMobile: false,
-    viewport: {height: 1200, width: 1920}, 
-  },
+function desktopDevice(browserName: BrowserName): PlaywrightTestProject {
+  return {
+    name: `desktop/${browserName}`,
+    use: {
+      browserName,
+      hasTouch: false,
+      isMobile: false,
+      viewport: {height: 1200, width: 1920}, 
+    },
+  }
 }
 
-const mobileChromiumProject: PlaywrightTestProject = {
-  name: 'Mobile/Chromium',
-  use: {
-    browserName: 'chromium',
-    hasTouch: true,
-    isMobile: true,
-    viewport: {height: 1280, width: 720}, 
-  },
+function mobileDevice(browserName: BrowserName): PlaywrightTestProject {
+  return {
+    name: `mobile/${browserName}`,
+    use: {
+      browserName,
+      hasTouch: true,
+      isMobile: true,
+      viewport: {height: 1280, width: 720}, 
+    },
+  }
 }
 
-const tabletChromiumProject: PlaywrightTestProject = {
-  name: 'Tablet/Chromium',
-  use: {
-    browserName: 'chromium',
-    hasTouch: true,
-    isMobile: true,
-    viewport: {height: 1600, width: 900}, 
-  },
+function tabletDevice(browserName: BrowserName): PlaywrightTestProject {
+  return {
+    name: `tablet/${browserName}`,
+    use: {
+      browserName,
+      hasTouch: true,
+      isMobile: true,
+      viewport: {height: 1600, width: 900}, 
+    },
+  }
 }
 
 export default defineConfig({
@@ -79,18 +89,24 @@ export default defineConfig({
     },
   },
 
-  projects: [
-    desktopChromiumProject, 
-    mobileChromiumProject,
-    tabletChromiumProject,
-  ].reduce(
-    (acc: Array<PlaywrightTestProject>, project: PlaywrightTestProject) => [
-      ...acc, 
-      inDarkMode(project), 
-      inLightMode(project),
-    ], 
-    [],
-  ),
+  projects: supportedBrowsers
+    .reduce(
+      (acc: Array<PlaywrightTestProject>, browserName) => [
+        ...acc,
+        desktopDevice(browserName),
+        mobileDevice(browserName),
+        tabletDevice(browserName),
+      ], 
+      [],
+    )
+    .reduce(
+      (acc: Array<PlaywrightTestProject>, project: PlaywrightTestProject) => [
+        ...acc, 
+        inDarkMode(project), 
+        inLightMode(project),
+      ], 
+      [],
+    ),
 
   webServer: {
     command: `npm run serve:${serveMode}`,

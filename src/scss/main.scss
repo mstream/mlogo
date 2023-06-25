@@ -26,6 +26,11 @@ $link-dark: $cyan;
   min-height: 40svh;
 }
 
+#canvas > * {
+  /* webkit's mobile viewport bug fix */
+  height: -webkit-fill-available; 
+}
+
 #editor {
   background: $background;
   min-height: 40svh;
