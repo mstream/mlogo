@@ -1,5 +1,12 @@
 
 
+### [0.46.1](https://github.com/mstream/mlogo/compare/0.46.0...0.46.1) (2023-06-25)
+
+
+### Bug Fixes
+
+* correct canvas height on mobile devices with Webkit ([9ae69a3](https://github.com/mstream/mlogo/commit/9ae69a3287dc574fbe8fc2f31c2f4fae3d4f21f2))
+
 ## [0.46.0](https://github.com/mstream/mlogo/compare/0.45.1...0.46.0) (2023-06-24)
 
 
