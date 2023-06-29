@@ -1,4 +1,4 @@
-import AxeBuilder from '@axe-core/playwright'
+import * as axe from '@axe-core/playwright'
 import { test, expect } from '@playwright/test'
 
 test.describe('Home Page', () => {
@@ -17,8 +17,8 @@ test.describe('Home Page', () => {
 
   test('has no accessibility issues', async ({ page }) => {
     // @ts-expect-error: types mismatch which does not cause any problems
-    const axe = new AxeBuilder({ page }) 
-    const accessibilityScanResults = await axe.analyze()
+    const axeBuilder: axe.AxeBuilder = new axe.AxeBuilder({ page }) 
+    const accessibilityScanResults = await axeBuilder.analyze()
     expect(accessibilityScanResults.violations).toEqual([])
   })
 })
