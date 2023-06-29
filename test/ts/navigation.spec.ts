@@ -33,7 +33,7 @@ test.describe('Navigation', () => {
     test.skip(!isViewportMobileSize(page), 'only on mobile devices')
     await forAllTabs(page, tabLink => expect(tabLink).toBeHidden())
     const burgerMenuLink = page.getByRole('button', {name:'menu'})
-    await expect(burgerMenuLink).toBeHidden()
+    await expect(burgerMenuLink).toBeVisible()
     await burgerMenuLink.click()
     await forAllTabs(page, tabLink => expect(tabLink).toBeVisible())
     await burgerMenuLink.click()
