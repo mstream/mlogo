@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import { join, resolve } from 'path'
+import { resolve } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import inProduction from './in-production.js'
 import * as url from 'url'

@@ -12,21 +12,23 @@ test.describe('Sandbox Page', () => {
   })
    
   test('the canvas is tall enough', async ({ page }) => {
-    const viewportHeight = page.viewportSize()?.height || 0
+    const viewportHeight = Number(page.viewportSize()?.height)
     const canvasImage = page.getByRole('img', {name: 'canvas'})
-    const canvasHeight = (await canvasImage.boundingBox())?.height || 0
+    const canvasHeight = Number((await canvasImage.boundingBox())?.height)
     expect(canvasHeight / viewportHeight).toBeGreaterThanOrEqual(1/3)
   })
  
   test('the editor is tall enough', async ({ page }) => {
-    const viewportHeight = page.viewportSize()?.height || 0
+    const viewportHeight = Number(page.viewportSize()?.height)
     const codeInputTextbox = page.getByRole('textbox', {name: 'code input'})
-    const codeInputHeight = (await codeInputTextbox.boundingBox())?.height || 0
+    const codeInputHeight = Number((await codeInputTextbox.boundingBox())?.height) 
     expect(codeInputHeight / viewportHeight).toBeGreaterThanOrEqual(1/3)
   })
 
   test.fixme('has no accessibility issues', async ({ page }) => {
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze()
+    // @ts-expect-error: types mismatch which does not cause any problems
+    const axe = new AxeBuilder.default({ page })
+    const accessibilityScanResults = await axe.analyze()
     expect(accessibilityScanResults.violations).toEqual([])
   })
 })

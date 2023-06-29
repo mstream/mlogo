@@ -31,13 +31,13 @@ test.describe('Navigation', () => {
 
   test('has the burger menu visible', async ({ page }) => {
     test.skip(!isViewportMobileSize(page), 'only on mobile devices')
-    await forAllTabs(page, tabLink => expect(tabLink).not.toBeVisible())
+    await forAllTabs(page, tabLink => expect(tabLink).toBeHidden())
     const burgerMenuLink = page.getByRole('button', {name:'menu'})
-    await expect(burgerMenuLink).toBeVisible()
+    await expect(burgerMenuLink).toBeHidden()
     await burgerMenuLink.click()
     await forAllTabs(page, tabLink => expect(tabLink).toBeVisible())
     await burgerMenuLink.click()
-    await forAllTabs(page, tabLink => expect(tabLink).not.toBeVisible())
+    await forAllTabs(page, tabLink => expect(tabLink).toBeHidden())
   })
 })
 

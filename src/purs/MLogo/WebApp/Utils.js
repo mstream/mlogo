@@ -7,5 +7,5 @@ export const _decompressFromEncodedURIComponent =
   lzString.decompressFromEncodedURIComponent
 
 export function _baseUrl() {
-  return import.meta.env?.BASE_URL
+  return import.meta.env.BASE_URL
 }

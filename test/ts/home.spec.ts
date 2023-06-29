@@ -16,7 +16,9 @@ test.describe('Home Page', () => {
   })
 
   test('has no accessibility issues', async ({ page }) => {
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze()
+    // @ts-expect-error: types mismatch which does not cause any problems
+    const axe = new AxeBuilder.default({ page }) 
+    const accessibilityScanResults = await axe.analyze()
     expect(accessibilityScanResults.violations).toEqual([])
   })
 })

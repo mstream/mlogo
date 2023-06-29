@@ -1,6 +1,6 @@
 import { defineConfig, PlaywrightTestProject } from '@playwright/test';
 
-import {base} from './vite.config.js'
+import {base} from './vite.config.ts'
 import inCI from './in-ci.js'
 import inProduction from './in-production.js'
 
@@ -15,6 +15,9 @@ const baseURL = `http://localhost:4173${base}`
 const serveMode = inProduction ? 'production' : 'development'
 
 function inDarkMode(project: PlaywrightTestProject): PlaywrightTestProject { 
+  if (!project.name) {
+    throw Error('project name required')
+  }
   return {
     ...project,
     name: `${project.name} (Dark Mode)`,
@@ -23,6 +26,9 @@ function inDarkMode(project: PlaywrightTestProject): PlaywrightTestProject {
 }
 
 function inLightMode(project: PlaywrightTestProject): PlaywrightTestProject { 
+  if (!project.name) {
+    throw Error('project name required')
+  }
   return {
     ...project, 
     name: `${project.name} (Light Mode)`,

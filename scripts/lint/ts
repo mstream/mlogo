@@ -2,4 +2,5 @@
 
 set -E -e
 
-npx eslint test/ts/
+npx tsc --noEmit
+npx eslint .
