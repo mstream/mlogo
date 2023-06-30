@@ -25,6 +25,14 @@ test.describe('Sandbox Page', () => {
     expect(codeInputHeight / viewportHeight).toBeGreaterThanOrEqual(1/3)
   })
 
+  test('the editor is responsive', async ({ page }) => {
+    const programCode = 'forward 10'
+    const codeInputTextbox = page.getByRole('textbox', {name: 'code input'})
+    const innerTextbox = codeInputTextbox.getByRole('textbox')
+    await innerTextbox.fill(programCode)
+    expect(codeInputTextbox).toContainText(programCode)
+  })
+
   test.fixme('has no accessibility issues', async ({ page }) => {
     // @ts-expect-error: types mismatch which does not cause any problems
     const axeBuilder: axe.AxeBuilder = new axe.AxeBuilder({ page })

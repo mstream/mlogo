@@ -221,9 +221,11 @@ component = Hooks.component \{ outputToken, queryToken } _ → Hooks.do
       , HH.div
           [ HP.id "code-input"
           , HP.ref aceRefLabel
+          {-
           , HPA.label "code input"
           , HPA.multiLine "true"
           , HPA.role "textbox"
+          -}
           ]
           []
       ]
