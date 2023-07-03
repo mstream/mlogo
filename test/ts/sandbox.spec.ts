@@ -30,7 +30,7 @@ test.describe('Sandbox Page', () => {
     const codeInputTextbox = page.getByRole('textbox', {name: 'code input'})
     const innerTextbox = codeInputTextbox.getByRole('textbox')
     await innerTextbox.fill(programCode)
-    expect(codeInputTextbox).toContainText(programCode)
+    await expect(codeInputTextbox).toContainText(programCode)
   })
 
   test.fixme('has no accessibility issues', async ({ page }) => {
