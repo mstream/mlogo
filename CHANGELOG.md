@@ -1,5 +1,12 @@
 
 
+### [0.46.2](https://github.com/mstream/mlogo/compare/0.46.1...0.46.2) (2023-07-03)
+
+
+### Bug Fixes
+
+* restore ARIA attributes for the editor ([d9661db](https://github.com/mstream/mlogo/commit/d9661dbaeb141c52ee9873effea43f4b68fd47ad))
+
 ### [0.46.1](https://github.com/mstream/mlogo/compare/0.46.0...0.46.1) (2023-06-25)
 
 
