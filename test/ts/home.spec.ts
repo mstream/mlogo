@@ -1,5 +1,9 @@
 import * as axe from '@axe-core/playwright'
-import { test, expect } from '@playwright/test'
+import { test, expect, Page, Locator } from '@playwright/test'
+
+function getAuthorPageLink(page: Page): Locator {
+  return page.getByRole('link', {name: 'author'})
+}
 
 test.describe('Home Page', () => {
   test.beforeEach(async ({page}) => {
@@ -11,7 +15,7 @@ test.describe('Home Page', () => {
   })
 
   test('has a link to the author\'s page', async ({ page }) => {
-    const authorPageLink = page.getByRole('link', {name: 'author'})
+    const authorPageLink = getAuthorPageLink(page)
     await expect(authorPageLink).toBeVisible()
   })
 

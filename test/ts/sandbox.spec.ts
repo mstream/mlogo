@@ -1,19 +1,19 @@
 import * as axe from '@axe-core/playwright'
-import { test, expect, Page } from '@playwright/test'
+import { test, expect, Page, Locator } from '@playwright/test'
 
-async function getCanvasImage(page: Page) {
+function getCanvasImage(page: Page) : Locator {
   return page.getByRole('img', {name: 'canvas'})
 }
 
-async function getCodeInputTextbox(page : Page) {
+function getCodeInputTextbox(page : Page) : Locator {
   return page.getByRole('textbox', {name: 'code input'})
 }
 
-async function getExamplesTab(page: Page) {
+function getExamplesTab(page: Page) : Locator {
   return page.getByRole('button', {name: 'examples'})
 }
 
-async function getExampleFigure(page: Page) {
+function getExampleFigure(page: Page) : Locator {
   return page.getByRole('figure')
 }
 
@@ -29,21 +29,21 @@ test.describe('Sandbox Page', () => {
    
   test('the canvas is tall enough', async ({ page }) => {
     const viewportHeight = Number(page.viewportSize()?.height)
-    const canvasImage = await getCanvasImage(page)
+    const canvasImage = getCanvasImage(page)
     const canvasHeight = Number((await canvasImage.boundingBox())?.height)
     expect(canvasHeight / viewportHeight).toBeGreaterThanOrEqual(1/3)
   })
  
   test('the editor is tall enough', async ({ page }) => {
     const viewportHeight = Number(page.viewportSize()?.height)
-    const codeInputTextbox = await getCodeInputTextbox(page)
+    const codeInputTextbox = getCodeInputTextbox(page)
     const codeInputHeight = Number((await codeInputTextbox.boundingBox())?.height) 
     expect(codeInputHeight / viewportHeight).toBeGreaterThanOrEqual(1/3)
   })
 
   test('the editor is responsive to input', async ({ page }) => {
     const programCode = 'forward 10'
-    const codeInputTextbox = await getCodeInputTextbox(page)
+    const codeInputTextbox = getCodeInputTextbox(page)
     const innerTextbox = codeInputTextbox.getByRole('textbox')
     await innerTextbox.fill(programCode)
     await expect(codeInputTextbox).toContainText(programCode)
@@ -51,8 +51,8 @@ test.describe('Sandbox Page', () => {
 
   test('the canvas is responsive to input', async ({ page }) => {
     const programCode = 'forward 10'
-    const canvasImage = await getCanvasImage(page)
-    const codeInputTextbox = await getCodeInputTextbox(page)
+    const canvasImage = getCanvasImage(page)
+    const codeInputTextbox = getCodeInputTextbox(page)
     const innerTextbox = codeInputTextbox.getByRole('textbox')
 
     expect(await canvasImage.screenshot()).toMatchSnapshot(
@@ -67,10 +67,10 @@ test.describe('Sandbox Page', () => {
   })
   
   test('the editor is responsive to examples', async ({ page }) => {
-    const codeInputTextbox = await getCodeInputTextbox(page)
-    const examplesTab = await getExamplesTab(page)
+    const codeInputTextbox = getCodeInputTextbox(page)
+    const examplesTab = getExamplesTab(page)
     await examplesTab.click()
-    const firstExampleFigure = (await getExampleFigure(page)).first()
+    const firstExampleFigure = getExampleFigure(page).first()
     const firstExampleTryButton = firstExampleFigure.getByRole('button')
     const firstExampleCode = (await firstExampleFigure.getByRole('code').allTextContents())[0]
     await firstExampleTryButton.click()
@@ -78,10 +78,10 @@ test.describe('Sandbox Page', () => {
   })
   
   test('the canvas is responsive to examples', async ({ page }) => {
-    const canvasImage = await getCanvasImage(page)
-    const examplesTab = await getExamplesTab(page)
+    const canvasImage = getCanvasImage(page)
+    const examplesTab = getExamplesTab(page)
     await examplesTab.click()
-    const firstExampleFigure = (await getExampleFigure(page)).first()
+    const firstExampleFigure = getExampleFigure(page).first()
     const firstExampleTryButton = firstExampleFigure.getByRole('button')
     expect(await canvasImage.screenshot()).toMatchSnapshot(
       'empty-canvas.svg', 
