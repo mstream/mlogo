@@ -48,6 +48,7 @@
   , "unicode"
   , "web-dom"
   , "web-html"
+  , "web-uievents"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/purs/**/*.purs", "test/purs/**/*.purs" ]

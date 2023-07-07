@@ -10,6 +10,7 @@ import Halogen.HTML (HTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
@@ -21,6 +22,7 @@ import MLogo.WebApp.Parts (IconSize(..))
 import MLogo.WebApp.Parts as Parts
 import MLogo.WebApp.Utils (classes)
 import Type.Proxy (Proxy(..))
+import Web.UIEvent.MouseEvent (button)
 
 data Tab = AboutTab | ExamplesTab | ReferenceTab
 
@@ -79,6 +81,14 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
           ReferenceTab →
             "fas" /\ "fa-book"
 
+        ariaLabel = case tab of
+          AboutTab →
+            "about"
+          ExamplesTab →
+            "examples"
+          ReferenceTab →
+            "reference"
+
         isActive = currentTab == tab
       in
         HH.li
@@ -88,6 +98,8 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
           [ HH.a
               [ HE.onClick $ const $ pure unit
               , HP.href "#"
+              , HPA.label ariaLabel
+              , HPA.role "button"
               ]
               [ Parts.icon iconStyle iconName Small
               , HH.span

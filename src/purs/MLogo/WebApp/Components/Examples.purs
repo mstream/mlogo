@@ -14,6 +14,7 @@ import Halogen.HTML (HTML)
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.HTML.Properties.ARIA as HPA
 import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import MLogo.Parsing.Expression (Expression)
@@ -44,7 +45,9 @@ component = Hooks.component \{ outputToken } examplesByTitle → Hooks.do
               { pageWidth: 50, simplifyBinaryOperations: false }
       in
         HH.div
-          [ classes [ "block", "is-flex", "is-flex-direction-column" ] ]
+          [ HPA.role "figure"
+          , classes [ "block", "is-flex", "is-flex-direction-column" ]
+          ]
           [ HH.div
               [ classes [ "is-flex", "is-flex-direction-row" ] ]
               [ HH.button
