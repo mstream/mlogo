@@ -48,6 +48,23 @@ test.describe('Sandbox Page', () => {
     await innerTextbox.fill(programCode)
     await expect(codeInputTextbox).toContainText(programCode)
   })
+
+  test('the canvas is responsive to input', async ({ page }) => {
+    const programCode = 'forward 10'
+    const canvasImage = await getCanvasImage(page)
+    const codeInputTextbox = await getCodeInputTextbox(page)
+    const innerTextbox = codeInputTextbox.getByRole('textbox')
+
+    expect(await canvasImage.screenshot()).toMatchSnapshot(
+      'empty-canvas.svg', 
+      {maxDiffPixelRatio: 0},
+    )
+    await innerTextbox.fill(programCode)
+    expect(await canvasImage.screenshot()).toMatchSnapshot(
+      'canvas-after-forward-10.svg', 
+      {maxDiffPixelRatio: 0}
+    )
+  })
   
   test('the editor is responsive to examples', async ({ page }) => {
     const codeInputTextbox = await getCodeInputTextbox(page)
@@ -58,6 +75,23 @@ test.describe('Sandbox Page', () => {
     const firstExampleCode = (await firstExampleFigure.getByRole('code').allTextContents())[0]
     await firstExampleTryButton.click()
     await expect(codeInputTextbox).toContainText(firstExampleCode)
+  })
+  
+  test('the canvas is responsive to examples', async ({ page }) => {
+    const canvasImage = await getCanvasImage(page)
+    const examplesTab = await getExamplesTab(page)
+    await examplesTab.click()
+    const firstExampleFigure = (await getExampleFigure(page)).first()
+    const firstExampleTryButton = firstExampleFigure.getByRole('button')
+    expect(await canvasImage.screenshot()).toMatchSnapshot(
+      'empty-canvas.svg', 
+      {maxDiffPixelRatio: 0},
+    )
+    await firstExampleTryButton.click()
+    expect(await canvasImage.screenshot()).toMatchSnapshot(
+      'canvas-after-applying-first-example.svg', 
+      {maxDiffPixelRatio: 0}
+    )
   })
 
   test.fixme('has no accessibility issues', async ({ page }) => {

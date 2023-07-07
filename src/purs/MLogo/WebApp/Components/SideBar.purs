@@ -22,7 +22,6 @@ import MLogo.WebApp.Parts (IconSize(..))
 import MLogo.WebApp.Parts as Parts
 import MLogo.WebApp.Utils (classes)
 import Type.Proxy (Proxy(..))
-import Web.UIEvent.MouseEvent (button)
 
 data Tab = AboutTab | ExamplesTab | ReferenceTab
 

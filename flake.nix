@@ -5,9 +5,10 @@
     easy-purescript-nix.url = "github:justinwoo/easy-purescript-nix/master";
     flake-utils.url = "github:numtide/flake-utils/main";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs-latest.url = "github:nixos/nixpkgs/master";
   };
 
-  outputs = { self, easy-purescript-nix, flake-utils, nixpkgs, ... }:
+  outputs = { self, easy-purescript-nix, flake-utils, nixpkgs, nixpkgs-latest, ... }:
     let
       name = "mlogo";
 
@@ -20,6 +21,10 @@
     flake-utils.lib.eachSystem supportedSystems (system:
       let
         pkgs = import nixpkgs {
+          inherit system;
+        };
+
+        pkgs-latest = import nixpkgs-latest {
           inherit system;
         };
 
@@ -64,7 +69,7 @@
         devShell = pkgs.mkShell {
           inherit name;
           buildInputs = devShellInputs.easy-ps ++ devShellInputs.pkgs;
-          PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
+          PLAYWRIGHT_BROWSERS_PATH = "${pkgs-latest.playwright-driver.browsers}";
           shellHook = ''
             PS1="\[\e[33m\][\[\e[m\]\[\e[34;40m\]${name}:\[\e[m\]\[\e[36m\]\w\[\e[m\]\[\e[33m\]]\[\e[m\]\[\e[32m\]\\$\[\e[m\] "
           '';

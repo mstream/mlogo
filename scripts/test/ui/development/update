@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+set -E -e
+
+export NODE_ENV=development
+
+npx playwright test --update-snapshots
