@@ -9,6 +9,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:@typescript-eslint/strict',
     'plugin:playwright/playwright-test',
+    'plugin:prettier/recommended',
   ],
   ignorePatterns: [
     'postcss.config.js',
@@ -23,7 +24,7 @@ module.exports = {
     project: true,
   },
   plugins: [
-    '@typescript-eslint'
+    '@typescript-eslint',
   ],
   root: true,
   rules: {

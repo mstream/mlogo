@@ -1,49 +1,54 @@
-import { defineConfig, PlaywrightTestProject } from '@playwright/test';
-
-import {base} from './vite.config.ts'
+import { defineConfig, PlaywrightTestProject } from '@playwright/test'
+import { base } from './vite.config.ts'
 import inCI from './in-ci.js'
 import inProduction from './in-production.js'
 
 type BrowserName = 'chromium' | 'firefox' | 'webkit'
 
-const supportedBrowsers: Array<BrowserName> = inCI ? 
-  /* Nix support issues for browsers other than Chromium on x86_64-linux system */
-  ['chromium'] : 
-  ['chromium', 'firefox', 'webkit'] 
+const supportedBrowsers: Array<BrowserName> = inCI
+  ? /* Nix support issues for browsers other than Chromium on x86_64-linux system */
+    ['chromium']
+  : ['chromium', 'firefox', 'webkit']
 
 const baseURL = `http://localhost:4173${base}`
 const serveMode = inProduction ? 'production' : 'development'
 
-function inDarkMode(project: PlaywrightTestProject): PlaywrightTestProject { 
+function inDarkMode(
+  project: PlaywrightTestProject,
+): PlaywrightTestProject {
   if (!project.name) {
     throw Error('project name required')
   }
   return {
     ...project,
     name: `${project.name} (Dark Mode)`,
-    use: {...project.use, colorScheme: 'dark'},
+    use: { ...project.use, colorScheme: 'dark' },
   }
 }
 
-function inLightMode(project: PlaywrightTestProject): PlaywrightTestProject { 
+function inLightMode(
+  project: PlaywrightTestProject,
+): PlaywrightTestProject {
   if (!project.name) {
     throw Error('project name required')
   }
   return {
-    ...project, 
+    ...project,
     name: `${project.name} (Light Mode)`,
-    use: {...project.use, colorScheme: 'light'},
+    use: { ...project.use, colorScheme: 'light' },
   }
 }
 
-function desktopDevice(browserName: BrowserName): PlaywrightTestProject {
+function desktopDevice(
+  browserName: BrowserName,
+): PlaywrightTestProject {
   return {
     name: `desktop/${browserName}`,
     use: {
       browserName,
       hasTouch: false,
       isMobile: false,
-      viewport: {height: 1200, width: 1920}, 
+      viewport: { height: 1200, width: 1920 },
     },
   }
 }
@@ -55,7 +60,7 @@ function mobileDevice(browserName: BrowserName): PlaywrightTestProject {
       browserName,
       hasTouch: true,
       isMobile: true,
-      viewport: {height: 1280, width: 720}, 
+      viewport: { height: 1280, width: 720 },
     },
   }
 }
@@ -67,7 +72,7 @@ function tabletDevice(browserName: BrowserName): PlaywrightTestProject {
       browserName,
       hasTouch: true,
       isMobile: true,
-      viewport: {height: 1600, width: 900}, 
+      viewport: { height: 1600, width: 900 },
     },
   }
 }
@@ -76,7 +81,7 @@ export default defineConfig({
   expect: {
     timeout: 5 * 1000,
   },
-  fullyParallel: !inCI, 
+  fullyParallel: !inCI,
   forbidOnly: inCI,
   globalTimeout: 10 * 60 * 1000,
   reporter: 'html',
@@ -103,26 +108,21 @@ export default defineConfig({
     .reduce(
       (acc: Array<PlaywrightTestProject>, browserName) => [
         ...acc,
-        ...( 
-          browserName === 'firefox' ? 
-            [
-              desktopDevice(browserName),
-            ] :
-            [
+        ...(browserName === 'firefox'
+          ? [desktopDevice(browserName)]
+          : [
               desktopDevice(browserName),
               mobileDevice(browserName),
               tabletDevice(browserName),
-            ]
-        )
-      ], 
+            ]),
+      ],
       [],
     )
     .reduce(
-      (acc: Array<PlaywrightTestProject>, project: PlaywrightTestProject) => [
-        ...acc, 
-        inDarkMode(project), 
-        inLightMode(project),
-      ], 
+      (
+        acc: Array<PlaywrightTestProject>,
+        project: PlaywrightTestProject,
+      ) => [...acc, inDarkMode(project), inLightMode(project)],
       [],
     ),
 

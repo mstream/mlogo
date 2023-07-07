@@ -39,12 +39,12 @@ const pwaIcons = [
 
 const pwaShortcuts = [
   {
-    name: "Open Sandbox",
-    short_name: "Sandbox",
-    description: "Evaluate your Logo code",
-    url: "/sandbox",
-    icons: [{ src: "bucket.png", sizes: "192x192" }]
-  }
+    name: 'Open Sandbox',
+    short_name: 'Sandbox',
+    description: 'Evaluate your Logo code',
+    url: '/sandbox',
+    icons: [{ src: 'bucket.png', sizes: '192x192' }],
+  },
 ]
 
 const pwaPlugin = VitePWA({
@@ -57,9 +57,8 @@ const pwaPlugin = VitePWA({
     theme_color: '#ffffff',
   },
   registerType: 'autoUpdate',
-  srcDir: 'build/images'
+  srcDir: 'build/images',
 })
-
 
 export default defineConfig({
   base,
@@ -72,13 +71,10 @@ export default defineConfig({
       input: {
         home: resolve(__dirname, root, 'index.html'),
         sandbox: resolve(__dirname, root, 'sandbox', 'index.html'),
-      }
+      },
     },
     sourcemap: !inProduction,
   },
-  plugins: [
-    pwaPlugin
-  ],
+  plugins: [pwaPlugin],
   root,
 })
-

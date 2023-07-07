@@ -1,3 +1,3 @@
-const inProduction : boolean
+const inProduction: boolean
 
 export default inProduction

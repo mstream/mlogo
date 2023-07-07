@@ -1,1 +1,1 @@
-export default Boolean(process.env.CI) 
+export default Boolean(process.env.CI)

@@ -1,3 +1,3 @@
-const inCi : boolean
+const inCi: boolean
 
 export default inCi

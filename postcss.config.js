@@ -7,11 +7,15 @@ const productionPlugins = [
     defaultExtractor(content) {
       const defaultSelectors = content.match(/[A-Za-z0-9_-]+/g) ?? []
 
-      const halogenHtmlSelectors = (content.match(/HH\.[A-Za-z]+_?/g) ?? [])
-        .map(selector => selector.slice(3).replace('_', ''))
+      const halogenHtmlSelectors = (
+        content.match(/HH\.[A-Za-z]+_?/g) ?? []
+      ).map((selector) => selector.slice(3).replace('_', ''))
 
-      const htmlSelectors = (content.match(/<[A-Za-z]+?\/>/g) ?? [])
-        .map(selector => selector.replace('<', '').replace('>', '').replace('/', ''))
+      const htmlSelectors = (
+        content.match(/<[A-Za-z]+?\/>/g) ?? []
+      ).map((selector) =>
+        selector.replace('<', '').replace('>', '').replace('/', ''),
+      )
 
       return [
         ...defaultSelectors,
@@ -19,9 +23,9 @@ const productionPlugins = [
         ...htmlSelectors,
       ]
     },
-  })
+  }),
 ]
 
 export default {
-  plugins: inProduction ? productionPlugins : []
+  plugins: inProduction ? productionPlugins : [],
 }

@@ -1,24 +1,24 @@
 import * as axe from '@axe-core/playwright'
 import { test, expect, Page, Locator } from '@playwright/test'
 
-function getCanvasImage(page: Page) : Locator {
-  return page.getByRole('img', {name: 'canvas'})
+function getCanvasImage(page: Page): Locator {
+  return page.getByRole('img', { name: 'canvas' })
 }
 
-function getCodeInputTextbox(page : Page) : Locator {
-  return page.getByRole('textbox', {name: 'code input'})
+function getCodeInputTextbox(page: Page): Locator {
+  return page.getByRole('textbox', { name: 'code input' })
 }
 
-function getExamplesTab(page: Page) : Locator {
-  return page.getByRole('button', {name: 'examples'})
+function getExamplesTab(page: Page): Locator {
+  return page.getByRole('button', { name: 'examples' })
 }
 
-function getExampleFigure(page: Page) : Locator {
+function getExampleFigure(page: Page): Locator {
   return page.getByRole('figure')
 }
 
 test.describe('Sandbox Page', () => {
-  test.beforeEach(async ({page}) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('sandbox')
   })
 
@@ -26,19 +26,25 @@ test.describe('Sandbox Page', () => {
     await expect(page).toHaveTitle(/MLogo/)
     await expect(page).toHaveTitle(/Sandbox/)
   })
-   
+
   test('the canvas is tall enough', async ({ page }) => {
     const viewportHeight = Number(page.viewportSize()?.height)
     const canvasImage = getCanvasImage(page)
-    const canvasHeight = Number((await canvasImage.boundingBox())?.height)
-    expect(canvasHeight / viewportHeight).toBeGreaterThanOrEqual(1/3)
+    const canvasHeight = Number(
+      (await canvasImage.boundingBox())?.height,
+    )
+    expect(canvasHeight / viewportHeight).toBeGreaterThanOrEqual(1 / 3)
   })
- 
+
   test('the editor is tall enough', async ({ page }) => {
     const viewportHeight = Number(page.viewportSize()?.height)
     const codeInputTextbox = getCodeInputTextbox(page)
-    const codeInputHeight = Number((await codeInputTextbox.boundingBox())?.height) 
-    expect(codeInputHeight / viewportHeight).toBeGreaterThanOrEqual(1/3)
+    const codeInputHeight = Number(
+      (await codeInputTextbox.boundingBox())?.height,
+    )
+    expect(codeInputHeight / viewportHeight).toBeGreaterThanOrEqual(
+      1 / 3,
+    )
   })
 
   test('the editor is responsive to input', async ({ page }) => {
@@ -56,27 +62,29 @@ test.describe('Sandbox Page', () => {
     const innerTextbox = codeInputTextbox.getByRole('textbox')
 
     expect(await canvasImage.screenshot()).toMatchSnapshot(
-      'empty-canvas.svg', 
-      {maxDiffPixelRatio: 0},
+      'empty-canvas.svg',
+      { maxDiffPixelRatio: 0 },
     )
     await innerTextbox.fill(programCode)
     expect(await canvasImage.screenshot()).toMatchSnapshot(
-      'canvas-after-forward-10.svg', 
-      {maxDiffPixelRatio: 0}
+      'canvas-after-forward-10.svg',
+      { maxDiffPixelRatio: 0 },
     )
   })
-  
+
   test('the editor is responsive to examples', async ({ page }) => {
     const codeInputTextbox = getCodeInputTextbox(page)
     const examplesTab = getExamplesTab(page)
     await examplesTab.click()
     const firstExampleFigure = getExampleFigure(page).first()
     const firstExampleTryButton = firstExampleFigure.getByRole('button')
-    const firstExampleCode = (await firstExampleFigure.getByRole('code').allTextContents())[0]
+    const firstExampleCode = (
+      await firstExampleFigure.getByRole('code').allTextContents()
+    )[0]
     await firstExampleTryButton.click()
     await expect(codeInputTextbox).toContainText(firstExampleCode)
   })
-  
+
   test('the canvas is responsive to examples', async ({ page }) => {
     const canvasImage = getCanvasImage(page)
     const examplesTab = getExamplesTab(page)
@@ -84,13 +92,13 @@ test.describe('Sandbox Page', () => {
     const firstExampleFigure = getExampleFigure(page).first()
     const firstExampleTryButton = firstExampleFigure.getByRole('button')
     expect(await canvasImage.screenshot()).toMatchSnapshot(
-      'empty-canvas.svg', 
-      {maxDiffPixelRatio: 0},
+      'empty-canvas.svg',
+      { maxDiffPixelRatio: 0 },
     )
     await firstExampleTryButton.click()
     expect(await canvasImage.screenshot()).toMatchSnapshot(
-      'canvas-after-applying-first-example.svg', 
-      {maxDiffPixelRatio: 0}
+      'canvas-after-applying-first-example.svg',
+      { maxDiffPixelRatio: 0 },
     )
   })
 
@@ -101,4 +109,3 @@ test.describe('Sandbox Page', () => {
     expect(accessibilityScanResults.violations).toEqual([])
   })
 })
-

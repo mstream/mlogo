@@ -1,5 +1,5 @@
 {
-  "allowImportingTsExtensions":true,
+  "allowImportingTsExtensions": true,
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "checkJs": false,
