@@ -1,5 +1,6 @@
 import * as axe from '@axe-core/playwright'
 import { test, expect, Page, Locator } from '@playwright/test'
+import configureSnapshotPath from './configure-snapshot-path.ts'
 
 const maxDiffPixelRatio = 0.05
 
@@ -20,7 +21,8 @@ function getExampleFigure(page: Page): Locator {
 }
 
 test.describe('Sandbox Page', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    configureSnapshotPath(testInfo)
     await page.goto('sandbox')
   })
 
