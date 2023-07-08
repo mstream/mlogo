@@ -26,9 +26,10 @@ $link-dark: $cyan;
   min-height: 40svh;
 }
 
-#canvas > * {
-  /* webkit's mobile viewport bug fix */
+/* webkit's mobile viewport bug fix */
+#canvas svg {
   height: -webkit-fill-available; 
+  width: -webkit-fill-available; 
 }
 
 #editor {

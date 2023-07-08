@@ -62,12 +62,12 @@ test.describe('Sandbox Page', () => {
     const innerTextbox = codeInputTextbox.getByRole('textbox')
 
     expect(await canvasImage.screenshot()).toMatchSnapshot(
-      'empty-canvas.svg',
+      'empty-canvas.png',
       { maxDiffPixelRatio: 0 },
     )
     await innerTextbox.fill(programCode)
     expect(await canvasImage.screenshot()).toMatchSnapshot(
-      'canvas-after-forward-10.svg',
+      'canvas-after-forward-10.png',
       { maxDiffPixelRatio: 0 },
     )
   })
@@ -92,12 +92,12 @@ test.describe('Sandbox Page', () => {
     const firstExampleFigure = getExampleFigure(page).first()
     const firstExampleTryButton = firstExampleFigure.getByRole('button')
     expect(await canvasImage.screenshot()).toMatchSnapshot(
-      'empty-canvas.svg',
+      'empty-canvas.png',
       { maxDiffPixelRatio: 0 },
     )
     await firstExampleTryButton.click()
     expect(await canvasImage.screenshot()).toMatchSnapshot(
-      'canvas-after-applying-first-example.svg',
+      'canvas-after-applying-first-example.png',
       { maxDiffPixelRatio: 0 },
     )
   })
