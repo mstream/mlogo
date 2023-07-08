@@ -8,3 +8,7 @@ capable of interpreting computer programs written in Logo language.
 
 The project tries to comply as closely as possible with the  
 [UCB Logo](https://en.wikipedia.org/wiki/UCBLogo) dialect.
+
+## License
+
+Distributed under the MIT License. See `LICENSE.txt` for more information.
