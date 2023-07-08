@@ -56,7 +56,7 @@ jobs:
       - name: "Run UI tests"
         run: >
           nix develop -c 
-          npm run test:ui:production
+          npm run test:ui:production:run
           
       - name: "Save Playwright reports" 
         uses: "actions/upload-artifact@v3"
