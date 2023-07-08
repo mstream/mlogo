@@ -26,6 +26,7 @@
     "bundle:production:webapp": "scripty",
     "clean": "scripty",
     "lint": "scripty",
+    "lint:md": "scripty",
     "lint:purs": "scripty",
     "lint:ts": "scripty",
     "release": "scripty",

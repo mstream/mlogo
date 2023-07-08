@@ -48,6 +48,10 @@
             spago
           ];
 
+          node-packages = with pkgs.nodePackages; [
+            markdownlint-cli
+          ];
+
           pkgs = with pkgs; [
             act
             docker
@@ -63,7 +67,10 @@
         checks = { inherit format-check; };
         devShell = pkgs.mkShell {
           inherit name;
-          buildInputs = devShellInputs.easy-ps ++ devShellInputs.pkgs;
+          buildInputs =
+            devShellInputs.easy-ps ++
+            devShellInputs.node-packages ++
+            devShellInputs.pkgs;
           PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
           shellHook = ''
             PS1="\[\e[33m\][\[\e[m\]\[\e[34;40m\]${name}:\[\e[m\]\[\e[36m\]\w\[\e[m\]\[\e[33m\]]\[\e[m\]\[\e[32m\]\\$\[\e[m\] "
