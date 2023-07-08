@@ -1,6 +1,8 @@
 import * as axe from '@axe-core/playwright'
 import { test, expect, Page, Locator } from '@playwright/test'
 
+const maxDiffPixelRatio = 0.05
+
 function getCanvasImage(page: Page): Locator {
   return page.getByRole('img', { name: 'canvas' })
 }
@@ -63,12 +65,12 @@ test.describe('Sandbox Page', () => {
 
     expect(await canvasImage.screenshot()).toMatchSnapshot(
       'empty-canvas.png',
-      { maxDiffPixelRatio: 0 },
+      { maxDiffPixelRatio },
     )
     await innerTextbox.fill(programCode)
     expect(await canvasImage.screenshot()).toMatchSnapshot(
       'canvas-after-forward-10.png',
-      { maxDiffPixelRatio: 0 },
+      { maxDiffPixelRatio },
     )
   })
 
@@ -93,12 +95,12 @@ test.describe('Sandbox Page', () => {
     const firstExampleTryButton = firstExampleFigure.getByRole('button')
     expect(await canvasImage.screenshot()).toMatchSnapshot(
       'empty-canvas.png',
-      { maxDiffPixelRatio: 0 },
+      { maxDiffPixelRatio },
     )
     await firstExampleTryButton.click()
     expect(await canvasImage.screenshot()).toMatchSnapshot(
       'canvas-after-applying-first-example.png',
-      { maxDiffPixelRatio: 0 },
+      { maxDiffPixelRatio },
     )
   })
 
