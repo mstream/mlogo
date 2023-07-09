@@ -26,6 +26,10 @@ $link-dark: $cyan;
   min-height: 40svh;
 }
 
+#examples pre {
+  max-width: 58svw;
+}
+
 /* webkit's mobile viewport bug fix */
 #canvas svg {
   height: -webkit-fill-available; 
@@ -39,10 +43,6 @@ $link-dark: $cyan;
 
 #editor > * {
   min-height: inherit;
-}
-
-#examples {
-  max-width: 40rem;
 }
 
 #code-input {
