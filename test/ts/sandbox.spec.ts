@@ -1,6 +1,5 @@
 import * as axe from '@axe-core/playwright'
 import { test, expect, Page, Locator } from '@playwright/test'
-import configureSnapshotPath from './configure-snapshot-path.ts'
 
 const maxDiffPixelRatio = 0.01
 
