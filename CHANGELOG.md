@@ -1,5 +1,12 @@
 
 
+### [0.46.4](https://github.com/mstream/mlogo/compare/0.46.3...0.46.4) (2023-07-09)
+
+
+### Bug Fixes
+
+* correct webkit canvas rendering ([50c844a](https://github.com/mstream/mlogo/commit/50c844a6874f8ca3c4fa619dabe2c44ba2e2a89b))
+
 ### [0.46.3](https://github.com/mstream/mlogo/compare/0.46.2...0.46.3) (2023-07-06)
 
 ### [0.46.2](https://github.com/mstream/mlogo/compare/0.46.1...0.46.2) (2023-07-03)
