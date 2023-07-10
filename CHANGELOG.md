@@ -1,5 +1,12 @@
 
 
+### [0.46.5](https://github.com/mstream/mlogo/compare/0.46.4...0.46.5) (2023-07-10)
+
+
+### Bug Fixes
+
+* correct displaying the examples panel on mobile devices ([b049525](https://github.com/mstream/mlogo/commit/b04952562434ea87917b7144f8b6d94d9ee2dd1a))
+
 ### [0.46.4](https://github.com/mstream/mlogo/compare/0.46.3...0.46.4) (2023-07-09)
 
 
