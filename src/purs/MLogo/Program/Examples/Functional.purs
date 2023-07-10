@@ -33,7 +33,7 @@ examplesByTitle =
                     ]
                 )
             ]
-        , source: ""
+        , source: "for [ i 1 1000 ] [ forward :i ]"
         }
     }
 
