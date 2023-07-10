@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+spago run -m Test.Benchmark.Main

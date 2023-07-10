@@ -14,8 +14,8 @@ import Data.List (List(..))
 import Data.List as List
 import Data.String (Pattern(..))
 import Data.String as String
-import Examples (Example(..))
-import Examples as Examples
+import MLogo.Program.Example (Example(..))
+import MLogo.Program.Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Parsing as Parsing
 import MLogo.Parsing.Expression
@@ -684,7 +684,7 @@ spec = describe "Printing" do
       ]
 
     forWithIndex_
-      Examples.examplesByTitle
+      Examples.all
       \title (Example { ast, source }) →
         sourceBasedPrintTestCase title source ast
 

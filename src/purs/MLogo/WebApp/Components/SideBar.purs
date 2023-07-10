@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
-import Examples as Examples
+import MLogo.Program.Examples as Examples
 import Halogen (Component)
 import Halogen.HTML (HTML)
 import Halogen.HTML as HH
@@ -60,7 +60,7 @@ component = Hooks.component \{ outputToken } _ → Hooks.do
           (Proxy ∷ Proxy "examples")
           unit
           ExamplesComponent.component
-          Examples.examplesByTitle
+          Examples.fancy
           handleExamplesOutput
       ReferenceTab →
         HH.slot_

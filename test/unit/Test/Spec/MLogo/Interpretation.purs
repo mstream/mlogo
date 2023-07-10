@@ -9,8 +9,8 @@ import Data.FoldableWithIndex (traverseWithIndex_)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
-import Examples (Example(..))
-import Examples as Examples
+import MLogo.Program.Example (Example(..))
+import MLogo.Program.Examples as Examples
 import MLogo.Interpretation as Interpretation
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState, Value(..))
@@ -119,7 +119,7 @@ spec = describe "Interpretation" do
       ( \title (Example { ast }) →
           expressionsTestCase title ast
       )
-      Examples.examplesByTitle
+      Examples.all
 
 expressionTestCase
   ∷ String

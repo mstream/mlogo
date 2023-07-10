@@ -26,6 +26,7 @@
   , "integers"
   , "lists"
   , "maybe"
+  , "minibench"
   , "newtype"
   , "node-buffer"
   , "node-fs"
@@ -50,5 +51,6 @@
   , "web-html"
   ]
 , packages = ./packages.dhall
-, sources = [ "src/purs/**/*.purs", "test/purs/**/*.purs" ]
+, sources =
+  [ "src/purs/**/*.purs", "test/benchmarks/**/*.purs", "test/unit/**/*.purs" ]
 }

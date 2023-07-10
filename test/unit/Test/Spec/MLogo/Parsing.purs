@@ -21,8 +21,8 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.Traversable (class Traversable, sequence)
 import Data.Tuple.Nested ((/\))
-import Examples (Example(..))
-import Examples as Examples
+import MLogo.Program.Example (Example(..))
+import MLogo.Program.Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Parsing (ParsingContext)
 import MLogo.Parsing as Parsing
@@ -802,7 +802,7 @@ spec = describe "Parsing" do
       ( \title (Example { ast, source }) →
           expressionsTestCase title source ast
       )
-      Examples.examplesByTitle
+      Examples.all
 
     expressionsTestCase
       "string literals are terminated by a space"

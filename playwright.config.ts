@@ -90,7 +90,7 @@ export default defineConfig({
     threshold: 10 * 1000,
   },
   retries: inCI ? 2 : 0,
-  testDir: './test/ts',
+  testDir: './test/ui',
   timeout: 20 * 1000,
   workers: inCI ? 1 : undefined,
   use: {

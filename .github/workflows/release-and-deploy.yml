@@ -46,7 +46,7 @@ jobs:
       - name: "Run unit tests"
         run: >
           nix develop -c 
-          npm run test:purs
+          npm run test:unit
 
       - name: "Bundle web application"
         run: >

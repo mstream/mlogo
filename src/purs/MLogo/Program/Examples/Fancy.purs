@@ -1,4 +1,4 @@
-module Examples (Example(..), examplesByTitle) where
+module MLogo.Program.Examples.Fancy (examplesByTitle) where
 
 import Prelude
 
@@ -6,34 +6,13 @@ import Data.List (List(..))
 import Data.List as List
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Symbol (class IsSymbol, reflectSymbol)
-import Heterogeneous.Folding (class FoldingWithIndex)
 import Heterogeneous.Folding as Heterogeneous
 import MLogo.Parsing.Expression
   ( BinaryOperationType(..)
   , Expression(..)
   , UnaryOperationType(..)
   )
-import Type.Proxy (Proxy)
-
-newtype Example = Example
-  { ast ∷ Array Expression
-  , source ∷ String
-  }
-
-data ToMap = ToMap
-
-instance
-  ( IsSymbol sym
-  ) ⇒
-  FoldingWithIndex
-    ToMap
-    (Proxy sym)
-    (Map String Example)
-    Example
-    (Map String Example) where
-  foldingWithIndex ToMap prop acc val =
-    Map.insert (reflectSymbol prop) val acc
+import MLogo.Program.Example (Example(..), ToMap(..))
 
 examplesByTitle ∷ Map String Example
 examplesByTitle =

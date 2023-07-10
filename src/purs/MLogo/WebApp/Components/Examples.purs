@@ -8,7 +8,7 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff.Class (class MonadAff)
-import Examples (Example(..))
+import MLogo.Program.Example (Example(..))
 import Halogen (Component)
 import Halogen.HTML (HTML)
 import Halogen.HTML as HH
