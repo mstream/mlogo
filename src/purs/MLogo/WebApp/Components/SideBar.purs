@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Tuple.Nested ((/\))
 import Effect.Aff.Class (class MonadAff)
-import MLogo.Program.Examples as Examples
 import Halogen (Component)
 import Halogen.HTML (HTML)
 import Halogen.HTML as HH
@@ -15,6 +14,7 @@ import Halogen.Hooks (HookM)
 import Halogen.Hooks as Hooks
 import Halogen.Hooks.Extra.Hooks as ExtraHooks
 import MLogo.Interpretation.Command.Commands as Commands
+import MLogo.Program.Examples as Examples
 import MLogo.WebApp.Components.About as AboutComponent
 import MLogo.WebApp.Components.Examples as ExamplesComponent
 import MLogo.WebApp.Components.Reference as ReferenceComponent

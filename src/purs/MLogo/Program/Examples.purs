@@ -1,6 +1,5 @@
 module MLogo.Program.Examples (fancy, functional, all) where
 
-
 import Data.Map (Map)
 import Data.Map as Map
 import MLogo.Program.Example (Example)

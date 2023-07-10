@@ -14,8 +14,6 @@ import Data.List (List(..))
 import Data.List as List
 import Data.String (Pattern(..))
 import Data.String as String
-import MLogo.Program.Example (Example(..))
-import MLogo.Program.Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Parsing as Parsing
 import MLogo.Parsing.Expression
@@ -27,6 +25,8 @@ import MLogo.Parsing.Expression
 import MLogo.Parsing.Expression.Gen as ExpressionGen
 import MLogo.Printing as Printing
 import MLogo.Printing.Code (codeToString) as Code
+import MLogo.Program.Example (Example(..))
+import MLogo.Program.Examples as Examples
 import Parsing (ParseError)
 import Parsing as P
 import Test.QuickCheck (Result(..))

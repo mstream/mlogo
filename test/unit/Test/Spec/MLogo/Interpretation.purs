@@ -9,8 +9,6 @@ import Data.FoldableWithIndex (traverseWithIndex_)
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\), (/\))
-import MLogo.Program.Example (Example(..))
-import MLogo.Program.Examples as Examples
 import MLogo.Interpretation as Interpretation
 import MLogo.Interpretation.Interpret as Interpret
 import MLogo.Interpretation.State (ExecutionState, Value(..))
@@ -19,6 +17,8 @@ import MLogo.Parsing.Expression
   ( BinaryOperationType(..)
   , Expression(..)
   )
+import MLogo.Program.Example (Example(..))
+import MLogo.Program.Examples as Examples
 import Test.Spec (describe, it)
 import Test.Spec.Assertions (fail)
 import Test.Spec.MLogo.Interpretation.Command as Command

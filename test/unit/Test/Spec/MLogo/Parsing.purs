@@ -21,8 +21,6 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.Traversable (class Traversable, sequence)
 import Data.Tuple.Nested ((/\))
-import MLogo.Program.Example (Example(..))
-import MLogo.Program.Examples as Examples
 import MLogo.Interpretation.Command.Commands as Commands
 import MLogo.Parsing (ParsingContext)
 import MLogo.Parsing as Parsing
@@ -35,6 +33,8 @@ import MLogo.Parsing.Expression
   )
 import MLogo.Parsing.Expression as Expression
 import MLogo.Parsing.Expression.Gen as ExpressionGen
+import MLogo.Program.Example (Example(..))
+import MLogo.Program.Examples as Examples
 import Parsing as P
 import Test.QuickCheck (Result(..))
 import Test.QuickCheck.Gen (Gen)
